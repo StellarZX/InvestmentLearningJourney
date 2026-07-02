@@ -29,6 +29,4 @@ Beginner. Learning how to read market indices and understand ETFs.
 ## Resources
 
 - [Financial Glossary](04_Glossary/Vocabulary.md)
-- [指数基金投资指南.epub](04_Glossary/指数基金投资指南.epub) 
-- 
-- dawd
+- [指数基金投资指南.epub](04_Glossary/指数基金投资指南.epub)
