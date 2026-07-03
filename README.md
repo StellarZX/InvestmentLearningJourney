@@ -35,8 +35,6 @@ This part focuses on the investor's behavior. It introduces [behavioral finance]
 
 ## 2. Market
 
-- [2026-07](02_Market/2026-07.md)
-
 
 ## 2. Investment
 | Asset                                  | Target | Current |  Value | Return | Gain/Loss |
