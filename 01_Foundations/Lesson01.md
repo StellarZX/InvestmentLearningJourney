@@ -1,7 +1,6 @@
-# Lesson 01 - Why Invest?
+# Lesson 01 — Why Invest?
 
-> "The goal of investing is not to get rich quickly.
-> The goal is to make your money work for you."
+> *"The best time to plant a tree was 20 years ago. The second best time is today."*
 
 ---
 
@@ -9,246 +8,292 @@
 
 After completing this lesson, you should be able to:
 
-- Understand why investing is necessary.
-- Distinguish saving from investing.
-- Explain the role of inflation.
-- Understand the relationship between market indices and ETFs.
-- Read the basic information on an index page.
+- Understand why investing is important.
+- Explain the difference between saving and investing.
+- Understand the impact of inflation.
+- Know why investing is a long-term activity.
+- Build the correct mindset before learning any investment products.
 
 ---
 
-# 1. Why Do We Need to Invest?
+# Introduction
 
-Many beginners believe that saving money in a bank is enough.
+Many people believe that investing is about making a lot of money quickly.
 
-However, money loses purchasing power over time because of inflation.
+In reality, successful investing is almost the opposite.
+
+Investing is not gambling.
+
+It is not predicting tomorrow's stock market.
+
+It is not trying to become rich overnight.
+
+Instead, investing is a long-term process of allowing your money to grow together with the economy.
+
+Before learning about stocks, ETFs, or financial markets, we must first answer one simple question:
+
+> **Why should we invest at all?**
+
+---
+
+# 1. Saving Is Important, But It Is Not Enough
+
+Most people start by saving money.
+
+Saving money is a good habit because it provides financial security.
 
 For example:
 
-Imagine you have **100 EUR** today.
+- paying unexpected medical expenses
+- repairing a car
+- buying a new laptop
+- dealing with emergencies
 
-If the bank pays **2%** annual interest, after one year you will have:
+Savings help us survive unexpected situations.
 
-102 EUR.
+However, saving alone is usually not enough to build long-term wealth.
 
-However, if inflation is **3%**, the prices of goods increase faster than your savings.
+Money sitting in a bank account grows very slowly.
 
-Although you have more money, your purchasing power has actually decreased.
+Meanwhile, the prices of goods and services continue to increase.
 
-Therefore, the purpose of investing is **not only to make money**, but also to preserve and grow the value of your wealth over the long term.
+This leads us to an important concept:
 
----
-
-# 2. Saving vs Investing
-
-Saving and investing are not the same.
-
-| Saving                   | Investing                            |
-|--------------------------|--------------------------------------|
-| Low risk                 | Higher risk                          |
-| Low return               | Higher expected return               |
-| Suitable for emergencies | Suitable for long-term wealth growth |
-| Bank deposits            | Stocks, ETFs, bonds, etc.            |
-
-Saving protects your money.
-
-Investing helps your money grow.
-
-A healthy financial plan usually needs both.
+**Inflation.**
 
 ---
 
-# 3. What Is a Market Index?
+# 2. Inflation
 
-A market index measures the overall performance of a group of stocks.
+Inflation means that the prices of goods and services increase over time.
 
-For example:
+As a result,
 
-- CSI 300
-- CSI A500
-- S&P 500
-- NASDAQ-100
-- Hang Seng Index
+the same amount of money buys fewer things in the future.
 
-An index is only a number.
+Imagine that today you have **100 RMB**.
 
-It represents the performance of many companies together.
+Suppose your bank pays **2%** annual interest.
 
-For example,
+After one year, you will have
 
-The CSI 300 represents 300 large companies in China's A-share market.
+102 RMB.
 
-If most of these companies rise, the index rises.
+However,
 
-If most of them fall, the index falls.
+if inflation is **3%**,
 
-An important point is:
+many products that cost 100 RMB today may cost 103 RMB next year.
 
-**An index cannot be bought directly.**
+Although your bank balance increased,
 
----
+your purchasing power actually decreased.
 
-# 4. What Is an ETF?
+This is why many people say:
 
-ETF stands for **Exchange-Traded Fund**.
+> **Cash loses value over time.**
 
-An ETF is a fund that tracks an index.
-
-For example,
-
-S&P 500 Index
-
-↓
-
-S&P 500 ETF
-
-The ETF attempts to copy the performance of the index.
-
-Therefore,
-
-Investors buy ETFs instead of buying indices.
+Investing aims to grow your wealth faster than inflation.
 
 ---
 
-# 5. Why Are There So Many ETFs Tracking the Same Index?
+# 3. Saving vs Investing
 
-For example,
+Although they are related, saving and investing have different purposes.
 
-There are many CSI 300 ETFs.
+| Saving | Investing |
+|---------|-----------|
+| Protects money | Grows money |
+| Low risk | Higher risk |
+| Low return | Higher expected return |
+| Suitable for emergencies | Suitable for long-term goals |
+
+Neither one is better.
+
+A healthy financial plan needs both.
+
+Emergency money should stay in savings.
+
+Long-term money can be invested.
+
+---
+
+# 4. What Does Investing Really Mean?
+
+Many beginners think investing means buying stocks.
+
+Actually,
+
+investing simply means using money to purchase assets that may become more valuable in the future.
 
 Examples include:
 
-- Huatai-PineBridge CSI 300 ETF
-- E Fund CSI 300 ETF
-- ChinaAMC CSI 300 ETF
+- Stocks
+- ETFs
+- Bonds
+- Real estate
+- Gold
 
-Although they have different fund companies and different prices,
+Different assets have different risks and expected returns.
 
-they all follow the same index.
+In this course,
 
-The index determines the long-term performance.
-
-The ETF is simply the investment vehicle.
-
-When choosing among ETFs tracking the same index, investors usually compare:
-
-- Expense ratio
-- Fund size
-- Liquidity
-- Tracking error
-
-rather than recent performance.
+our main focus will be **ETFs** because they are one of the most suitable investment tools for beginners.
 
 ---
 
-# 6. How to Read an Index Page
+# 5. Investing Is a Long-Term Game
 
-As a beginner, focus only on the following information.
+One of the biggest mistakes beginners make is expecting quick profits.
 
-### Daily Change (%)
+For example,
 
-This tells you whether the market is up or down today.
+someone buys a fund today,
 
-Example:
+checks the price tomorrow,
 
-CSI 300
+and becomes nervous because it dropped by 2%.
 
--2.96%
+Professional investors usually think differently.
 
-This means the overall market represented by the CSI 300 declined by 2.96%.
+Instead of asking:
 
----
+> "What happened today?"
 
-### Advancing vs Declining Stocks
+they ask:
 
-For example:
+> "What will happen over the next 10 or 20 years?"
 
-107 stocks advanced.
+Daily market fluctuations are normal.
 
-189 stocks declined.
-
-This indicates that market sentiment was relatively weak.
+Long-term investing focuses on years rather than days.
 
 ---
 
-### Trend
+# 6. Time Is Your Greatest Advantage
 
-Observe whether the market:
+As a young investor,
 
-- continued rising,
-- continued falling,
-- or recovered during the day.
+your biggest advantage is **time**, not money.
 
-Do not spend too much time studying intraday fluctuations.
+Imagine two people.
 
-Long-term investors care more about long-term trends.
+Person A starts investing at the age of 25.
+
+Person B starts investing at the age of 40.
+
+Even if Person B invests more money every month,
+
+Person A often has a significant advantage because the investments have more time to grow.
+
+The earlier you begin,
+
+the more opportunities your investments have to compound over time.
 
 ---
 
 # 7. Common Misunderstandings
 
-❌ I should buy the ETF that increased the most last year.
+### ❌ Investing means getting rich quickly.
 
-✅ Better thinking:
-
-Understand which index the ETF tracks first.
+✅ Investing is a long-term process of growing wealth.
 
 ---
 
-❌ The ETF price should be the same as the index value.
+### ❌ Saving money is enough.
 
-✅ Better thinking:
-
-The ETF price is independent of the index value.
-
-Only their percentage changes should be similar.
+✅ Saving protects your money, while investing helps it grow.
 
 ---
 
-❌ Today's market dropped by 3%, so I should sell immediately.
+### ❌ I should wait until I have a lot of money.
 
-✅ Better thinking:
+✅ Starting early is usually more important than starting with a large amount.
 
-Daily fluctuations are normal.
+---
 
-Long-term investors focus on years rather than days.
+### ❌ I need to predict the market perfectly.
+
+✅ Long-term investors focus on consistency rather than prediction.
+
+---
+
+# Thinking Like an Investor
+
+A beginner often asks:
+
+> "Which investment will make me the most money?"
+
+An investor asks:
+
+> "How can I build a system that I can follow for the next 30 years?"
+
+The second question is much more important.
+
+Investing is not about making one perfect decision.
+
+It is about making many reasonable decisions over a long period of time.
 
 ---
 
 # Key Takeaways
 
-- Investing helps preserve and grow wealth over the long term.
-- Saving and investing serve different purposes.
-- A market index measures the performance of many stocks.
-- An index cannot be bought directly.
-- ETFs are investment funds that track indices.
-- The index is more important than the ETF provider.
-- Long-term investors focus on trends instead of daily price movements.
+- Investing is a tool for long-term wealth growth.
+- Inflation reduces the purchasing power of money.
+- Saving and investing have different purposes.
+- Investing requires patience.
+- Time is one of the most valuable assets an investor has.
+- Building good habits is more important than chasing quick profits.
 
 ---
 
 # Review Questions
 
-1. What is the difference between saving and investing?
+1. Why is saving alone usually not enough?
 
-2. Why can't investors buy an index directly?
+2. What is inflation?
 
-3. What does an ETF do?
+3. What is the main difference between saving and investing?
 
-4. Why are there many ETFs tracking the same index?
+4. Why is time important in investing?
 
-5. Which information is most important when reading an index page?
+5. Why shouldn't beginners focus on daily market movements?
+
+---
+
+# Assignment
+
+Think about your own financial situation.
+
+Write a short reflection (100–150 words) answering the following questions:
+
+- Why do you want to learn investing?
+- What are your long-term financial goals?
+- What do you expect to gain from this course?
+- What kind of investor do you hope to become?
+
+---
+
+# Connections
+
+Previous Lesson
+
+None
+
+↓
+
+Current Lesson
+
+Why Invest?
+
+↓
+
+Next Lesson
+
+What Is a Stock?
 
 ---
 
 # One Sentence to Remember
 
-> **Invest in an index through an ETF, not in an ETF because it performed well recently.**
-
-Today, I officially started my investment learning journey.
-
-I learned that a market index measures the overall performance of a group of stocks and cannot be bought directly.
-
-I also learned that ETFs are investment funds designed to track market indices.
-
-Finally, I learned how to read the basic information on an index page, including the daily percentage change, the number of advancing and declining stocks, and the overall market trend.
+> **The purpose of investing is not to get rich quickly, but to allow your money to grow faster than inflation over the long term.**
