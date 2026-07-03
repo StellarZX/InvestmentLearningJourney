@@ -37,6 +37,15 @@ This part focuses on the investor's behavior. It introduces [behavioral finance]
 
 - [2026-07](02_Market/2026-07.md)
 
+
+## 2. Investment
+| Asset                                  | Target | Current |  Value | Return | Gain/Loss |
+|----------------------------------------|-------:|--------:|-------:|-------:|----------:|
+| [沪深300](03_Portfolio/沪深300(460300).md) |    35% |    100% | ¥1,000 |  0.00% |        ¥0 |
+| Hong Kong                              |    25% |      0% |     ¥0 |  0.00% |        ¥0 |
+| U.S.                                   |    30% |      0% |     ¥0 |  0.00% |        ¥0 |
+| Gold                                   |    10% |      0% |     ¥0 |  0.00% |        ¥0 |
+
 ## 3. Resources
 
 - [Financial Glossary](04_Glossary/Vocabulary.md)

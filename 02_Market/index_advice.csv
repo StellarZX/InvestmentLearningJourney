@@ -1,0 +1,6 @@
+﻿指数,日期,PE,盈利收益率,建议
+沪深300,-,-,-,获取失败：module 'akshare' has no attribute 'index_value_hist_funddb'
+中证500,-,-,-,获取失败：module 'akshare' has no attribute 'index_value_hist_funddb'
+中证红利,-,-,-,获取失败：module 'akshare' has no attribute 'index_value_hist_funddb'
+上证50,-,-,-,获取失败：module 'akshare' has no attribute 'index_value_hist_funddb'
+创业板指,-,-,-,获取失败：module 'akshare' has no attribute 'index_value_hist_funddb'
