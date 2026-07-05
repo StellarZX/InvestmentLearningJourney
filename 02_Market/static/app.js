@@ -42,7 +42,7 @@ const translations = {
     totalChange: "Total Change",
     records: "Records",
     tradingDays: "trading days",
-    valuationNoCsv: "No valuation CSV is available for this index.",
+    valuationNoCsv: "No assessment data is available for this index.",
     assessmentScore: "Composite Assessment Score",
     assessmentNote: "Higher score means the index has a more attractive combination of valuation, price position, drawdown, and trend.",
     adviceTitle: "Extra investment suggestion",
@@ -64,7 +64,6 @@ const translations = {
     unableToLoad: "Unable to load data",
     to: "to",
     languageButton: "中文",
-    closePriceAria: "Close price chart",
     valuationAria: "Valuation metric chart",
   },
   zh: {
@@ -99,7 +98,7 @@ const translations = {
     totalChange: "区间涨跌",
     records: "记录数",
     tradingDays: "个交易日",
-    valuationNoCsv: "该指数暂无估值 CSV 数据。",
+    valuationNoCsv: "该指数暂无评估数据。",
     assessmentScore: "综合评估评分",
     assessmentNote: "分数越高，表示估值、价格位置、回撤和趋势组合越有吸引力。",
     adviceTitle: "额外投入建议",
@@ -121,7 +120,6 @@ const translations = {
     unableToLoad: "无法加载数据",
     to: "至",
     languageButton: "English",
-    closePriceAria: "收盘价走势图",
     valuationAria: "估值指标走势图",
   },
 };
@@ -330,6 +328,21 @@ function renderValuationChart() {
   caption.textContent = `${metricLabel(metric)} + ${t("assessmentScore")} · ${t("assessmentNote")}`;
 }
 
+function updateMetricOptions() {
+  const select = document.querySelector("#valuationMetric");
+  const hasValuation = state.valuations.length > 0;
+  ["earnings_yield", "pe_ttm", "pb"].forEach((value) => {
+    const option = select.querySelector(`option[value="${value}"]`);
+    if (option) option.disabled = !hasValuation;
+  });
+  if (!hasValuation && select.value !== "close") {
+    select.value = "close";
+  }
+  if (hasValuation && select.value === "close") {
+    select.value = "earnings_yield";
+  }
+}
+
 function renderInvestmentAdvice(latestAssessment) {
   const box = document.querySelector("#investmentAdvice");
   const score = latestAssessment ? Number(latestAssessment.extra_investment_score) : NaN;
@@ -398,6 +411,7 @@ async function selectIndex(slug) {
   state.records = data.records;
   state.valuations = valuationData.records;
   state.assessments = assessmentData.records;
+  updateMetricOptions();
   renderSummary(data.index);
   renderValuationChart();
   renderTable();

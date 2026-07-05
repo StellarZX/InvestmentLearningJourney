@@ -7,6 +7,7 @@ It can:
 - fetch major index data from Yahoo Finance chart API;
 - store each index as yearly CSV files under `data/indices`;
 - store available valuation metrics under `data/valuations`;
+- store composite assessment scores under `data/assessments`;
 - run a local dashboard at `http://127.0.0.1:8050`;
 - show latest index values, daily changes, long-term change, a close-price chart, valuation curves, and recent OHLC records.
 - switch the dashboard between English and Chinese with one button.

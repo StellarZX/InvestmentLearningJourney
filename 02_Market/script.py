@@ -30,6 +30,7 @@ from curl_cffi import requests
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data" / "indices"
 VALUATION_DIR = BASE_DIR / "data" / "valuations"
+ASSESSMENT_DIR = BASE_DIR / "data" / "assessments"
 STATIC_DIR = BASE_DIR / "static"
 METADATA_FILE = BASE_DIR / "data" / "metadata.json"
 DEFAULT_HOST = "127.0.0.1"
@@ -183,6 +184,18 @@ def save_valuation_by_year(config: IndexConfig, df: pd.DataFrame) -> None:
         year_df.drop(columns=["year"]).to_csv(out, index=False, encoding="utf-8", quoting=csv.QUOTE_MINIMAL)
 
 
+def save_assessment_by_year(config: IndexConfig, df: pd.DataFrame) -> None:
+    if df.empty:
+        return
+    index_dir = ASSESSMENT_DIR / config.slug
+    index_dir.mkdir(parents=True, exist_ok=True)
+    df = df.copy()
+    df["year"] = pd.to_datetime(df["date"]).dt.year
+    for year, year_df in df.groupby("year"):
+        out = index_dir / f"{int(year)}.csv"
+        year_df.drop(columns=["year"]).to_csv(out, index=False, encoding="utf-8", quoting=csv.QUOTE_MINIMAL)
+
+
 def read_index_csvs(slug: str) -> pd.DataFrame:
     index_dir = DATA_DIR / slug
     frames = []
@@ -201,6 +214,20 @@ def read_valuation_csvs(slug: str) -> pd.DataFrame:
     if not frames:
         return pd.DataFrame()
     return pd.concat(frames, ignore_index=True).sort_values("date")
+
+
+def read_assessment_csvs(slug: str) -> pd.DataFrame:
+    index_dir = ASSESSMENT_DIR / slug
+    frames = []
+    for path in sorted(index_dir.glob("*.csv")):
+        frames.append(pd.read_csv(path))
+    if not frames:
+        return pd.DataFrame()
+    return pd.concat(frames, ignore_index=True).sort_values("date")
+
+
+def dataframe_records(df: pd.DataFrame) -> list[dict[str, Any]]:
+    return df.astype(object).where(pd.notna(df), None).to_dict(orient="records")
 
 
 def load_metadata() -> dict[str, Any]:
@@ -229,6 +256,7 @@ def needs_refresh(config: IndexConfig, refresh: bool) -> bool:
 def refresh_data(years: int = 10, force: bool = False) -> dict[str, Any]:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     VALUATION_DIR.mkdir(parents=True, exist_ok=True)
+    ASSESSMENT_DIR.mkdir(parents=True, exist_ok=True)
     end = date.today()
     start = date(end.year - years, 1, 1)
     metadata = load_metadata()
@@ -238,6 +266,7 @@ def refresh_data(years: int = 10, force: bool = False) -> dict[str, Any]:
     for config in INDICES:
         if not needs_refresh(config, force):
             cached = read_index_csvs(config.slug)
+            ensure_assessment_csv(config, force=False)
             results.append({"slug": config.slug, "name": config.name, "status": "cached", "rows": len(cached)})
             continue
         df = fetch_index(config, start, end)
@@ -246,6 +275,7 @@ def refresh_data(years: int = 10, force: bool = False) -> dict[str, Any]:
         if not valuation_df.empty:
             valuation_df = valuation_df[valuation_df["date"] >= start.isoformat()]
             save_valuation_by_year(config, valuation_df)
+        assessment_df = ensure_assessment_csv(config, force=True)
         metadata["indices"][config.slug] = {
             **asdict(config),
             "rows": int(len(df)),
@@ -255,6 +285,7 @@ def refresh_data(years: int = 10, force: bool = False) -> dict[str, Any]:
             "years": sorted(int(y) for y in pd.to_datetime(df["date"]).dt.year.unique()),
             "valuation_rows": int(len(valuation_df)) if not valuation_df.empty else 0,
             "valuation_metrics": ["earnings_yield", "pe_ttm", "pb"] if not valuation_df.empty else [],
+            "assessment_rows": int(len(assessment_df)) if not assessment_df.empty else 0,
         }
         save_metadata(metadata)
         results.append({"slug": config.slug, "name": config.name, "status": "updated", "rows": len(df)})
@@ -292,20 +323,20 @@ def records_for_slug(slug: str) -> list[dict[str, Any]]:
     df = read_index_csvs(slug)
     if df.empty:
         return []
-    return df.replace({float("nan"): None}).to_dict(orient="records")
+    return dataframe_records(df)
 
 
 def valuation_for_slug(slug: str) -> list[dict[str, Any]]:
     df = read_valuation_csvs(slug)
     if df.empty:
         return []
-    return df.replace({float("nan"): None}).to_dict(orient="records")
+    return dataframe_records(df)
 
 
-def assessment_for_slug(slug: str) -> list[dict[str, Any]]:
+def compute_assessment_df(slug: str) -> pd.DataFrame:
     df = read_index_csvs(slug)
     if df.empty:
-        return []
+        return pd.DataFrame()
     df = df[["date", "close"]].copy()
     df["close"] = pd.to_numeric(df["close"], errors="coerce")
     df = df.dropna(subset=["close"]).sort_values("date").reset_index(drop=True)
@@ -386,7 +417,28 @@ def assessment_for_slug(slug: str) -> list[dict[str, Any]]:
         ).round(4)
         df["method"] = "Composite: 45% price percentile, 35% drawdown, 20% trend"
         df["confidence"] = "price_only"
-    return df.replace({float("nan"): None}).to_dict(orient="records")
+    return df
+
+
+def ensure_assessment_csv(config: IndexConfig, force: bool = False) -> pd.DataFrame:
+    cached = read_assessment_csvs(config.slug)
+    if not force and not cached.empty:
+        return cached
+    df = compute_assessment_df(config.slug)
+    save_assessment_by_year(config, df)
+    return df
+
+
+def assessment_for_slug(slug: str) -> list[dict[str, Any]]:
+    df = read_assessment_csvs(slug)
+    if df.empty:
+        config = next((item for item in INDICES if item.slug == slug), None)
+        if not config:
+            return []
+        df = ensure_assessment_csv(config, force=True)
+    if df.empty:
+        return []
+    return dataframe_records(df)
 
 
 class MarketHandler(BaseHTTPRequestHandler):
