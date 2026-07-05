@@ -35,6 +35,9 @@ This part focuses on the investor's behavior. It introduces [behavioral finance]
 
 ## 2. Market
 
+- [Market Index Dashboard](02_Market/README.md)
+- Run locally with `.\.venv\Scripts\python.exe .\02_Market\script.py`, then open `http://127.0.0.1:8050`.
+
 
 ## 2. Investment
 | Asset                                  | Target | Current |  Value | Return | Gain/Loss |
