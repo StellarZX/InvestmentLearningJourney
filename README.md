@@ -40,6 +40,7 @@ This part focuses on the investor's behavior. It introduces [behavioral finance]
 
 
 ## 2. Investment
+[Investment List](03_Portfolio/summary.md)
 | Asset                                  | Target | Current |  Value | Return | Gain/Loss |
 |----------------------------------------|-------:|--------:|-------:|-------:|----------:|
 | [沪深300(BOC)](03_Portfolio/沪深300(460300).md) |    35% |    100% | ¥1,000 |  0.00% |        ¥0 |
