@@ -58,13 +58,12 @@ const translations = {
     priceScore: "Price position",
     drawdownScore: "Drawdown",
     trendScore: "Trend",
-    leftAxis: "Left axis",
-    rightAxis: "Right axis",
     recordsCount: "records",
     unableToLoad: "Unable to load data",
     to: "to",
     languageButton: "中文",
     valuationAria: "Valuation metric chart",
+    assessmentAria: "Composite assessment score chart",
   },
   zh: {
     appTitle: "市场指数仪表盘",
@@ -114,13 +113,12 @@ const translations = {
     priceScore: "价格位置",
     drawdownScore: "回撤",
     trendScore: "趋势",
-    leftAxis: "左轴",
-    rightAxis: "右轴",
     recordsCount: "条记录",
     unableToLoad: "无法加载数据",
     to: "至",
     languageButton: "English",
     valuationAria: "估值指标走势图",
+    assessmentAria: "综合评估评分走势图",
   },
 };
 
@@ -167,6 +165,7 @@ function applyTranslations() {
   });
   document.querySelector("#languageButton").textContent = t("languageButton");
   document.querySelector("#valuationChart").setAttribute("aria-label", t("valuationAria"));
+  document.querySelector("#assessmentChart").setAttribute("aria-label", t("assessmentAria"));
 }
 
 function valueClass(value) {
@@ -176,6 +175,14 @@ function valueClass(value) {
 function formatNumber(value) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
   return fmt.format(Number(value));
+}
+
+function formatAxisNumber(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
+  return Number(value).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
 async function fetchJson(url) {
@@ -217,36 +224,28 @@ function metricLabel(metric) {
   }[metric] || metric;
 }
 
-function renderDualAxisChart(svg, leftRecords, leftField, rightRecords, rightField) {
+function renderSingleAxisChart(svg, records, field, color) {
   svg.innerHTML = "";
-  const leftByDate = new Map(leftRecords.map((row) => [row.date, row]));
-  const rightByDate = new Map(rightRecords.map((row) => [row.date, row]));
-  const dates = [...leftByDate.keys()].filter((date) => rightByDate.has(date));
-  const usable = dates.map((date) => ({
-    date,
-    left: Number(leftByDate.get(date)[leftField]),
-    right: Number(rightByDate.get(date)[rightField]),
-  })).filter((row) => !Number.isNaN(row.left) && !Number.isNaN(row.right));
+  const usable = records
+    .map((row) => ({ date: row.date, value: Number(row[field]) }))
+    .filter((row) => !Number.isNaN(row.value));
   if (usable.length < 2) return false;
 
   const width = svg.clientWidth || 900;
-  const height = svg.clientHeight || 420;
-  const margin = { top: 22, right: 74, bottom: 36, left: 74 };
+  const height = svg.clientHeight || 320;
+  const margin = { top: 18, right: 28, bottom: 34, left: 74 };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
-  const leftValues = usable.map((row) => row.left);
-  const rightValues = usable.map((row) => row.right);
-  const leftMin = Math.min(...leftValues);
-  const leftMax = Math.max(...leftValues);
-  const rightMin = Math.min(...rightValues);
-  const rightMax = Math.max(...rightValues);
-  const leftSpan = leftMax - leftMin || 1;
-  const rightSpan = rightMax - rightMin || 1;
+  const values = usable.map((row) => row.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const padding = (max - min || Math.max(Math.abs(max), 1)) * 0.08;
+  const yMin = min - padding;
+  const yMax = max + padding;
+  const span = yMax - yMin || 1;
   const x = (i) => margin.left + (i / (usable.length - 1)) * innerWidth;
-  const leftY = (value) => margin.top + (1 - (value - leftMin) / leftSpan) * innerHeight;
-  const rightY = (value) => margin.top + (1 - (value - rightMin) / rightSpan) * innerHeight;
-  const leftPoints = usable.map((row, i) => `${x(i)},${leftY(row.left)}`).join(" ");
-  const rightPoints = usable.map((row, i) => `${x(i)},${rightY(row.right)}`).join(" ");
+  const y = (value) => margin.top + (1 - (value - yMin) / span) * innerHeight;
+  const points = usable.map((row, i) => `${x(i)},${y(row.value)}`).join(" ");
   const ns = "http://www.w3.org/2000/svg";
   const el = (name, attrs = {}) => {
     const node = document.createElementNS(ns, name);
@@ -257,32 +256,19 @@ function renderDualAxisChart(svg, leftRecords, leftField, rightRecords, rightFie
   [0, 0.25, 0.5, 0.75, 1].forEach((tick) => {
     const gy = margin.top + tick * innerHeight;
     svg.appendChild(el("line", { x1: margin.left, y1: gy, x2: width - margin.right, y2: gy, stroke: "#e6eaf0" }));
-    const leftLabel = leftMax - tick * leftSpan;
-    const rightLabel = rightMax - tick * rightSpan;
-    const leftText = el("text", { x: margin.left - 10, y: gy + 4, fill: "#1f7a8c", "font-size": "12", "text-anchor": "end" });
-    leftText.textContent = formatNumber(leftLabel);
-    const rightText = el("text", { x: width - margin.right + 10, y: gy + 4, fill: "#7a4f01", "font-size": "12" });
-    rightText.textContent = formatNumber(rightLabel);
-    svg.appendChild(leftText);
-    svg.appendChild(rightText);
+    const label = yMax - tick * span;
+    const text = el("text", { x: margin.left - 10, y: gy + 4, fill: "#667085", "font-size": "12", "text-anchor": "end" });
+    text.textContent = formatAxisNumber(label);
+    svg.appendChild(text);
   });
 
   svg.appendChild(el("polyline", {
-    points: leftPoints,
+    points,
     fill: "none",
-    stroke: "#1f7a8c",
+    stroke: color,
     "stroke-width": "2.5",
     "stroke-linejoin": "round",
     "stroke-linecap": "round",
-  }));
-  svg.appendChild(el("polyline", {
-    points: rightPoints,
-    fill: "none",
-    stroke: "#7a4f01",
-    "stroke-width": "2.5",
-    "stroke-linejoin": "round",
-    "stroke-linecap": "round",
-    "stroke-dasharray": "6 4",
   }));
 
   const leftLabel = el("text", { x: margin.left, y: height - 10, fill: "#667085", "font-size": "12" });
@@ -291,13 +277,6 @@ function renderDualAxisChart(svg, leftRecords, leftField, rightRecords, rightFie
   rightLabel.textContent = usable[usable.length - 1].date;
   svg.appendChild(leftLabel);
   svg.appendChild(rightLabel);
-
-  const legend = el("text", { x: margin.left, y: 14, fill: "#1f7a8c", "font-size": "12", "font-weight": "600" });
-  legend.textContent = `${t("leftAxis")}: ${metricLabel(leftField)}`;
-  const legend2 = el("text", { x: width - margin.right, y: 14, fill: "#7a4f01", "font-size": "12", "font-weight": "600", "text-anchor": "end" });
-  legend2.textContent = `${t("rightAxis")}: ${t("assessmentScore")}`;
-  svg.appendChild(legend);
-  svg.appendChild(legend2);
   return true;
 }
 
@@ -305,7 +284,8 @@ function renderValuationChart() {
   const shell = document.querySelector("#valuationShell");
   const empty = document.querySelector("#valuationEmpty");
   const caption = document.querySelector("#valuationCaption");
-  const svg = document.querySelector("#valuationChart");
+  const valuationSvg = document.querySelector("#valuationChart");
+  const assessmentSvg = document.querySelector("#assessmentChart");
   let metric = document.querySelector("#valuationMetric").value;
   const valuationRecords = chartRecordsFor(state.valuations);
   const assessmentRecords = chartRecordsFor(state.assessments);
@@ -316,7 +296,8 @@ function renderValuationChart() {
     shell.classList.add("hidden");
     empty.classList.remove("hidden");
     caption.textContent = t("valuationNoCsv");
-    svg.innerHTML = "";
+    valuationSvg.innerHTML = "";
+    assessmentSvg.innerHTML = "";
     renderInvestmentAdvice(null);
     return;
   }
@@ -324,8 +305,12 @@ function renderValuationChart() {
   shell.classList.remove("hidden");
   empty.classList.add("hidden");
   renderInvestmentAdvice(assessmentRecords[assessmentRecords.length - 1]);
-  renderDualAxisChart(svg, leftRecords, metric, assessmentRecords, "extra_investment_score");
-  caption.textContent = `${metricLabel(metric)} + ${t("assessmentScore")} · ${t("assessmentNote")}`;
+  renderSingleAxisChart(valuationSvg, leftRecords, metric, "#1f7a8c");
+  renderSingleAxisChart(assessmentSvg, assessmentRecords, "extra_investment_score", "#7a4f01");
+  document.querySelector("#valuationChartTitle").textContent = metricLabel(metric);
+  document.querySelector("#valuationChartCaption").textContent = `${leftRecords.length} ${t("recordsCount")}`;
+  document.querySelector("#assessmentChartCaption").textContent = `${assessmentRecords.length} ${t("recordsCount")}`;
+  caption.textContent = t("assessmentNote");
 }
 
 function updateMetricOptions() {

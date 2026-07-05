@@ -47,7 +47,9 @@ http://127.0.0.1:8050
 
 ## Refresh Data
 
-Force a full data refresh:
+By default, the script uses incremental updates. It checks whether today's data already exists locally. If it does, the local CSV files are used directly. If it does not, the script fetches only the recent missing window, merges it with local CSV files, and saves the updated yearly files.
+
+Force a full data refresh only when you want to rebuild the local data files:
 
 ```powershell
 .\.venv\Scripts\python.exe .\02_Market\script.py --refresh

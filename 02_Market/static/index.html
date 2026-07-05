@@ -63,8 +63,25 @@
       </div>
       <div id="valuationEmpty" class="empty-state" data-i18n="valuationUnavailable">Assessment history is not available for this index yet.</div>
       <div id="investmentAdvice" class="advice-box"></div>
-      <div class="chart-shell" id="valuationShell">
-        <svg id="valuationChart" role="img" aria-label="Valuation metric chart"></svg>
+      <div id="valuationShell" class="split-chart-grid">
+        <div class="mini-chart">
+          <div class="mini-chart-title">
+            <strong id="valuationChartTitle"></strong>
+            <span id="valuationChartCaption" class="muted"></span>
+          </div>
+          <div class="chart-shell">
+            <svg id="valuationChart" role="img" aria-label="Valuation metric chart"></svg>
+          </div>
+        </div>
+        <div class="mini-chart">
+          <div class="mini-chart-title">
+            <strong data-i18n="assessmentScore">Composite Assessment Score</strong>
+            <span id="assessmentChartCaption" class="muted"></span>
+          </div>
+          <div class="chart-shell">
+            <svg id="assessmentChart" role="img" aria-label="Composite assessment score chart"></svg>
+          </div>
+        </div>
       </div>
     </section>
 

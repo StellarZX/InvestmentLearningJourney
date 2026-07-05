@@ -223,6 +223,34 @@ button {
   height: 420px;
 }
 
+.split-chart-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.mini-chart {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: #fff;
+}
+
+.mini-chart .chart-shell {
+  height: 320px;
+}
+
+.mini-chart-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.mini-chart-title strong {
+  font-size: 15px;
+}
+
 .empty-state {
   border: 1px dashed var(--line);
   border-radius: 8px;

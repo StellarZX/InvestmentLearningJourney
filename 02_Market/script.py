@@ -16,7 +16,7 @@ import json
 import math
 import mimetypes
 from dataclasses import asdict, dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -230,6 +230,78 @@ def dataframe_records(df: pd.DataFrame) -> list[dict[str, Any]]:
     return df.astype(object).where(pd.notna(df), None).to_dict(orient="records")
 
 
+def latest_date(df: pd.DataFrame) -> date | None:
+    if df.empty or "date" not in df.columns:
+        return None
+    dates = pd.to_datetime(df["date"], errors="coerce").dropna()
+    if dates.empty:
+        return None
+    latest = dates.max().date()
+    return latest
+
+
+def has_today(df: pd.DataFrame) -> bool:
+    latest = latest_date(df)
+    return latest == date.today()
+
+
+def append_index_data(config: IndexConfig, years: int, force: bool = False) -> tuple[pd.DataFrame, str, int]:
+    today = date.today()
+    full_start = date(today.year - years, 1, 1)
+    existing = read_index_csvs(config.slug)
+
+    if force or existing.empty:
+        fetched = fetch_index(config, full_start, today + timedelta(days=1))
+        save_index_by_year(config, fetched)
+        status = "refreshed" if force and not existing.empty else "created"
+        return fetched, status, int(len(fetched))
+
+    if has_today(existing):
+        return existing, "cached_today", 0
+
+    previous_latest = latest_date(existing)
+    start = max((previous_latest or full_start) - timedelta(days=7), full_start)
+    fetched = fetch_index(config, start, today + timedelta(days=1))
+    merged = (
+        pd.concat([existing, fetched], ignore_index=True)
+        .sort_values("date")
+        .drop_duplicates(subset=["date"], keep="last")
+    )
+    save_index_by_year(config, merged)
+    if previous_latest:
+        new_rows = int((pd.to_datetime(merged["date"]).dt.date > previous_latest).sum())
+    else:
+        new_rows = int(len(merged))
+    return merged, "appended" if new_rows else "checked", new_rows
+
+
+def update_valuation_data(config: IndexConfig, start: date, force: bool = False) -> tuple[pd.DataFrame, int]:
+    if not config.valuation_symbol:
+        return pd.DataFrame(), 0
+
+    existing = read_valuation_csvs(config.slug)
+    if not force and not existing.empty and has_today(existing):
+        return existing, 0
+
+    previous_latest = latest_date(existing)
+    valuation_df = fetch_valuation(config)
+    if valuation_df.empty:
+        return existing, 0
+
+    valuation_df = valuation_df[valuation_df["date"] >= start.isoformat()]
+    merged = (
+        pd.concat([existing, valuation_df], ignore_index=True)
+        .sort_values("date")
+        .drop_duplicates(subset=["date"], keep="last")
+    )
+    save_valuation_by_year(config, merged)
+    if previous_latest:
+        new_rows = int((pd.to_datetime(merged["date"]).dt.date > previous_latest).sum())
+    else:
+        new_rows = int(len(merged))
+    return merged, new_rows
+
+
 def load_metadata() -> dict[str, Any]:
     if not METADATA_FILE.exists():
         return {}
@@ -241,41 +313,38 @@ def save_metadata(metadata: dict[str, Any]) -> None:
     METADATA_FILE.write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def needs_refresh(config: IndexConfig, refresh: bool) -> bool:
-    if refresh:
-        return True
-    if config.valuation_symbol and not any((VALUATION_DIR / config.slug).glob("*.csv")):
-        return True
-    metadata = load_metadata()
-    refreshed_at = metadata.get("indices", {}).get(config.slug, {}).get("refreshed_at", "")
-    if refreshed_at.startswith(date.today().isoformat()):
-        return False
-    return not any((DATA_DIR / config.slug).glob("*.csv"))
-
-
 def refresh_data(years: int = 10, force: bool = False) -> dict[str, Any]:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     VALUATION_DIR.mkdir(parents=True, exist_ok=True)
     ASSESSMENT_DIR.mkdir(parents=True, exist_ok=True)
-    end = date.today()
-    start = date(end.year - years, 1, 1)
+    today = date.today()
+    start = date(today.year - years, 1, 1)
     metadata = load_metadata()
     metadata.setdefault("indices", {})
 
     results = []
     for config in INDICES:
-        if not needs_refresh(config, force):
-            cached = read_index_csvs(config.slug)
-            ensure_assessment_csv(config, force=False)
-            results.append({"slug": config.slug, "name": config.name, "status": "cached", "rows": len(cached)})
-            continue
-        df = fetch_index(config, start, end)
-        save_index_by_year(config, df)
-        valuation_df = fetch_valuation(config)
-        if not valuation_df.empty:
-            valuation_df = valuation_df[valuation_df["date"] >= start.isoformat()]
-            save_valuation_by_year(config, valuation_df)
-        assessment_df = ensure_assessment_csv(config, force=True)
+        existing_before = read_index_csvs(config.slug)
+        index_metadata = metadata.get("indices", {}).get(config.slug, {})
+        already_checked_today = index_metadata.get("last_checked_on") == today.isoformat()
+        can_use_daily_cache = (
+            not force
+            and not existing_before.empty
+            and already_checked_today
+            and not has_today(existing_before)
+        )
+
+        if can_use_daily_cache:
+            df, status, new_rows = existing_before, "cached_checked", 0
+        else:
+            df, status, new_rows = append_index_data(config, years=years, force=force)
+
+        existing_valuation = read_valuation_csvs(config.slug)
+        if can_use_daily_cache and (not config.valuation_symbol or not existing_valuation.empty):
+            valuation_df, valuation_new_rows = existing_valuation, 0
+        else:
+            valuation_df, valuation_new_rows = update_valuation_data(config, start=start, force=force)
+        assessment_df = ensure_assessment_csv(config, force=force or new_rows > 0 or valuation_new_rows > 0)
         metadata["indices"][config.slug] = {
             **asdict(config),
             "rows": int(len(df)),
@@ -286,9 +355,13 @@ def refresh_data(years: int = 10, force: bool = False) -> dict[str, Any]:
             "valuation_rows": int(len(valuation_df)) if not valuation_df.empty else 0,
             "valuation_metrics": ["earnings_yield", "pe_ttm", "pb"] if not valuation_df.empty else [],
             "assessment_rows": int(len(assessment_df)) if not assessment_df.empty else 0,
+            "last_update_status": status,
+            "new_rows": new_rows,
+            "valuation_new_rows": valuation_new_rows,
+            "last_checked_on": today.isoformat(),
         }
         save_metadata(metadata)
-        results.append({"slug": config.slug, "name": config.name, "status": "updated", "rows": len(df)})
+        results.append({"slug": config.slug, "name": config.name, "status": status, "rows": len(df), "new_rows": new_rows})
     return {"results": results, "metadata": load_metadata()}
 
 
@@ -422,7 +495,8 @@ def compute_assessment_df(slug: str) -> pd.DataFrame:
 
 def ensure_assessment_csv(config: IndexConfig, force: bool = False) -> pd.DataFrame:
     cached = read_assessment_csvs(config.slug)
-    if not force and not cached.empty:
+    index_df = read_index_csvs(config.slug)
+    if not force and not cached.empty and latest_date(cached) == latest_date(index_df):
         return cached
     df = compute_assessment_df(config.slug)
     save_assessment_by_year(config, df)
@@ -546,7 +620,8 @@ def main() -> None:
     print("Preparing market index data...")
     result = refresh_data(years=args.years, force=args.refresh)
     for item in result["results"]:
-        print(f"  {item['name']}: {item['status']} ({item['rows']} rows)")
+        suffix = f", +{item['new_rows']} new" if item.get("new_rows") else ""
+        print(f"  {item['name']}: {item['status']} ({item['rows']} rows{suffix})")
     if args.fetch_only:
         return
     run_server(args.host, args.port)

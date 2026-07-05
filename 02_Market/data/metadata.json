@@ -7,10 +7,11 @@
       "region": "United States",
       "currency": "USD",
       "source": "Yahoo Finance chart API",
+      "valuation_symbol": null,
       "rows": 2639,
       "first_date": "2016-01-04",
       "last_date": "2026-07-02",
-      "refreshed_at": "2026-07-05T22:43:47",
+      "refreshed_at": "2026-07-05T23:37:44",
       "years": [
         2016,
         2017,
@@ -23,7 +24,14 @@
         2024,
         2025,
         2026
-      ]
+      ],
+      "valuation_rows": 0,
+      "valuation_metrics": [],
+      "assessment_rows": 2639,
+      "last_update_status": "cached_checked",
+      "new_rows": 0,
+      "valuation_new_rows": 0,
+      "last_checked_on": "2026-07-05"
     },
     "nasdaq_composite": {
       "slug": "nasdaq_composite",
@@ -32,10 +40,11 @@
       "region": "United States",
       "currency": "USD",
       "source": "Yahoo Finance chart API",
+      "valuation_symbol": null,
       "rows": 2639,
       "first_date": "2016-01-04",
       "last_date": "2026-07-02",
-      "refreshed_at": "2026-07-05T22:43:47",
+      "refreshed_at": "2026-07-05T23:37:44",
       "years": [
         2016,
         2017,
@@ -48,7 +57,14 @@
         2024,
         2025,
         2026
-      ]
+      ],
+      "valuation_rows": 0,
+      "valuation_metrics": [],
+      "assessment_rows": 2639,
+      "last_update_status": "cached_checked",
+      "new_rows": 0,
+      "valuation_new_rows": 0,
+      "last_checked_on": "2026-07-05"
     },
     "dow_jones": {
       "slug": "dow_jones",
@@ -57,10 +73,11 @@
       "region": "United States",
       "currency": "USD",
       "source": "Yahoo Finance chart API",
+      "valuation_symbol": null,
       "rows": 2639,
       "first_date": "2016-01-04",
       "last_date": "2026-07-02",
-      "refreshed_at": "2026-07-05T22:43:47",
+      "refreshed_at": "2026-07-05T23:37:44",
       "years": [
         2016,
         2017,
@@ -73,7 +90,14 @@
         2024,
         2025,
         2026
-      ]
+      ],
+      "valuation_rows": 0,
+      "valuation_metrics": [],
+      "assessment_rows": 2639,
+      "last_update_status": "cached_checked",
+      "new_rows": 0,
+      "valuation_new_rows": 0,
+      "last_checked_on": "2026-07-05"
     },
     "nasdaq_100": {
       "slug": "nasdaq_100",
@@ -82,10 +106,11 @@
       "region": "United States",
       "currency": "USD",
       "source": "Yahoo Finance chart API",
+      "valuation_symbol": null,
       "rows": 2639,
       "first_date": "2016-01-04",
       "last_date": "2026-07-02",
-      "refreshed_at": "2026-07-05T22:43:47",
+      "refreshed_at": "2026-07-05T23:37:44",
       "years": [
         2016,
         2017,
@@ -98,7 +123,14 @@
         2024,
         2025,
         2026
-      ]
+      ],
+      "valuation_rows": 0,
+      "valuation_metrics": [],
+      "assessment_rows": 2639,
+      "last_update_status": "cached_checked",
+      "new_rows": 0,
+      "valuation_new_rows": 0,
+      "last_checked_on": "2026-07-05"
     },
     "hang_seng": {
       "slug": "hang_seng",
@@ -107,10 +139,11 @@
       "region": "Hong Kong",
       "currency": "HKD",
       "source": "Yahoo Finance chart API",
+      "valuation_symbol": null,
       "rows": 2580,
       "first_date": "2016-01-04",
       "last_date": "2026-07-03",
-      "refreshed_at": "2026-07-05T22:43:48",
+      "refreshed_at": "2026-07-05T23:37:44",
       "years": [
         2016,
         2017,
@@ -123,7 +156,14 @@
         2024,
         2025,
         2026
-      ]
+      ],
+      "valuation_rows": 0,
+      "valuation_metrics": [],
+      "assessment_rows": 2580,
+      "last_update_status": "cached_checked",
+      "new_rows": 0,
+      "valuation_new_rows": 0,
+      "last_checked_on": "2026-07-05"
     },
     "csi_300": {
       "slug": "csi_300",
@@ -136,7 +176,7 @@
       "rows": 1288,
       "first_date": "2021-03-11",
       "last_date": "2026-07-03",
-      "refreshed_at": "2026-07-05T22:52:05",
+      "refreshed_at": "2026-07-05T23:37:44",
       "years": [
         2021,
         2022,
@@ -150,7 +190,12 @@
         "earnings_yield",
         "pe_ttm",
         "pb"
-      ]
+      ],
+      "assessment_rows": 1288,
+      "last_update_status": "cached_checked",
+      "new_rows": 0,
+      "valuation_new_rows": 0,
+      "last_checked_on": "2026-07-05"
     },
     "shanghai_composite": {
       "slug": "shanghai_composite",
@@ -159,10 +204,11 @@
       "region": "China",
       "currency": "CNY",
       "source": "Yahoo Finance chart API",
+      "valuation_symbol": null,
       "rows": 2547,
       "first_date": "2016-01-04",
       "last_date": "2026-07-03",
-      "refreshed_at": "2026-07-05T22:43:48",
+      "refreshed_at": "2026-07-05T23:37:44",
       "years": [
         2016,
         2017,
@@ -175,7 +221,14 @@
         2024,
         2025,
         2026
-      ]
+      ],
+      "valuation_rows": 0,
+      "valuation_metrics": [],
+      "assessment_rows": 2547,
+      "last_update_status": "cached_checked",
+      "new_rows": 0,
+      "valuation_new_rows": 0,
+      "last_checked_on": "2026-07-05"
     },
     "shenzhen_component": {
       "slug": "shenzhen_component",
@@ -184,10 +237,11 @@
       "region": "China",
       "currency": "CNY",
       "source": "Yahoo Finance chart API",
+      "valuation_symbol": null,
       "rows": 2545,
       "first_date": "2016-01-04",
       "last_date": "2026-07-03",
-      "refreshed_at": "2026-07-05T22:43:48",
+      "refreshed_at": "2026-07-05T23:37:44",
       "years": [
         2016,
         2017,
@@ -200,7 +254,14 @@
         2024,
         2025,
         2026
-      ]
+      ],
+      "valuation_rows": 0,
+      "valuation_metrics": [],
+      "assessment_rows": 2545,
+      "last_update_status": "cached_checked",
+      "new_rows": 0,
+      "valuation_new_rows": 0,
+      "last_checked_on": "2026-07-05"
     },
     "nikkei_225": {
       "slug": "nikkei_225",
@@ -209,10 +270,11 @@
       "region": "Japan",
       "currency": "JPY",
       "source": "Yahoo Finance chart API",
+      "valuation_symbol": null,
       "rows": 2566,
       "first_date": "2016-01-04",
       "last_date": "2026-07-03",
-      "refreshed_at": "2026-07-05T22:43:49",
+      "refreshed_at": "2026-07-05T23:37:44",
       "years": [
         2016,
         2017,
@@ -225,7 +287,14 @@
         2024,
         2025,
         2026
-      ]
+      ],
+      "valuation_rows": 0,
+      "valuation_metrics": [],
+      "assessment_rows": 2566,
+      "last_update_status": "cached_checked",
+      "new_rows": 0,
+      "valuation_new_rows": 0,
+      "last_checked_on": "2026-07-05"
     },
     "ftse_100": {
       "slug": "ftse_100",
@@ -234,10 +303,11 @@
       "region": "United Kingdom",
       "currency": "GBP",
       "source": "Yahoo Finance chart API",
+      "valuation_symbol": null,
       "rows": 2652,
       "first_date": "2016-01-04",
       "last_date": "2026-07-03",
-      "refreshed_at": "2026-07-05T22:43:49",
+      "refreshed_at": "2026-07-05T23:37:44",
       "years": [
         2016,
         2017,
@@ -250,7 +320,14 @@
         2024,
         2025,
         2026
-      ]
+      ],
+      "valuation_rows": 0,
+      "valuation_metrics": [],
+      "assessment_rows": 2652,
+      "last_update_status": "cached_checked",
+      "new_rows": 0,
+      "valuation_new_rows": 0,
+      "last_checked_on": "2026-07-05"
     },
     "dax": {
       "slug": "dax",
@@ -259,10 +336,11 @@
       "region": "Germany",
       "currency": "EUR",
       "source": "Yahoo Finance chart API",
+      "valuation_symbol": null,
       "rows": 2665,
       "first_date": "2016-01-04",
       "last_date": "2026-07-03",
-      "refreshed_at": "2026-07-05T22:43:49",
+      "refreshed_at": "2026-07-05T23:37:44",
       "years": [
         2016,
         2017,
@@ -275,7 +353,14 @@
         2024,
         2025,
         2026
-      ]
+      ],
+      "valuation_rows": 0,
+      "valuation_metrics": [],
+      "assessment_rows": 2665,
+      "last_update_status": "cached_checked",
+      "new_rows": 0,
+      "valuation_new_rows": 0,
+      "last_checked_on": "2026-07-05"
     }
   }
 }
