@@ -1,7 +1,5 @@
 # Investment Learning Journey
 
-[English](README.md) | [中文](README.zh.md)
-
 This repository records my journey of learning long-term investing from zero.
 
 The goal is not to chase short-term profits, but to build a systematic understanding of investing, ETFs, market indices, portfolio management, and financial English.
