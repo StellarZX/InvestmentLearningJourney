@@ -39,18 +39,42 @@ This part focuses on the investor's behavior. It introduces [behavioral finance]
 - Run locally with `.\.venv\Scripts\python.exe .\02_Market\script.py`, then open `http://127.0.0.1:8050`.
 
 
-## 2. Investment
-[Investment List](03_Portfolio/summary.md)
+## 3. Portfolio
 
+- [Portfolio Summary](03_Portfolio/summary.md)
+- [Portfolio Review Diary](03_Portfolio/review_diary.md)
 
-| Asset                                  | Target | Current |  Value | Return | Gain/Loss |
-|----------------------------------------|-------:|--------:|-------:|-------:|----------:|
-| [沪深300(BOC)](03_Portfolio/沪深300(460300).md) |    35% |    100% | ¥1,000 |  0.00% |        ¥0 |
-| Hong Kong                              |    25% |      0% |     ¥0 |  0.00% |        ¥0 |
-| U.S.(IBKR)                             |    30% |      0% |     €500 |  0.00% |        ¥0 |
-| Gold                                   |    10% |      0% |     ¥0 |  0.00% |        ¥0 |
+Current record rule: `summary.md` is the only source of truth for holdings, executed transactions, active DCA plans, and allocation changes. Individual fund files are reference notes only.
 
-## 3. Resources
+### Current Funding Status
+
+| Item | Status |
+|---|---|
+| Near-term extra funding | Paused |
+| Domestic DCA plans | Active |
+| IBKR funding | €500 transferred and settled |
+| Bookkeeping FX rate | 1 EUR = ¥7.80 |
+
+### Current Actual Allocation
+
+This table uses the bookkeeping FX rate above. It reflects actual current assets, not future DCA commitments.
+
+| Market / Asset | Holding | Original Amount | RMB Equivalent | Weight Including Cash | Weight Excluding Cash |
+|---|---|---:|---:|---:|---:|
+| China A-share | [华泰柏瑞沪深300ETF联接A](03_Portfolio/沪深300(460300).md) | ¥1,000 | ¥1,000.00 | 20.41% | 23.14% |
+| United States | [iShares Core S&P 500 UCITS ETF USD Acc](03_Portfolio/iShares%20Core%20S%26P%20500%20UCITS%20ETF%20USD%20Acc(SXR8).md) | €425.918 | ¥3,322.16 | 67.80% | 76.86% |
+| Cash | IBKR EUR cash | €74.082 | ¥577.84 | 11.79% | - |
+| Total | - | - | ¥4,900.00 | 100.00% | 100.00% |
+
+### Active Domestic DCA Plans
+
+| Market | Fund | Code | Plan |
+|---|---|---:|---|
+| China A-share | [华泰柏瑞沪深300ETF联接A](03_Portfolio/沪深300(460300).md) | 460300 | ¥1,000 monthly on the 10th, 4 installments |
+| Hong Kong | [易方达恒生红利低波ETF联接A](03_Portfolio/易方达恒生红利低波ETF联接A(021457).md) | 021457 | ¥1,000 monthly on the 10th, 3 installments |
+| Hong Kong | [汇添富恒生指数（QDII-LOF）](03_Portfolio/汇添富恒生指数(QDII-LOF)(164705).md) | 164705 | ¥1,000 monthly on the 10th, 1 installment |
+
+## 4. Resources
 
 - [Financial Glossary](04_Glossary/Vocabulary.md)
 - [指数基金投资指南.epub](04_Glossary/指数基金投资指南.epub)
