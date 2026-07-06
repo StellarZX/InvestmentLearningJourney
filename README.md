@@ -1,5 +1,7 @@
 # Investment Learning Journey
 
+[English](README.md) | [中文](README.zh.md)
+
 This repository records my journey of learning long-term investing from zero.
 
 The goal is not to chase short-term profits, but to build a systematic understanding of investing, ETFs, market indices, portfolio management, and financial English.
@@ -7,6 +9,53 @@ The goal is not to chase short-term profits, but to build a systematic understan
 ## 1. Foundations
 
 The Foundations section is a 40-lesson beginner path from basic investing ideas to a first long-term investment plan.
+
+- [Foundations Chinese Guide](01_Foundations/README.zh.md)
+
+### Foundations Lesson Links
+
+| Lesson | English | 中文 |
+|---|---|---|
+| 01 Why Invest? | [English](01_Foundations/Part_I_Foundations/Lesson01.md) | [中文](01_Foundations/Part_I_Foundations/zh/Lesson01.md) |
+| 02 What Is a Stock? | [English](01_Foundations/Part_I_Foundations/Lesson02.md) | [中文](01_Foundations/Part_I_Foundations/zh/Lesson02.md) |
+| 03 What Is a Stock Exchange? | [English](01_Foundations/Part_I_Foundations/Lesson03.md) | [中文](01_Foundations/Part_I_Foundations/zh/Lesson03.md) |
+| 04 What Is a Market Index? | [English](01_Foundations/Part_I_Foundations/Lesson04.md) | [中文](01_Foundations/Part_I_Foundations/zh/Lesson04.md) |
+| 05 What Is an ETF? | [English](01_Foundations/Part_I_Foundations/Lesson05.md) | [中文](01_Foundations/Part_I_Foundations/zh/Lesson05.md) |
+| 06 Mutual Funds vs. ETFs | [English](01_Foundations/Part_I_Foundations/Lesson06.md) | [中文](01_Foundations/Part_I_Foundations/zh/Lesson06.md) |
+| 07 The Investment Framework | [English](01_Foundations/Part_I_Foundations/Lesson07.md) | [中文](01_Foundations/Part_I_Foundations/zh/Lesson07.md) |
+| 08 The Chinese Stock Market | [English](01_Foundations/Part_II_Understanding_Financial_Markets/Lesson08.md) | [中文](01_Foundations/Part_II_Understanding_Financial_Markets/zh/Lesson08.md) |
+| 09 The Hong Kong Stock Market | [English](01_Foundations/Part_II_Understanding_Financial_Markets/Lesson09.md) | [中文](01_Foundations/Part_II_Understanding_Financial_Markets/zh/Lesson09.md) |
+| 10 The U.S. Stock Market | [English](01_Foundations/Part_II_Understanding_Financial_Markets/Lesson10.md) | [中文](01_Foundations/Part_II_Understanding_Financial_Markets/zh/Lesson10.md) |
+| 11 Bull Markets & Bear Markets | [English](01_Foundations/Part_II_Understanding_Financial_Markets/Lesson11.md) | [中文](01_Foundations/Part_II_Understanding_Financial_Markets/zh/Lesson11.md) |
+| 12 Market Capitalization | [English](01_Foundations/Part_II_Understanding_Financial_Markets/Lesson12.md) | [中文](01_Foundations/Part_II_Understanding_Financial_Markets/zh/Lesson12.md) |
+| 13 Growth vs. Value Investing | [English](01_Foundations/Part_II_Understanding_Financial_Markets/Lesson13.md) | [中文](01_Foundations/Part_II_Understanding_Financial_Markets/zh/Lesson13.md) |
+| 14 Understanding Global Markets | [English](01_Foundations/Part_II_Understanding_Financial_Markets/Lesson14.md) | [中文](01_Foundations/Part_II_Understanding_Financial_Markets/zh/Lesson14.md) |
+| 15 Compound Interest | [English](01_Foundations/Part_III_Core_Investment_Principles/Lesson15.md) | [中文](01_Foundations/Part_III_Core_Investment_Principles/zh/Lesson15.md) |
+| 16 Inflation | [English](01_Foundations/Part_III_Core_Investment_Principles/Lesson16.md) | [中文](01_Foundations/Part_III_Core_Investment_Principles/zh/Lesson16.md) |
+| 17 Understanding Risk | [English](01_Foundations/Part_III_Core_Investment_Principles/Lesson17.md) | [中文](01_Foundations/Part_III_Core_Investment_Principles/zh/Lesson17.md) |
+| 18 Volatility Is Not Risk | [English](01_Foundations/Part_III_Core_Investment_Principles/Lesson18.md) | [中文](01_Foundations/Part_III_Core_Investment_Principles/zh/Lesson18.md) |
+| 19 Diversification | [English](01_Foundations/Part_III_Core_Investment_Principles/Lesson19.md) | [中文](01_Foundations/Part_III_Core_Investment_Principles/zh/Lesson19.md) |
+| 20 Asset Allocation | [English](01_Foundations/Part_III_Core_Investment_Principles/Lesson20.md) | [中文](01_Foundations/Part_III_Core_Investment_Principles/zh/Lesson20.md) |
+| 21 Core Investment Principles | [English](01_Foundations/Part_III_Core_Investment_Principles/Lesson21.md) | [中文](01_Foundations/Part_III_Core_Investment_Principles/zh/Lesson21.md) |
+| 22 How ETFs Work | [English](01_Foundations/Part_IV_ETF_Investing/Lesson22.md) | [中文](01_Foundations/Part_IV_ETF_Investing/zh/Lesson22.md) |
+| 23 Expense Ratio | [English](01_Foundations/Part_IV_ETF_Investing/Lesson23.md) | [中文](01_Foundations/Part_IV_ETF_Investing/zh/Lesson23.md) |
+| 24 Tracking Error | [English](01_Foundations/Part_IV_ETF_Investing/Lesson24.md) | [中文](01_Foundations/Part_IV_ETF_Investing/zh/Lesson24.md) |
+| 25 Liquidity | [English](01_Foundations/Part_IV_ETF_Investing/Lesson25.md) | [中文](01_Foundations/Part_IV_ETF_Investing/zh/Lesson25.md) |
+| 26 Dollar-Cost Averaging | [English](01_Foundations/Part_IV_ETF_Investing/Lesson26.md) | [中文](01_Foundations/Part_IV_ETF_Investing/zh/Lesson26.md) |
+| 27 Portfolio Construction | [English](01_Foundations/Part_IV_ETF_Investing/Lesson27.md) | [中文](01_Foundations/Part_IV_ETF_Investing/zh/Lesson27.md) |
+| 28 Building an ETF Portfolio | [English](01_Foundations/Part_IV_ETF_Investing/Lesson28.md) | [中文](01_Foundations/Part_IV_ETF_Investing/zh/Lesson28.md) |
+| 29 Financial Statements | [English](01_Foundations/Part_V_Understanding_the_Economy/Lesson29.md) | [中文](01_Foundations/Part_V_Understanding_the_Economy/zh/Lesson29.md) |
+| 30 Valuation | [English](01_Foundations/Part_V_Understanding_the_Economy/Lesson30.md) | [中文](01_Foundations/Part_V_Understanding_the_Economy/zh/Lesson30.md) |
+| 31 Economic Cycles | [English](01_Foundations/Part_V_Understanding_the_Economy/Lesson31.md) | [中文](01_Foundations/Part_V_Understanding_the_Economy/zh/Lesson31.md) |
+| 32 Interest Rates | [English](01_Foundations/Part_V_Understanding_the_Economy/Lesson32.md) | [中文](01_Foundations/Part_V_Understanding_the_Economy/zh/Lesson32.md) |
+| 33 Central Banks | [English](01_Foundations/Part_V_Understanding_the_Economy/Lesson33.md) | [中文](01_Foundations/Part_V_Understanding_the_Economy/zh/Lesson33.md) |
+| 34 The Economy and Financial Markets | [English](01_Foundations/Part_V_Understanding_the_Economy/Lesson34.md) | [中文](01_Foundations/Part_V_Understanding_the_Economy/zh/Lesson34.md) |
+| 35 Behavioral Finance | [English](01_Foundations/Part_VI_Investment_Psychology/Lesson35.md) | [中文](01_Foundations/Part_VI_Investment_Psychology/zh/Lesson35.md) |
+| 36 Fear & Greed | [English](01_Foundations/Part_VI_Investment_Psychology/Lesson36.md) | [中文](01_Foundations/Part_VI_Investment_Psychology/zh/Lesson36.md) |
+| 37 FOMO | [English](01_Foundations/Part_VI_Investment_Psychology/Lesson37.md) | [中文](01_Foundations/Part_VI_Investment_Psychology/zh/Lesson37.md) |
+| 38 Common Beginner Mistakes | [English](01_Foundations/Part_VI_Investment_Psychology/Lesson38.md) | [中文](01_Foundations/Part_VI_Investment_Psychology/zh/Lesson38.md) |
+| 39 Building Your Own Investment Philosophy | [English](01_Foundations/Part_VI_Investment_Psychology/Lesson39.md) | [中文](01_Foundations/Part_VI_Investment_Psychology/zh/Lesson39.md) |
+| 40 Graduation: Your First Investment Plan | [English](01_Foundations/Part_VI_Investment_Psychology/Lesson40.md) | [中文](01_Foundations/Part_VI_Investment_Psychology/zh/Lesson40.md) |
 
 ### Part I - Foundations
 
