@@ -31,6 +31,7 @@ This fund tracks the Hang Seng Index through a QDII structure. It provides broad
 | Date Added | Plan |
 |---|---|
 | 2026-07-06 | ¥1,000 monthly DCA on the 10th, 1 installment. |
+| 2026-07-10 | July 2026 DCA executed: ¥1,000. Planned DCA completed. |
 
 ## Maintenance Note
 

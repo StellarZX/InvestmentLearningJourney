@@ -2,6 +2,19 @@
 
 This file is for comments, reflections, and review notes. It is not the official holdings record.
 
+## 2026-07-16
+
+- Recorded July 2026 domestic DCA completion.
+- Executed three planned domestic fund investments on 2026-07-10:
+  - 460300: ¥1,000.
+  - 021457: ¥1,000.
+  - 164705: ¥1,000.
+- 164705 has completed its planned one-installment DCA.
+- 460300 still has 3 remaining monthly installments.
+- 021457 still has 2 remaining monthly installments.
+- No near-term extra discretionary funding was added. This update only records the planned July DCA execution.
+- Current focus remains: follow the preset plan, avoid emotional extra buying, and review allocation after the next scheduled DCA.
+
 ## 2026-07-06
 
 - Portfolio record rule updated: `summary.md` is the only file used for holdings and active DCA plans.
