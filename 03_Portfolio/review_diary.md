@@ -9,10 +9,18 @@ This file is for comments, reflections, and review notes. It is not the official
   - 460300: ¥1,000.
   - 021457: ¥1,000.
   - 164705: ¥1,000.
-- 164705 has completed its planned one-installment DCA.
-- 460300 still has 3 remaining monthly installments.
-- 021457 still has 2 remaining monthly installments.
-- No near-term extra discretionary funding was added. This update only records the planned July DCA execution.
+- No near-term extra discretionary funding was added. This update only records planned DCA execution and plan adjustment.
+- Updated domestic DCA plan after reviewing China A-share vs Hong Kong exposure.
+- 460300 plan changed from 4 total installments to 2 total installments:
+  - 1 installment already completed.
+  - 1 installment remains.
+- 164705 plan extended by 2 additional installments:
+  - 1 installment already completed.
+  - 2 installments remain.
+- 021457 remains unchanged:
+  - 1 installment completed.
+  - 2 installments remain.
+- The updated plan shifts future domestic investment more toward Hong Kong exposure while keeping a smaller A-share CSI 300 base position.
 - Current focus remains: follow the preset plan, avoid emotional extra buying, and review allocation after the next scheduled DCA.
 
 ## 2026-07-06

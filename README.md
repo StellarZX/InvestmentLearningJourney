@@ -52,7 +52,7 @@ Current record rule: `summary.md` is the only source of truth for holdings, exec
 | Item | Status |
 |---|---|
 | Near-term extra funding | Paused |
-| Domestic DCA plans | July 2026 completed; 460300 and 021457 still active, 164705 completed |
+| Domestic DCA plans | July 2026 completed; 460300, 021457, and 164705 still active |
 | IBKR funding | €500 transferred and settled |
 | Bookkeeping FX rate | 1 EUR = ¥7.80 |
 
@@ -72,9 +72,9 @@ This table uses the bookkeeping FX rate above. It reflects actual current assets
 
 | Market | Fund | Code | Plan |
 |---|---|---:|---|
-| China A-share | [华泰柏瑞沪深300ETF联接A](03_Portfolio/沪深300(460300).md) | 460300 | ¥1,000 monthly on the 10th, 3 remaining installments |
+| China A-share | [华泰柏瑞沪深300ETF联接A](03_Portfolio/沪深300(460300).md) | 460300 | ¥1,000 monthly on the 10th, 1 remaining installment |
 | Hong Kong | [易方达恒生红利低波ETF联接A](03_Portfolio/易方达恒生红利低波ETF联接A(021457).md) | 021457 | ¥1,000 monthly on the 10th, 2 remaining installments |
-| Hong Kong | [汇添富恒生指数（QDII-LOF）](03_Portfolio/汇添富恒生指数(QDII-LOF)(164705).md) | 164705 | Completed on 2026-07-10 |
+| Hong Kong | [汇添富恒生指数（QDII-LOF）](03_Portfolio/汇添富恒生指数(QDII-LOF)(164705).md) | 164705 | ¥1,000 monthly on the 10th, 2 remaining installments |
 
 ## 4. Resources
 
