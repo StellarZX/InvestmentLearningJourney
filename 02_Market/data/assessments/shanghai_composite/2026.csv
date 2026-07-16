@@ -118,3 +118,12 @@ date,close,price_percentile,drawdown_pct,price_score,drawdown_score,trend_score,
 2026-07-01,4112.444824,94.0476,-3.0672,5.9524,10.2239,70.0,,20.2569,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
 2026-07-02,4028.904053,87.963,-5.0363,12.037,16.7876,70.0,,25.2923,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
 2026-07-03,4043.643066,88.2275,-4.6889,11.7725,15.6296,70.0,,24.768,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-06,4041.238037,88.0952,-4.7456,11.9048,15.8185,70.0,,24.8936,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-07,3990.235107,85.1852,-5.9477,14.8148,19.8258,50.0,,23.6057,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-08,3970.879883,84.127,-6.4039,15.873,21.3465,50.0,,24.6141,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-09,4036.587891,87.963,-4.8552,12.037,16.1839,70.0,,25.081,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-10,3996.162109,85.4497,-5.808,14.5503,19.3601,50.0,,23.3237,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-13,3913.793945,80.0265,-7.7495,19.9735,25.8316,50.0,,28.0291,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-14,3967.125977,83.4656,-6.4924,16.5344,21.6414,50.0,,25.015,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-15,3955.577881,82.2751,-6.7646,17.7249,22.5487,50.0,,25.8682,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-16,3882.412598,77.381,-8.4892,22.619,28.2972,50.0,,30.0826,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
