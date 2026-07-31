@@ -132,3 +132,14 @@ date,close,price_percentile,drawdown_pct,price_score,drawdown_score,trend_score,
 2026-07-13,25873.179688,96.0317,-4.5055,3.9683,15.0184,70.0,,21.0422,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
 2026-07-14,26107.009766,96.8254,-3.6425,3.1746,12.1416,70.0,,19.6781,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
 2026-07-15,26269.230469,97.619,-3.0437,2.381,10.1458,70.0,,18.6225,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-16,25881.949219,95.7672,-4.4732,4.2328,14.9105,70.0,,21.1234,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-17,25520.240234,94.0476,-5.8082,5.9524,19.3606,70.0,,23.4548,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-20,25508.070312,93.9153,-5.8531,6.0847,19.5103,70.0,,23.5667,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-21,25837.210938,95.1058,-4.6383,4.8942,15.4609,70.0,,21.6137,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-22,25690.900391,94.1799,-5.1783,5.8201,17.261,70.0,,22.6604,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-23,25137.689453,92.8571,-7.2201,7.1429,24.0671,70.0,,25.6378,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-24,24975.820312,92.4603,-7.8176,7.5397,26.0585,70.0,,26.5133,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-27,24932.080078,92.328,-7.979,7.672,26.5966,70.0,,26.7612,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-28,24876.910156,91.9312,-8.1826,8.0688,27.2754,70.0,,27.1774,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-29,24442.939453,91.1376,-9.7843,8.8624,32.6145,70.0,,29.4032,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-30,25122.179688,92.7249,-7.2774,7.2751,24.2579,70.0,,25.7641,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only

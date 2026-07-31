@@ -132,3 +132,14 @@ date,close,price_percentile,drawdown_pct,price_score,drawdown_score,trend_score,
 2026-07-13,29264.099609,95.8995,-4.5547,4.1005,15.1824,70.0,,21.1591,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
 2026-07-14,29586.289062,97.3545,-3.5039,2.6455,11.6796,70.0,,19.2783,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
 2026-07-15,29502.599609,97.0899,-3.7768,2.9101,12.5894,70.0,,19.7158,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-16,29025.769531,94.4444,-5.332,5.5556,17.7734,70.0,,22.7207,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-17,28592.660156,93.7831,-6.7446,6.2169,22.4821,70.0,,24.6663,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-20,28604.230469,93.9153,-6.7069,6.0847,22.3563,70.0,,24.5628,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-21,29155.179688,94.9735,-4.9099,5.0265,16.3665,70.0,,21.9902,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-22,28998.099609,94.1799,-5.4223,5.8201,18.0742,70.0,,22.945,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-23,28454.810547,92.9894,-7.1942,7.0106,23.9807,70.0,,25.548,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-24,28128.339844,92.8571,-8.259,7.1429,27.53,70.0,,26.8498,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-27,28039.210938,92.7249,-8.5497,7.2751,28.499,70.0,,27.2484,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-28,27763.130859,92.4603,-9.4501,7.5397,31.5005,70.0,,28.418,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-29,27192.310547,91.6667,-11.3119,8.3333,37.7063,70.0,,30.9472,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-30,28106.349609,92.7249,-8.3307,7.2751,27.7691,70.0,,26.993,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only

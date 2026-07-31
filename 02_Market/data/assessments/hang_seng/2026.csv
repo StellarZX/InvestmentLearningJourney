@@ -129,3 +129,14 @@ date,close,price_percentile,drawdown_pct,price_score,drawdown_score,trend_score,
 2026-07-14,24340.730469,69.4444,-12.9696,30.5556,43.2321,50.0,,38.8813,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
 2026-07-15,24681.099609,71.0317,-11.7526,28.9683,39.1755,50.0,,36.7472,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
 2026-07-16,25008.599609,73.6772,-10.5817,26.3228,35.2722,50.0,,34.1905,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-17,24562.240234,70.3704,-12.1776,29.6296,40.5921,50.0,,37.5406,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-20,25143.050781,74.7354,-10.1009,25.2646,33.6698,50.0,,33.1535,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-21,25132.289062,74.6032,-10.1394,25.3968,33.7981,50.0,,33.2579,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-22,24892.660156,72.0899,-10.9962,27.9101,36.654,50.0,,35.3884,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-23,25210.810547,75.3968,-9.8587,24.6032,32.8622,50.0,,32.5732,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-24,24963.230469,72.619,-10.7439,27.381,35.8129,50.0,,34.856,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-27,25207.179688,75.2646,-9.8716,24.7354,32.9055,50.0,,32.6479,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-28,25310.849609,76.455,-9.501,23.545,31.6699,50.0,,31.6797,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-29,25807.919922,83.2011,-7.7237,16.7989,25.7456,70.0,,30.5705,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-30,25858.880859,84.127,-7.5415,15.873,25.1383,70.0,,29.9413,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2026-07-31,25884.429688,84.5238,-7.4501,15.4762,24.8338,70.0,,29.6561,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
