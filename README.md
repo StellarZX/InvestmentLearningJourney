@@ -53,7 +53,7 @@ Current holdings only; detailed DCA records live in [02_DCA_Index_Funds/records/
 ### Current Holdings
 
 | Market | Platform | Fund | Code | Current Position | Current Cost | Role |
-|---|---|---|---:|---:|---|
+|---|---|---|---:|---:|---:|---|
 | China A-share | Domestic fund platform | 华泰柏瑞沪深300ETF联接A | 460300 | ¥2,000 | ¥2,000 | China core broad-market exposure |
 | Hong Kong | Domestic fund platform | 易方达恒生红利低波ETF联接A | 021457 | ¥1,000 | ¥1,000 | Hong Kong high-dividend low-volatility allocation |
 | Hong Kong | Domestic fund platform | 汇添富恒生指数（QDII-LOF） | 164705 | ¥1,000 | ¥1,000 | Hang Seng broad-market exposure |
