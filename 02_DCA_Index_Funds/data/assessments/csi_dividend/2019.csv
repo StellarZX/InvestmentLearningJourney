@@ -1,0 +1,10 @@
+date,close,price_percentile,drawdown_pct,price_score,drawdown_score,trend_score,valuation_score,extra_investment_score,method,confidence
+2019-11-28,1.0,,,,,,,,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2019-11-29,1.000100016593933,,,,,,,,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2019-12-06,1.0047999620437622,,,,,,,,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2019-12-13,1.0322999954223633,,,,,,,,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2019-12-20,1.0414999723434448,,,,,,,,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2019-12-26,1.0441999435424805,,,,,,,,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2019-12-27,1.0410000085830688,,,,,,,,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2019-12-30,1.0520000457763672,,,,,,,,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only
+2019-12-31,1.059999942779541,,,,,,,,"Composite: 45% price percentile, 35% drawdown, 20% trend",price_only

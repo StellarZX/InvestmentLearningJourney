@@ -130,16 +130,13 @@ const translations = {
 
 const indexTranslations = {
   sp500: "标普500",
-  nasdaq_composite: "纳斯达克综合指数",
-  dow_jones: "道琼斯工业平均指数",
   nasdaq_100: "纳斯达克100",
   hang_seng: "恒生指数",
   csi_300: "沪深300",
-  shanghai_composite: "上证指数",
-  shenzhen_component: "深证成指",
-  nikkei_225: "日经225",
-  ftse_100: "英国富时100",
-  dax: "德国DAX",
+  csi_500: "中证500",
+  chi_next: "创业板指",
+  csi_dividend: "中证红利",
+  hsi_dividend_lowvol: "恒生红利低波",
 };
 
 const regionTranslations = {

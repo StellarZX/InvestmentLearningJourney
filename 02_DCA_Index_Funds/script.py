@@ -49,20 +49,21 @@ class IndexConfig:
     currency: str
     source: str = "Yahoo Finance chart API"
     valuation_symbol: str | None = None
+    sina_symbol: str | None = None  # fetch via Sina/AkShare instead of Yahoo when set
 
 
+# Only indices related to the current funds: the 6 RMB funds + S&P 500 + NASDAQ-100
 INDICES: list[IndexConfig] = [
-    IndexConfig("sp500", "S&P 500", "^GSPC", "United States", "USD"),
-    IndexConfig("nasdaq_composite", "NASDAQ Composite", "^IXIC", "United States", "USD"),
-    IndexConfig("dow_jones", "Dow Jones Industrial Average", "^DJI", "United States", "USD"),
-    IndexConfig("nasdaq_100", "NASDAQ-100", "^NDX", "United States", "USD"),
-    IndexConfig("hang_seng", "Hang Seng Index", "^HSI", "Hong Kong", "HKD"),
     IndexConfig("csi_300", "CSI 300", "000300.SS", "China", "CNY", valuation_symbol="沪深300"),
-    IndexConfig("shanghai_composite", "Shanghai Composite", "000001.SS", "China", "CNY"),
-    IndexConfig("shenzhen_component", "Shenzhen Component", "399001.SZ", "China", "CNY"),
-    IndexConfig("nikkei_225", "Nikkei 225", "^N225", "Japan", "JPY"),
-    IndexConfig("ftse_100", "FTSE 100", "^FTSE", "United Kingdom", "GBP"),
-    IndexConfig("dax", "DAX", "^GDAXI", "Germany", "EUR"),
+    IndexConfig("csi_500", "CSI 500", "000905.SS", "China", "CNY", sina_symbol="sh000905", valuation_symbol="中证500"),
+    IndexConfig("chi_next", "ChiNext", "399006.SZ", "China", "CNY", sina_symbol="sz399006"),
+    IndexConfig("csi_dividend", "CSI Dividend", "515080.SS", "China", "CNY",
+                source="ETF proxy (515080) via Yahoo Finance chart API"),
+    IndexConfig("hang_seng", "Hang Seng Index", "^HSI", "Hong Kong", "HKD"),
+    IndexConfig("hsi_dividend_lowvol", "HS Dividend Low Vol", "159545.SZ", "Hong Kong", "CNY",
+                source="ETF proxy (159545) via Yahoo Finance chart API"),
+    IndexConfig("sp500", "S&P 500", "^GSPC", "United States", "USD"),
+    IndexConfig("nasdaq_100", "NASDAQ-100", "^NDX", "United States", "USD"),
 ]
 
 
@@ -82,6 +83,8 @@ def clean_number(value: Any) -> float | None:
 
 
 def fetch_index(config: IndexConfig, start: date, end: date) -> pd.DataFrame:
+    if config.sina_symbol:
+        return fetch_index_sina(config, start, end)
     url = (
         "https://query1.finance.yahoo.com/v8/finance/chart/"
         f"{config.symbol}?period1={utc_timestamp(start)}&period2={utc_timestamp(end)}"
@@ -125,6 +128,29 @@ def fetch_index(config: IndexConfig, start: date, end: date) -> pd.DataFrame:
     if df.empty:
         raise RuntimeError(f"{config.name}: no data returned")
     return df.sort_values("date").drop_duplicates(subset=["date"], keep="last")
+
+
+def fetch_index_sina(config: IndexConfig, start: date, end: date) -> pd.DataFrame:
+    import akshare as ak
+
+    df = ak.stock_zh_index_daily(symbol=config.sina_symbol)
+    df["date"] = pd.to_datetime(df["date"])
+    df = df[(df["date"].dt.date >= start) & (df["date"].dt.date <= end)]
+    out = pd.DataFrame({
+        "date": df["date"].dt.strftime("%Y-%m-%d"),
+        "open": pd.to_numeric(df.get("open"), errors="coerce"),
+        "high": pd.to_numeric(df.get("high"), errors="coerce"),
+        "low": pd.to_numeric(df.get("low"), errors="coerce"),
+        "close": pd.to_numeric(df.get("close"), errors="coerce"),
+        "adj_close": pd.to_numeric(df.get("close"), errors="coerce"),
+        "volume": pd.to_numeric(df.get("volume"), errors="coerce").fillna(0),
+        "symbol": config.symbol,
+        "name": config.name,
+        "region": config.region,
+        "currency": config.currency,
+        "source": "Sina via AkShare",
+    })
+    return out.dropna(subset=["close"]).sort_values("date").drop_duplicates(subset=["date"], keep="last")
 
 
 def save_index_by_year(config: IndexConfig, df: pd.DataFrame) -> None:

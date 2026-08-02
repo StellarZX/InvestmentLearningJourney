@@ -25,6 +25,9 @@ SUMMARY_FILE = BASE_DIR.parent / "README.md"
 # Holding code -> (index data folder, tracking index name)
 HOLDING_INDEX_MAP: dict[str, tuple[str, str]] = {
     "460300": ("csi_300", "CSI 300"),
+    "160119": ("csi_500", "CSI 500"),
+    "110026": ("chi_next", "ChiNext"),
+    "100032": ("csi_dividend", "CSI Dividend"),
     "021457": ("hsi_dividend_lowvol", "HS Dividend Low Vol"),
     "164705": ("hang_seng", "Hang Seng Index"),
     "SXR8": ("sp500", "S&P 500"),
@@ -35,6 +38,9 @@ CASH_CODES = {"EUR", "CNY", "USD", "HKD"}
 # Redemption / settlement speed (key dimension for raising cash in an emergency)
 LIQUIDITY: dict[str, dict[str, str]] = {
     "460300": {"label": "Fast: redemption T+1~T+3", "level": "fast"},
+    "160119": {"label": "Fast: redemption T+1~T+3", "level": "fast"},
+    "110026": {"label": "Fast: redemption T+1~T+3", "level": "fast"},
+    "100032": {"label": "Fast: redemption T+1~T+3", "level": "fast"},
     "021457": {"label": "Slow: QDII redemption ~T+7~T+10", "level": "slow"},
     "164705": {"label": "Slow: QDII redemption ~T+7~T+10", "level": "slow"},
     "SXR8": {"label": "Medium: same-day sell, T+2 settlement", "level": "medium"},
@@ -43,6 +49,9 @@ LIQUIDITY: dict[str, dict[str, str]] = {
 # Position class labels (English)
 ROLE_LABEL = {
     "460300": "A-share core holding",
+    "160119": "China mid-cap complement",
+    "110026": "China growth satellite",
+    "100032": "China dividend defense",
     "021457": "HK dividend low-vol satellite",
     "164705": "HK broad-market satellite",
     "SXR8": "US core holding",
@@ -51,6 +60,9 @@ ROLE_LABEL = {
 # Position class codes for localization
 POSITION_CLASS_CODE = {
     "460300": "core",
+    "160119": "satellite",
+    "110026": "satellite",
+    "100032": "satellite",
     "021457": "satellite",
     "164705": "satellite",
     "SXR8": "core",
@@ -58,11 +70,14 @@ POSITION_CLASS_CODE = {
 
 # Fallback holdings (used when the root README table cannot be parsed)
 FALLBACK_HOLDINGS: list[dict[str, str]] = [
-    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "华泰柏瑞沪深300ETF联接A", "code": "460300", "position": "¥2,000", "cost": "¥2,000", "role": "China core broad-market exposure"},
-    {"market": "Hong Kong", "platform": "Domestic fund platform", "fund": "易方达恒生红利低波ETF联接A", "code": "021457", "position": "¥1,000", "cost": "¥1,000", "role": "Hong Kong high-dividend low-volatility allocation"},
-    {"market": "Hong Kong", "platform": "Domestic fund platform", "fund": "汇添富恒生指数（QDII-LOF）", "code": "164705", "position": "¥1,000", "cost": "¥1,000", "role": "Hang Seng broad-market exposure"},
-    {"market": "United States", "platform": "IBKR", "fund": "iShares Core S&P 500 UCITS ETF USD (Acc)", "code": "SXR8", "position": "0.6 shares", "cost": "€425.918", "role": "US large-cap equity exposure"},
-    {"market": "Cash", "platform": "IBKR", "fund": "EUR cash", "code": "EUR", "position": "€74.082", "cost": "€74.082", "role": "Cash buffer"},
+    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "华泰柏瑞沪深300ETF联接A", "code": "460300", "target": "25%", "position": "¥2,000", "cost": "¥2,000", "role": "China core broad-market exposure"},
+    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "南方中证500ETF联接(LOF)A", "code": "160119", "target": "15%", "position": "¥0", "cost": "¥0", "role": "China mid-cap complement"},
+    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "易方达创业板ETF联接A", "code": "110026", "target": "10%", "position": "¥0", "cost": "¥0", "role": "China growth satellite"},
+    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "富国中证红利指数增强A", "code": "100032", "target": "15%", "position": "¥0", "cost": "¥0", "role": "China dividend defense"},
+    {"market": "Hong Kong", "platform": "Domestic fund platform", "fund": "汇添富恒生指数（QDII-LOF）", "code": "164705", "target": "15%", "position": "¥1,000", "cost": "¥1,000", "role": "Hang Seng broad-market exposure"},
+    {"market": "Hong Kong", "platform": "Domestic fund platform", "fund": "易方达恒生红利低波ETF联接A", "code": "021457", "target": "20%", "position": "¥1,000", "cost": "¥1,000", "role": "Hong Kong high-dividend low-volatility allocation"},
+    {"market": "United States", "platform": "IBKR", "fund": "iShares Core S&P 500 UCITS ETF USD (Acc)", "code": "SXR8", "target": "-", "position": "0.6 shares", "cost": "€425.918", "role": "US large-cap equity exposure"},
+    {"market": "Cash", "platform": "IBKR", "fund": "EUR cash", "code": "EUR", "target": "-", "position": "€74.082", "cost": "€74.082", "role": "Cash buffer"},
 ]
 
 
@@ -80,15 +95,16 @@ def parse_summary_holdings() -> list[dict[str, str]]:
             continue
         if line.startswith("|") and "---" not in line:
             cells = [c.strip() for c in line.strip().strip("|").split("|")]
-            if len(cells) >= 7 and cells[3]:
+            if len(cells) >= 8 and cells[3]:
                 rows.append({
                     "market": cells[0],
                     "platform": cells[1],
                     "fund": cells[2],
                     "code": cells[3],
-                    "position": cells[4],
-                    "cost": cells[5],
-                    "role": cells[-1],
+                    "target": cells[4],
+                    "position": cells[5],
+                    "cost": cells[6],
+                    "role": cells[7],
                 })
         elif line.strip() == "":
             in_table = False
@@ -212,12 +228,15 @@ def build_holdings_decision() -> dict[str, Any]:
             "platform": holding["platform"],
             "fund": holding["fund"],
             "code": code,
+            "target": holding.get("target", "-"),
             "position_raw": holding["position"],
             "cost_raw": holding["cost"],
             "position_amount": extract_amount(holding["position"]),
             "cost_amount": extract_amount(holding["cost"]),
             "role": holding["role"],
         }
+        if base["position_amount"] == 0:
+            continue  # planned but not held yet (position 0 in the portfolio table)
         if code in CASH_CODES or "cash" in holding["fund"].lower():
             base.update({
                 "position_class": "Cash buffer",

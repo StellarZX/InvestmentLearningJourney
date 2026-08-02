@@ -79,8 +79,6 @@ FUNDS: list[Fund] = [
          1.0, price_source="local", currency="EUR"),
     Fund("ibkr", "Invesco EQQQ NASDAQ-100 UCITS ETF (Acc)", "EQQQ", "NASDAQ-100", "nasdaq_100",
          1.0, price_source="local", currency="EUR"),
-    Fund("ibkr", "iShares Core MSCI World UCITS ETF (Acc)", "EUNL", "MSCI World", "msci_world",
-         1.0, price_source="yf:EUNL.DE", currency="EUR"),
 ]
 
 
