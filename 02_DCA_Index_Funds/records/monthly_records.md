@@ -21,4 +21,4 @@
 | 2026-07-10 | DCA    | 易方达恒生红利低波ETF联接A                          | 021457 |   ¥1,000 | -                |
 | 2026-07-10 | DCA    | 汇添富恒生指数（QDII-LOF）                        | 164705 |   ¥1,000 | -                |
 
-Rule: run the manual DCA on the 10th each month (amounts per the DCA decision page), append a row to Monthly Records, and update the Current Holdings table in the root README.
+Rule: run the manual DCA on the 10th each month (amounts per the DCA decision page), append a row to Monthly Records, update Current Position / Current Cost in the root README holdings table, then run `..\\.venv\\Scripts\\python.exe .\\02_DCA_Index_Funds\\update_portfolio.py` to refresh the Current % / Return % columns automatically.

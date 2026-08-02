@@ -42,13 +42,13 @@ This part focuses on the investor's behavior. It introduces [behavioral finance]
 
 ## 3. Portfolio
 
-RMB (CNY) and EUR allocations are tracked separately; their amounts and ratios are never mixed.
-
-EUR (€50/month): S&P 500 (SXR8) 50% + NASDAQ-100 (EQQQ) 50%.
+The monthly workflow:
+1. Refresh data — run .\\.venv\\Scripts\\python.exe .\\02_DCA_Index_Funds\\script.py --fetch-only (market data updates automatically)
+2. Buy — open the DCA decision page, read this month's allocation, place the orders manually
+3. Record — append a row to the Monthly Records table in [monthly_records.md](D:/CodeX/InvestmentLearningJourney/02_DCA_Index_Funds/records/monthly_records.md); update the "Current Position / Current Cost" columns for the bought funds in the Current Holdings table of the root [README.md](D:/CodeX/InvestmentLearningJourney/README.md)
+4. Recalculate ratios — run the new .\\.venv\\Scripts\\python.exe .\\02_DCA_Index_Funds\\update_portfolio.py, which automatically recomputes the Current % and Return % columns
 
 ### Current Holdings
-
-Current % = position ÷ total RMB positions (¥4,000); Return % = (Current Position − Current Cost) ÷ Current Cost. EUR rows are excluded from both.
 
 | Market | Platform | Fund | Code | Target % | Current % | Current Position | Current Cost | Return % |
 |---|---|---|---|---|---|---|---:|---:|
