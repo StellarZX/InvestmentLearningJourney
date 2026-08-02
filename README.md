@@ -40,12 +40,7 @@ This part focuses on the investor's behavior. It introduces [behavioral finance]
 - Pages: `/` index dashboard, `/dca.html` monthly DCA decision, `/holdings.html` emergency review.
 
 
-## 3. Stock Quant
-
-- [Stock Quant Pilot](03_Stock_Quant/README.md) - a ¥1,000 A-share single-stock quant pilot; learning-focused with no near-term additional funding.
-
-
-## 4. Portfolio
+## 3. Portfolio
 
 Current holdings only; detailed DCA records live in [Records](02_DCA_Index_Funds/records/monthly_records.md).
 
@@ -59,7 +54,7 @@ Current holdings only; detailed DCA records live in [Records](02_DCA_Index_Funds
 | United States | IBKR | iShares Core S&P 500 UCITS ETF USD (Acc) | SXR8 | 0.6 shares | €425.918 | US large-cap equity exposure |
 | Cash | IBKR | EUR cash | EUR | €74.082 | €74.082 | Cash buffer |
 
-## 5. Resources
+## 4. Resources
 
-- [Financial Glossary](04_Glossary/Vocabulary.md)
-- [指数基金投资指南.epub](04_Glossary/指数基金投资指南.epub)
+- [Financial Glossary](Glossary/Vocabulary.md)
+- [指数基金投资指南.epub](Glossary/指数基金投资指南.epub)
