@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="dcaPageTitle">Monthly DCA Allocation</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="dca-page">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">ILJ</div>
+      <div>
+        <h1 data-i18n="dcaPageTitle">Monthly DCA Allocation</h1>
+        <p class="muted" data-i18n="dcaPageSubtitle"></p>
+      </div>
+    </div>
+    <nav class="page-nav">
+      <a href="/" class="nav-link" data-i18n="navIndices">Index Dashboard</a>
+      <a href="/dca.html" class="nav-link active" data-i18n="navDca">DCA Decision</a>
+      <a href="/holdings.html" class="nav-link" data-i18n="navHoldings">Emergency Review</a>
+    </nav>
+    <div class="sidebar-note">
+      <p class="muted" data-i18n="dcaRunHint"></p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section class="toolbar">
+      <div>
+        <p class="eyebrow" data-i18n="dcaEyebrow">Monthly plan</p>
+        <h2 id="dcaTitle"></h2>
+        <p id="dcaCaption" class="muted"></p>
+      </div>
+      <div class="toolbar-actions">
+        <button id="languageButton" type="button">中文</button>
+        <button id="dcaRefreshButton" type="button" data-i18n="dcaRefresh">Recalculate</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div id="dcaError" class="empty-state hidden"></div>
+      <div id="dcaGroups"></div>
+      <div id="dcaNotes" class="muted dca-notes"></div>
+    </section>
+  </main>
+
+  <script src="/dca.js"></script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Market Index Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">ILJ</div>
+      <div>
+        <h1 data-i18n="appTitle">Market Index Dashboard</h1>
+        <p data-i18n="appSubtitle">Major global indices, stored locally by year.</p>
+      </div>
+    </div>
+    <nav class="page-nav">
+      <a href="/" class="nav-link active" data-i18n="navIndices">Index Dashboard</a>
+      <a href="/dca.html" class="nav-link" data-i18n="navDca">DCA Decision</a>
+      <a href="/holdings.html" class="nav-link" data-i18n="navHoldings">Emergency Review</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <section class="index-tabs" id="indexTabs" role="tablist"></section>
+
+    <section class="toolbar">
+      <div>
+        <p class="eyebrow" data-i18n="eyebrow">Local market data</p>
+        <h2 id="selectedName" data-i18n="loading">Loading...</h2>
+        <p id="selectedMeta" class="muted"></p>
+      </div>
+      <div class="toolbar-actions">
+        <label>
+          <span data-i18n="range">Range</span>
+          <select id="rangeSelect">
+            <option value="252" data-i18n="range1y">1Y</option>
+            <option value="756" data-i18n="range3y">3Y</option>
+            <option value="1260" selected data-i18n="range5y">5Y</option>
+            <option value="0" data-i18n="rangeAll">All</option>
+          </select>
+        </label>
+        <label>
+          <span data-i18n="language">Language</span>
+          <button id="languageButton" type="button">中文</button>
+        </label>
+        <button id="reloadButton" type="button" data-i18n="reload">Reload</button>
+      </div>
+    </section>
+
+    <section class="summary-grid" id="summaryGrid"></section>
+
+    <section class="panel chart-panel">
+      <div class="panel-header">
+        <div>
+          <h3 data-i18n="valuationMetrics">Valuation & Assessment</h3>
+          <p id="valuationCaption" class="muted"></p>
+        </div>
+        <label>
+          <span data-i18n="metric">Metric</span>
+          <select id="valuationMetric">
+            <option value="earnings_yield" data-i18n="earningsYield">Earnings Yield</option>
+            <option value="pe_ttm" data-i18n="peTtm">P/E TTM</option>
+            <option value="pb" data-i18n="pb">P/B</option>
+            <option value="close" data-i18n="closePrice">Close Price</option>
+          </select>
+        </label>
+      </div>
+      <div id="valuationEmpty" class="empty-state" data-i18n="valuationUnavailable">Assessment history is not available for this index yet.</div>
+      <div id="investmentAdvice" class="advice-box"></div>
+      <div id="valuationShell" class="split-chart-grid">
+        <div class="mini-chart">
+          <div class="mini-chart-title">
+            <strong id="valuationChartTitle"></strong>
+            <span id="valuationChartCaption" class="muted"></span>
+          </div>
+          <div class="chart-shell">
+            <svg id="valuationChart" role="img" aria-label="Valuation metric chart"></svg>
+          </div>
+        </div>
+        <div class="mini-chart">
+          <div class="mini-chart-title">
+            <strong data-i18n="assessmentScore">Composite Assessment Score</strong>
+            <span id="assessmentChartCaption" class="muted"></span>
+          </div>
+          <div class="chart-shell">
+            <svg id="assessmentChart" role="img" aria-label="Composite assessment score chart"></svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h3 data-i18n="latestRecords">Latest Records</h3>
+        <p class="muted" data-i18n="recordsSubtitle">Daily OHLC data from local CSV files.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="date">Date</th>
+              <th data-i18n="open">Open</th>
+              <th data-i18n="high">High</th>
+              <th data-i18n="low">Low</th>
+              <th data-i18n="close">Close</th>
+              <th data-i18n="volume">Volume</th>
+            </tr>
+          </thead>
+          <tbody id="recordsBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

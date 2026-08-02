@@ -34,49 +34,33 @@ This part connects investing with businesses and the broader economy. It introdu
 This part focuses on the investor's behavior. It introduces [behavioral finance](01_Foundations/Part_VI_Investment_Psychology/Lesson35.md), the role of [fear and greed](01_Foundations/Part_VI_Investment_Psychology/Lesson36.md), and the danger of [FOMO](01_Foundations/Part_VI_Investment_Psychology/Lesson37.md). It also summarizes [common beginner mistakes](01_Foundations/Part_VI_Investment_Psychology/Lesson38.md), helps readers build their own [investment philosophy](01_Foundations/Part_VI_Investment_Psychology/Lesson39.md), and finishes with a first [long-term investment plan](01_Foundations/Part_VI_Investment_Psychology/Lesson40.md).
 
 
-## 2. Market
+## 2. DCA Index Funds
 
-- [Market Index Dashboard](02_Market/README.md)
-- Run locally with `.\.venv\Scripts\python.exe .\02_Market\script.py`, then open `http://127.0.0.1:8050`.
+- [DCA Index Funds Dashboard](02_DCA_Index_Funds/README.md) - global index data, monthly DCA allocation (¥2,000 + €50), and an emergency position review.
+- Run locally with `.\.venv\Scripts\python.exe .\02_DCA_Index_Funds\script.py`, then open `http://127.0.0.1:8050`.
+- Pages: `/` index dashboard, `/dca.html` monthly DCA decision, `/holdings.html` emergency review.
 
 
-## 3. Portfolio
+## 3. Stock Quant
 
-- [Portfolio Summary](03_Portfolio/summary.md)
-- [Portfolio Review Diary](03_Portfolio/review_diary.md)
+- [Stock Quant Pilot](03_Stock_Quant/README.md) - a ¥1,000 A-share single-stock quant pilot; learning-focused with no near-term additional funding.
 
-Current record rule: `summary.md` is the only source of truth for holdings, executed transactions, active DCA plans, and allocation changes. Individual fund files are reference notes only.
 
-### Current Funding Status
+## 4. Portfolio
 
-| Item | Status |
-|---|---|
-| Near-term extra funding | Paused |
-| Domestic DCA plans | July 2026 completed; 460300, 021457, and 164705 still active |
-| IBKR funding | €500 transferred and settled |
-| Bookkeeping FX rate | 1 EUR = ¥7.80 |
+Current holdings only; detailed DCA records live in [02_DCA_Index_Funds/records/monthly_records.md](02_DCA_Index_Funds/records/monthly_records.md).
 
-### Current Actual Allocation
+### Current Holdings
 
-This table uses the bookkeeping FX rate above. It reflects actual current assets, not future DCA commitments.
+| Market | Platform | Fund | Code | Current Position | Current Cost | Role |
+|---|---|---|---:|---:|---|
+| China A-share | Domestic fund platform | 华泰柏瑞沪深300ETF联接A | 460300 | ¥2,000 | ¥2,000 | China core broad-market exposure |
+| Hong Kong | Domestic fund platform | 易方达恒生红利低波ETF联接A | 021457 | ¥1,000 | ¥1,000 | Hong Kong high-dividend low-volatility allocation |
+| Hong Kong | Domestic fund platform | 汇添富恒生指数（QDII-LOF） | 164705 | ¥1,000 | ¥1,000 | Hang Seng broad-market exposure |
+| United States | IBKR | iShares Core S&P 500 UCITS ETF USD (Acc) | SXR8 | 0.6 shares | €425.918 | US large-cap equity exposure |
+| Cash | IBKR | EUR cash | EUR | €74.082 | €74.082 | Cash buffer |
 
-| Market / Asset | Holding | Original Amount | RMB Equivalent | Weight Including Cash | Weight Excluding Cash |
-|---|---|---:|---:|---:|---:|
-| China A-share | [华泰柏瑞沪深300ETF联接A](03_Portfolio/沪深300(460300).md) | ¥2,000 | ¥2,000.00 | 25.32% | 27.31% |
-| Hong Kong | [易方达恒生红利低波ETF联接A](03_Portfolio/易方达恒生红利低波ETF联接A(021457).md) + [汇添富恒生指数（QDII-LOF）](03_Portfolio/汇添富恒生指数(QDII-LOF)(164705).md) | ¥2,000 | ¥2,000.00 | 25.32% | 27.31% |
-| United States | [iShares Core S&P 500 UCITS ETF USD Acc](03_Portfolio/iShares%20Core%20S%26P%20500%20UCITS%20ETF%20USD%20Acc(SXR8).md) | €425.918 | ¥3,322.16 | 42.05% | 45.37% |
-| Cash | IBKR EUR cash | €74.082 | ¥577.84 | 7.31% | - |
-| Total | - | - | ¥7,900.00 | 100.00% | 100.00% |
-
-### Active Domestic DCA Plans
-
-| Market | Fund | Code | Plan |
-|---|---|---:|---|
-| China A-share | [华泰柏瑞沪深300ETF联接A](03_Portfolio/沪深300(460300).md) | 460300 | ¥1,000 monthly on the 10th, 1 remaining installment |
-| Hong Kong | [易方达恒生红利低波ETF联接A](03_Portfolio/易方达恒生红利低波ETF联接A(021457).md) | 021457 | ¥1,000 monthly on the 10th, 2 remaining installments |
-| Hong Kong | [汇添富恒生指数（QDII-LOF）](03_Portfolio/汇添富恒生指数(QDII-LOF)(164705).md) | 164705 | ¥1,000 monthly on the 10th, 2 remaining installments |
-
-## 4. Resources
+## 5. Resources
 
 - [Financial Glossary](04_Glossary/Vocabulary.md)
 - [指数基金投资指南.epub](04_Glossary/指数基金投资指南.epub)
