@@ -70,14 +70,14 @@ POSITION_CLASS_CODE = {
 
 # Fallback holdings (used when the root README table cannot be parsed)
 FALLBACK_HOLDINGS: list[dict[str, str]] = [
-    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "华泰柏瑞沪深300ETF联接A", "code": "460300", "target": "25%", "position": "¥2,000", "cost": "¥2,000", "role": "China core broad-market exposure"},
-    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "南方中证500ETF联接(LOF)A", "code": "160119", "target": "15%", "position": "¥0", "cost": "¥0", "role": "China mid-cap complement"},
-    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "易方达创业板ETF联接A", "code": "110026", "target": "10%", "position": "¥0", "cost": "¥0", "role": "China growth satellite"},
-    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "富国中证红利指数增强A", "code": "100032", "target": "15%", "position": "¥0", "cost": "¥0", "role": "China dividend defense"},
-    {"market": "Hong Kong", "platform": "Domestic fund platform", "fund": "汇添富恒生指数（QDII-LOF）", "code": "164705", "target": "15%", "position": "¥1,000", "cost": "¥1,000", "role": "Hang Seng broad-market exposure"},
-    {"market": "Hong Kong", "platform": "Domestic fund platform", "fund": "易方达恒生红利低波ETF联接A", "code": "021457", "target": "20%", "position": "¥1,000", "cost": "¥1,000", "role": "Hong Kong high-dividend low-volatility allocation"},
-    {"market": "United States", "platform": "IBKR", "fund": "iShares Core S&P 500 UCITS ETF USD (Acc)", "code": "SXR8", "target": "-", "position": "0.6 shares", "cost": "€425.918", "role": "US large-cap equity exposure"},
-    {"market": "Cash", "platform": "IBKR", "fund": "EUR cash", "code": "EUR", "target": "-", "position": "€74.082", "cost": "€74.082", "role": "Cash buffer"},
+    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "华泰柏瑞沪深300ETF联接A", "code": "460300", "target": "25%", "current_pct": "50%", "position": "¥2,000", "cost": "¥2,000", "return_pct": "0.0%"},
+    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "南方中证500ETF联接(LOF)A", "code": "160119", "target": "15%", "current_pct": "0%", "position": "¥0", "cost": "¥0", "return_pct": "-"},
+    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "易方达创业板ETF联接A", "code": "110026", "target": "10%", "current_pct": "0%", "position": "¥0", "cost": "¥0", "return_pct": "-"},
+    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "富国中证红利指数增强A", "code": "100032", "target": "15%", "current_pct": "0%", "position": "¥0", "cost": "¥0", "return_pct": "-"},
+    {"market": "Hong Kong", "platform": "Domestic fund platform", "fund": "汇添富恒生指数（QDII-LOF）", "code": "164705", "target": "15%", "current_pct": "25%", "position": "¥1,000", "cost": "¥1,000", "return_pct": "0.0%"},
+    {"market": "Hong Kong", "platform": "Domestic fund platform", "fund": "易方达恒生红利低波ETF联接A", "code": "021457", "target": "20%", "current_pct": "25%", "position": "¥1,000", "cost": "¥1,000", "return_pct": "0.0%"},
+    {"market": "United States", "platform": "IBKR", "fund": "iShares Core S&P 500 UCITS ETF USD (Acc)", "code": "SXR8", "target": "-", "current_pct": "-", "position": "0.6 shares", "cost": "€425.918", "return_pct": "-"},
+    {"market": "Cash", "platform": "IBKR", "fund": "EUR cash", "code": "EUR", "target": "-", "current_pct": "-", "position": "€74.082", "cost": "€74.082", "return_pct": "-"},
 ]
 
 
@@ -95,16 +95,17 @@ def parse_summary_holdings() -> list[dict[str, str]]:
             continue
         if line.startswith("|") and "---" not in line:
             cells = [c.strip() for c in line.strip().strip("|").split("|")]
-            if len(cells) >= 8 and cells[3]:
+            if len(cells) >= 9 and cells[3]:
                 rows.append({
                     "market": cells[0],
                     "platform": cells[1],
                     "fund": cells[2],
                     "code": cells[3],
                     "target": cells[4],
-                    "position": cells[5],
-                    "cost": cells[6],
-                    "role": cells[7],
+                    "current_pct": cells[5],
+                    "position": cells[6],
+                    "cost": cells[7],
+                    "return_pct": cells[8],
                 })
         elif line.strip() == "":
             in_table = False
@@ -233,7 +234,7 @@ def build_holdings_decision() -> dict[str, Any]:
             "cost_raw": holding["cost"],
             "position_amount": extract_amount(holding["position"]),
             "cost_amount": extract_amount(holding["cost"]),
-            "role": holding["role"],
+            "role": holding.get("role", ""),
         }
         if base["position_amount"] == 0:
             continue  # planned but not held yet (position 0 in the portfolio table)

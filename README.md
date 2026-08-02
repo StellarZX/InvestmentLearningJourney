@@ -44,31 +44,22 @@ This part focuses on the investor's behavior. It introduces [behavioral finance]
 
 RMB (CNY) and EUR allocations are tracked separately; their amounts and ratios are never mixed.
 
-### Target Allocation (RMB, ¥2,000/month)
-
-| Fund | Code | Target |
-|---|---:|---:|
-| 华泰柏瑞沪深300ETF联接A | 460300 | 25% |
-| 南方中证500ETF联接(LOF)A | 160119 | 15% |
-| 易方达创业板ETF联接A | 110026 | 10% |
-| 富国中证红利指数增强A | 100032 | 15% |
-| 汇添富恒生指数（QDII-LOF） | 164705 | 15% |
-| 易方达恒生红利低波ETF联接A | 021457 | 20% |
-
 EUR (€50/month): S&P 500 (SXR8) 50% + NASDAQ-100 (EQQQ) 50%.
 
 ### Current Holdings
 
-| Market | Platform | Fund | Code | Target % | Current Position | Current Cost | Role |
-|---|---|---|---|---|---:|---:|---|
-| China A-share | Domestic fund platform | 华泰柏瑞沪深300ETF联接A | 460300 | 25% | ¥2,000 | ¥2,000 | China core broad-market exposure |
-| China A-share | Domestic fund platform | 南方中证500ETF联接(LOF)A | 160119 | 15% | ¥0 | ¥0 | China mid-cap complement |
-| China A-share | Domestic fund platform | 易方达创业板ETF联接A | 110026 | 10% | ¥0 | ¥0 | China growth satellite |
-| China A-share | Domestic fund platform | 富国中证红利指数增强A | 100032 | 15% | ¥0 | ¥0 | China dividend defense |
-| Hong Kong | Domestic fund platform | 汇添富恒生指数（QDII-LOF） | 164705 | 15% | ¥1,000 | ¥1,000 | Hang Seng broad-market exposure |
-| Hong Kong | Domestic fund platform | 易方达恒生红利低波ETF联接A | 021457 | 20% | ¥1,000 | ¥1,000 | Hong Kong high-dividend low-volatility allocation |
-| United States | IBKR | iShares Core S&P 500 UCITS ETF USD (Acc) | SXR8 | - | 0.6 shares | €425.918 | US large-cap equity exposure |
-| Cash | IBKR | EUR cash | EUR | - | €74.082 | €74.082 | Cash buffer |
+Current % = position ÷ total RMB positions (¥4,000); Return % = (Current Position − Current Cost) ÷ Current Cost. EUR rows are excluded from both.
+
+| Market | Platform | Fund | Code | Target % | Current % | Current Position | Current Cost | Return % |
+|---|---|---|---|---|---|---|---:|---:|---|
+| China A-share | Domestic fund platform | 华泰柏瑞沪深300ETF联接A | 460300 | 25% | 50% | ¥2,000 | ¥2,000 | 0.0% |
+| China A-share | Domestic fund platform | 南方中证500ETF联接(LOF)A | 160119 | 15% | 0% | ¥0 | ¥0 | - |
+| China A-share | Domestic fund platform | 易方达创业板ETF联接A | 110026 | 10% | 0% | ¥0 | ¥0 | - |
+| China A-share | Domestic fund platform | 富国中证红利指数增强A | 100032 | 15% | 0% | ¥0 | ¥0 | - |
+| Hong Kong | Domestic fund platform | 汇添富恒生指数（QDII-LOF） | 164705 | 15% | 25% | ¥1,000 | ¥1,000 | 0.0% |
+| Hong Kong | Domestic fund platform | 易方达恒生红利低波ETF联接A | 021457 | 20% | 25% | ¥1,000 | ¥1,000 | 0.0% |
+| United States | IBKR | iShares Core S&P 500 UCITS ETF USD (Acc) | SXR8 | - | - | 0.6 shares | €425.918 | - |
+| Cash | IBKR | EUR cash | EUR | - | - | €74.082 | €74.082 | - |
 
 Detailed DCA records live in [Records](02_DCA_Index_Funds/records/monthly_records.md).
 
