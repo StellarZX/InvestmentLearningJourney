@@ -51,7 +51,7 @@ EUR (€50/month): S&P 500 (SXR8) 50% + NASDAQ-100 (EQQQ) 50%.
 Current % = position ÷ total RMB positions (¥4,000); Return % = (Current Position − Current Cost) ÷ Current Cost. EUR rows are excluded from both.
 
 | Market | Platform | Fund | Code | Target % | Current % | Current Position | Current Cost | Return % |
-|---|---|---|---|---|---|---|---:|---:|---|
+|---|---|---|---|---|---|---|---:|---:|
 | China A-share | Domestic fund platform | 华泰柏瑞沪深300ETF联接A | 460300 | 25% | 50% | ¥2,000 | ¥2,000 | 0.0% |
 | China A-share | Domestic fund platform | 南方中证500ETF联接(LOF)A | 160119 | 15% | 0% | ¥0 | ¥0 | - |
 | China A-share | Domestic fund platform | 易方达创业板ETF联接A | 110026 | 10% | 0% | ¥0 | ¥0 | - |
