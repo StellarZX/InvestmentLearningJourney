@@ -8,7 +8,6 @@ The goal is not to chase short-term profits, but to build a systematic understan
 
 The Foundations section is a 40-lesson beginner path from basic investing ideas to a first long-term investment plan.
 
-- [Foundations Chinese Guide](01_Foundations/README.zh.md)
 ### Part I - Foundations
 
 This part explains why investing matters before introducing any products. It starts with [why people invest](01_Foundations/Part_I_Foundations/Lesson01.md), then builds the basic language of [stocks](01_Foundations/Part_I_Foundations/Lesson02.md), [stock exchanges](01_Foundations/Part_I_Foundations/Lesson03.md), [market indices](01_Foundations/Part_I_Foundations/Lesson04.md), [ETFs](01_Foundations/Part_I_Foundations/Lesson05.md), and the difference between [mutual funds and ETFs](01_Foundations/Part_I_Foundations/Lesson06.md). It ends by connecting these ideas into a simple [investment framework](01_Foundations/Part_I_Foundations/Lesson07.md).
@@ -48,7 +47,7 @@ This part focuses on the investor's behavior. It introduces [behavioral finance]
 
 ## 4. Portfolio
 
-Current holdings only; detailed DCA records live in [02_DCA_Index_Funds/records/monthly_records.md](02_DCA_Index_Funds/records/monthly_records.md).
+Current holdings only; detailed DCA records live in [Records](02_DCA_Index_Funds/records/monthly_records.md).
 
 ### Current Holdings
 
