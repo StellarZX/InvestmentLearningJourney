@@ -52,12 +52,12 @@ The monthly workflow:
 
 | Market | Platform | Fund | Code | Target % | Current % | Current Position | Current Cost | Return % |
 |---|---|---|---|---|---|---|---:|---:|
-| China A-share | Domestic fund platform | 华泰柏瑞沪深300ETF联接A | 460300 | 25% | 43.8% | ¥2,625 | ¥2,625 | 0.0% |
+| China A-share | Domestic fund platform | 华泰柏瑞沪深300ETF联接A | 460300 | 25% | 42% | ¥2,536.48 | ¥2,625 | -3.4% |
 | China A-share | Domestic fund platform | 南方中证500ETF联接(LOF)A | 160119 | 15% | 6.2% | ¥375 | ¥371 | 1.1% |
 | China A-share | Domestic fund platform | 易方达创业板ETF联接A | 110026 | 10% | 2.1% | ¥125 | ¥125 | 0.0% |
 | China A-share | Domestic fund platform | 富国中证红利指数增强A | 100032 | 15% | 3.1% | ¥188 | ¥188 | 0.0% |
-| Hong Kong | Domestic fund platform | 汇添富恒生指数（QDII-LOF） | 164705 | 15% | 19.8% | ¥1,187 | ¥1,187 | 0.0% |
-| Hong Kong | Domestic fund platform | 易方达恒生红利低波ETF联接A | 021457 | 20% | 25% | ¥1,500 | ¥1,500 | 0.0% |
+| Hong Kong | Domestic fund platform | 汇添富恒生指数（QDII-LOF） | 164705 | 15% | 20.6% | ¥1,243.61 | ¥1,187 | 4.8% |
+| Hong Kong | Domestic fund platform | 易方达恒生红利低波ETF联接A | 021457 | 20% | 26% | ¥1,572.82 | ¥1,500 | 4.9% |
 | United States | IBKR | iShares Core S&P 500 UCITS ETF USD (Acc) | SXR8 | - | - | 0.6 shares | €425.918 | - |
 | Cash | IBKR | EUR cash | EUR | - | - | €74.082 | €74.082 | - |
 
