@@ -70,12 +70,12 @@ POSITION_CLASS_CODE = {
 
 # Fallback holdings (used when the root README table cannot be parsed)
 FALLBACK_HOLDINGS: list[dict[str, str]] = [
-    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "华泰柏瑞沪深300ETF联接A", "code": "460300", "target": "25%", "current_pct": "50%", "position": "¥2,000", "cost": "¥2,000", "return_pct": "0.0%"},
-    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "南方中证500ETF联接(LOF)A", "code": "160119", "target": "15%", "current_pct": "0%", "position": "¥0", "cost": "¥0", "return_pct": "-"},
-    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "易方达创业板ETF联接A", "code": "110026", "target": "10%", "current_pct": "0%", "position": "¥0", "cost": "¥0", "return_pct": "-"},
-    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "富国中证红利指数增强A", "code": "100032", "target": "15%", "current_pct": "0%", "position": "¥0", "cost": "¥0", "return_pct": "-"},
-    {"market": "Hong Kong", "platform": "Domestic fund platform", "fund": "汇添富恒生指数（QDII-LOF）", "code": "164705", "target": "15%", "current_pct": "25%", "position": "¥1,000", "cost": "¥1,000", "return_pct": "0.0%"},
-    {"market": "Hong Kong", "platform": "Domestic fund platform", "fund": "易方达恒生红利低波ETF联接A", "code": "021457", "target": "20%", "current_pct": "25%", "position": "¥1,000", "cost": "¥1,000", "return_pct": "0.0%"},
+    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "华泰柏瑞沪深300ETF联接A", "code": "460300", "target": "25%", "current_pct": "43.8%", "position": "¥2,625", "cost": "¥2,625", "return_pct": "0.0%"},
+    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "南方中证500ETF联接(LOF)A", "code": "160119", "target": "15%", "current_pct": "6.2%", "position": "¥371", "cost": "¥371", "return_pct": "0.0%"},
+    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "易方达创业板ETF联接A", "code": "110026", "target": "10%", "current_pct": "2.1%", "position": "¥125", "cost": "¥125", "return_pct": "0.0%"},
+    {"market": "China A-share", "platform": "Domestic fund platform", "fund": "富国中证红利指数增强A", "code": "100032", "target": "15%", "current_pct": "3.1%", "position": "¥188", "cost": "¥188", "return_pct": "0.0%"},
+    {"market": "Hong Kong", "platform": "Domestic fund platform", "fund": "汇添富恒生指数（QDII-LOF）", "code": "164705", "target": "15%", "current_pct": "19.8%", "position": "¥1,187", "cost": "¥1,187", "return_pct": "0.0%"},
+    {"market": "Hong Kong", "platform": "Domestic fund platform", "fund": "易方达恒生红利低波ETF联接A", "code": "021457", "target": "20%", "current_pct": "25%", "position": "¥1,500", "cost": "¥1,500", "return_pct": "0.0%"},
     {"market": "United States", "platform": "IBKR", "fund": "iShares Core S&P 500 UCITS ETF USD (Acc)", "code": "SXR8", "target": "-", "current_pct": "-", "position": "0.6 shares", "cost": "€425.918", "return_pct": "-"},
     {"market": "Cash", "platform": "IBKR", "fund": "EUR cash", "code": "EUR", "target": "-", "current_pct": "-", "position": "€74.082", "cost": "€74.082", "return_pct": "-"},
 ]
@@ -85,30 +85,35 @@ def parse_summary_holdings() -> list[dict[str, str]]:
     if not SUMMARY_FILE.exists():
         return FALLBACK_HOLDINGS
     lines = SUMMARY_FILE.read_text(encoding="utf-8").splitlines()
-    in_table = False
+    start = next((i for i, line in enumerate(lines) if re.match(r"^#{2,3}\s+Current Holdings", line)), None)
+    if start is None:
+        return FALLBACK_HOLDINGS
+    table_start = next(
+        (i for i in range(start + 1, len(lines)) if lines[i].startswith("|") and "Market" in lines[i]),
+        None,
+    )
+    if table_start is None:
+        return FALLBACK_HOLDINGS
     rows: list[dict[str, str]] = []
-    for line in lines:
-        if re.match(r"^#{2,3}\s+Current Holdings", line):
-            in_table = True
+    for i in range(table_start + 1, len(lines)):
+        line = lines[i]
+        if not line.startswith("|"):
+            break
+        if "---" in line:
             continue
-        if not in_table:
-            continue
-        if line.startswith("|") and "---" not in line:
-            cells = [c.strip() for c in line.strip().strip("|").split("|")]
-            if len(cells) >= 9 and cells[3]:
-                rows.append({
-                    "market": cells[0],
-                    "platform": cells[1],
-                    "fund": cells[2],
-                    "code": cells[3],
-                    "target": cells[4],
-                    "current_pct": cells[5],
-                    "position": cells[6],
-                    "cost": cells[7],
-                    "return_pct": cells[8],
-                })
-        elif line.strip() == "":
-            in_table = False
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) >= 9 and cells[3]:
+            rows.append({
+                "market": cells[0],
+                "platform": cells[1],
+                "fund": cells[2],
+                "code": cells[3],
+                "target": cells[4],
+                "current_pct": cells[5],
+                "position": cells[6],
+                "cost": cells[7],
+                "return_pct": cells[8],
+            })
     return rows or FALLBACK_HOLDINGS
 
 
