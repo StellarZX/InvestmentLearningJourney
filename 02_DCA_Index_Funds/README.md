@@ -60,7 +60,7 @@ Then open `http://127.0.0.1:8050` to read the allocation. To print the allocatio
 
 The fund universe and base weights are defined in `02_DCA_Index_Funds/dca.py` (FUNDS list) and can be edited to match your own plan. Verify fund availability and purchase limits in your apps before buying.
 
-Monthly execution records are kept in `records/monthly_records.md`; current holdings live in the repository root README (single source of truth).
+Monthly execution records are kept in `data/dca_records.csv` (managed via the `/portfolio.html` page); current holdings live in the repository root README (single source of truth).
 
 ## Emergency Position Review
 

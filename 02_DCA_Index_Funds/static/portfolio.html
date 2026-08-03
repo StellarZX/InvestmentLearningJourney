@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="portfolioTitle">Portfolio</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="portfolio-page">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">ILJ</div>
+      <div>
+        <h1 data-i18n="portfolioTitle">Portfolio</h1>
+        <p class="muted" data-i18n="portfolioSubtitle"></p>
+      </div>
+    </div>
+    <nav class="page-nav">
+      <a href="/" class="nav-link" data-i18n="navIndices">Index Dashboard</a>
+      <a href="/dca.html" class="nav-link" data-i18n="navDca">DCA Decision</a>
+      <a href="/portfolio.html" class="nav-link active" data-i18n="navPortfolio">Portfolio</a>
+      <a href="/holdings.html" class="nav-link" data-i18n="navHoldings">Emergency Review</a>
+    </nav>
+    <div class="sidebar-note">
+      <p class="muted" data-i18n="portfolioSourceNote"></p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section class="toolbar">
+      <div>
+        <p class="eyebrow" data-i18n="portfolioEyebrow">Holdings & records</p>
+        <h2 id="portfolioTitle"></h2>
+        <p id="portfolioCaption" class="muted"></p>
+      </div>
+      <div class="toolbar-actions">
+        <button id="languageButton" type="button">中文</button>
+        <button id="addRecordButton" type="button" data-i18n="addRecord">Add Record</button>
+      </div>
+    </section>
+
+    <section id="recordForm" class="panel hidden">
+      <div class="panel-header"><h3 data-i18n="addRecordTitle">Add DCA Record</h3></div>
+      <div class="form-grid">
+        <label><span data-i18n="fFund">Fund</span>
+          <select id="formFund"></select>
+        </label>
+        <label><span data-i18n="fDate">Date</span>
+          <input type="date" id="formDate">
+        </label>
+        <label><span data-i18n="fPosition">Position</span>
+          <input type="number" id="formPosition" step="0.01" min="0" placeholder="0.00">
+        </label>
+        <label><span data-i18n="fCost">Cost</span>
+          <input type="number" id="formCost" step="0.01" min="0" placeholder="0.00">
+        </label>
+        <label class="form-note"><span data-i18n="fNote">Note</span>
+          <input type="text" id="formNote">
+        </label>
+      </div>
+      <div class="form-actions">
+        <span id="formError" class="muted"></span>
+        <button id="formCancel" type="button" data-i18n="formCancel">Cancel</button>
+        <button id="formSave" type="button" data-i18n="formSave">Save</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h3 data-i18n="currentHoldings">Current Holdings</h3>
+      </div>
+      <div id="portfolioError" class="empty-state hidden"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="hFund2">Fund</th>
+              <th data-i18n="dcaCode">Code</th>
+              <th data-i18n="dcaQuota">Target</th>
+              <th data-i18n="curPct">Current %</th>
+              <th data-i18n="curPosition">Position</th>
+              <th data-i18n="curCost">Cost</th>
+              <th data-i18n="curReturn">Return %</th>
+            </tr>
+          </thead>
+          <tbody id="holdingsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h3 data-i18n="recordHistory">Record History</h3>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="fDate">Date</th>
+              <th data-i18n="hFund2">Fund</th>
+              <th data-i18n="dcaCode">Code</th>
+              <th data-i18n="curPosition">Position</th>
+              <th data-i18n="curCost">Cost</th>
+              <th data-i18n="fNote">Note</th>
+            </tr>
+          </thead>
+          <tbody id="recordsBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/portfolio.js"></script>
+</body>
+</html>

@@ -66,6 +66,7 @@ const translations = {
     assessmentAria: "Composite assessment score chart",
     navIndices: "Index Dashboard",
     navDca: "DCA Decision",
+    navPortfolio: "Portfolio",
     navHoldings: "Emergency Review",
   },
   zh: {
@@ -124,6 +125,7 @@ const translations = {
     assessmentAria: "综合评估评分走势图",
     navIndices: "指数看板",
     navDca: "定投决策",
+    navPortfolio: "持仓记录",
     navHoldings: "持仓应急",
   },
 };

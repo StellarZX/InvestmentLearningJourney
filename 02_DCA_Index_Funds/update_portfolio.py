@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import re
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 README = ROOT / "README.md"
@@ -37,23 +38,19 @@ def fmt_return(value: float | None) -> str:
     return f"{value:.1f}%"
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Recompute Current % / Return % in the root README holdings table")
-    parser.add_argument("--path", type=Path, default=README, help="Target README path (for testing)")
-    args = parser.parse_args()
-    lines = args.path.read_text(encoding="utf-8").splitlines()
+def recompute_readme(path: Path = README) -> dict[str, Any]:
+    """Recompute Current % / Return % columns in the README holdings table. Returns a summary."""
+    lines = path.read_text(encoding="utf-8").splitlines()
     start = next((i for i, line in enumerate(lines) if re.match(r"^#{2,3}\s+Current Holdings", line)), None)
     if start is None:
-        print("Current Holdings heading not found.")
-        return
+        return {"error": "Current Holdings heading not found"}
 
     table_start = next(
         (i for i in range(start + 1, len(lines)) if lines[i].startswith("|") and "Market" in lines[i]),
         None,
     )
     if table_start is None:
-        print("Holdings table not found.")
-        return
+        return {"error": "Holdings table not found"}
 
     rows: list[tuple[int, list[str]]] = []
     for i in range(table_start + 1, len(lines)):
@@ -94,7 +91,19 @@ def main() -> None:
             lines[i] = re.sub(r"\(¥[\d,]+\)", f"(¥{rmb_total:,.0f})", lines[i])
             break
 
-    args.path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return {"total": rmb_total, "changed": changed}
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Recompute Current % / Return % in the root README holdings table")
+    parser.add_argument("--path", type=Path, default=README, help="Target README path (for testing)")
+    args = parser.parse_args()
+    result = recompute_readme(args.path)
+    if "error" in result:
+        print(result["error"])
+        return
+    rmb_total, changed = result["total"], result["changed"]
     print(f"RMB total position: ¥{rmb_total:,.0f}")
     if changed:
         for code, oc, nc, or_, nr in changed:

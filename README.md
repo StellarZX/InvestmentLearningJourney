@@ -45,7 +45,7 @@ This part focuses on the investor's behavior. It introduces [behavioral finance]
 The monthly workflow:
 1. Refresh data — run .\\.venv\\Scripts\\python.exe .\\02_DCA_Index_Funds\\script.py --fetch-only (market data updates automatically)
 2. Buy — open the DCA decision page, read this month's allocation, place the orders manually
-3. Record — append a row to the Monthly Records table in [monthly_records.md](D:/CodeX/InvestmentLearningJourney/02_DCA_Index_Funds/records/monthly_records.md); update the "Current Position / Current Cost" columns for the bought funds in the Current Holdings table of the root [README.md](D:/CodeX/InvestmentLearningJourney/README.md)
+3. Record — add a DCA record on the portfolio page (`/portfolio.html`); it saves to `02_DCA_Index_Funds/data/dca_records.csv` and updates the Current Holdings table in the root [README.md](D:/CodeX/InvestmentLearningJourney/README.md) automatically
 4. Recalculate ratios — run the new .\\.venv\\Scripts\\python.exe .\\02_DCA_Index_Funds\\update_portfolio.py, which automatically recomputes the Current % and Return % columns
 
 ### Current Holdings
@@ -61,7 +61,7 @@ The monthly workflow:
 | United States | IBKR | iShares Core S&P 500 UCITS ETF USD (Acc) | SXR8 | - | - | 0.6 shares | €425.918 | - |
 | Cash | IBKR | EUR cash | EUR | - | - | €74.082 | €74.082 | - |
 
-Detailed DCA records live in [Records](02_DCA_Index_Funds/records/monthly_records.md).
+DCA records are managed on the portfolio page (`/portfolio.html`) and stored in [dca_records.csv](02_DCA_Index_Funds/data/dca_records.csv).
 
 ## 4. Resources
 
