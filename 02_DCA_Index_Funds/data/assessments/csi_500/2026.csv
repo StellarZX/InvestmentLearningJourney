@@ -138,3 +138,7 @@ date,close,price_percentile,drawdown_pct,price_score,drawdown_score,trend_score,
 2026-07-29,7524.508,82.4074,-16.6848,17.5926,55.6161,50.0,13.7566,26.7118,"Composite: 45% valuation, 25% price percentile, 20% drawdown, 10% trend",valuation_supported
 2026-07-30,7309.575,78.836,-19.0647,21.164,63.549,50.0,16.4903,30.4214,"Composite: 45% valuation, 25% price percentile, 20% drawdown, 10% trend",valuation_supported
 2026-07-31,7493.985,82.1429,-17.0228,17.8571,56.7427,50.0,14.9471,27.539,"Composite: 45% valuation, 25% price percentile, 20% drawdown, 10% trend",valuation_supported
+2026-08-03,7414.523,81.0847,-17.9026,18.9153,59.6755,50.0,16.1376,28.9258,"Composite: 45% valuation, 25% price percentile, 20% drawdown, 10% trend",valuation_supported
+2026-08-04,7607.487,83.2011,-15.7661,16.7989,52.5535,50.0,13.3598,25.7223,"Composite: 45% valuation, 25% price percentile, 20% drawdown, 10% trend",valuation_supported
+2026-08-05,7809.207,84.7884,-13.5325,15.2116,45.1084,50.0,10.0529,22.3484,"Composite: 45% valuation, 25% price percentile, 20% drawdown, 10% trend",valuation_supported
+2026-08-06,7829.362,84.9206,-13.3093,15.0794,44.3645,50.0,9.7443,22.0277,"Composite: 45% valuation, 25% price percentile, 20% drawdown, 10% trend",valuation_supported

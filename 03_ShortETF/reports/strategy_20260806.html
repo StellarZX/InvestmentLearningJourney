@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>ETF 动量策略日报</title><style>
+:root{--bg:#f5f6f8;--card:#fff;--ink:#1a2233;--sub:#5b6472;--line:#e4e7ee;--up:#e03131;--down:#0ca678;--accent:#2f5af5}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.65;padding-bottom:40px}
+.wrap{max-width:980px;margin:0 auto;padding:0 20px}
+header{background:linear-gradient(135deg,#1a2233,#2f5af5);color:#fff;padding:36px 0 28px;margin-bottom:22px}
+header h1{font-size:22px;font-weight:700}
+header .sub{opacity:.85;font-size:13px;margin-top:6px}
+.card{background:var(--card);border-radius:14px;padding:20px 22px;margin-bottom:18px;border:1px solid var(--line)}
+.card h2{font-size:17px;margin-bottom:10px}
+.kpi{display:inline-block;background:#fbfcfe;border:1px solid var(--line);border-radius:10px;padding:12px 18px;margin-right:12px}
+.kpi .k{font-size:12px;color:var(--sub)} .kpi .v{font-size:20px;font-weight:700;margin-top:2px}
+.up{color:var(--up)} .down{color:var(--down)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{background:#f3f5f9;color:var(--sub);text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+td{padding:9px 10px;border-bottom:1px solid #eef0f5}
+.score-pill{display:inline-block;min-width:36px;text-align:center;border-radius:8px;padding:2px 6px;font-weight:700;font-size:12.5px}
+.advice{border-left:4px solid var(--accent);background:#eef2ff;border-radius:0 10px 10px 0;padding:13px 16px;font-size:13.5px}
+.advice.warn{border-color:#f59f00;background:#fff9e6}
+.note{font-size:12px;color:var(--sub);margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+footer{text-align:center;color:var(--sub);font-size:12px;margin-top:20px}
+</style></head><body>
+<header><div class="wrap">
+<h1>ETF 动量策略日报</h1>
+<div class="sub">生成时间 2026-08-06 23:51 · 池内 94 只 · 双多可买 49 只 · 持仓 TOP3</div>
+</div></header>
+<div class="wrap">
+<div class="card"><h2>今日操作策略（每10个交易日调仓）</h2>
+
+<table><thead><tr><th>持仓标的</th><th>评分</th><th>20日动量</th><th>MACD</th><th>场外基金</th><th>C类代码</th><th>建议仓位</th></tr></thead>
+<tbody><tr>
+          <td><b>房地产ETF银华</b><br><span style="color:#868e96;font-size:12px">sz159768</span></td>
+          <td><span class="score-pill" style="background:#fff0f0;color:#c92a2a">75</span></td>
+          <td class="up">+8.8%</td>
+          <td>多头</td>
+          <td>南方中证全指房地产ETF联接</td>
+          <td>004643</td>
+          <td>33%</td>
+        </tr><tr>
+          <td><b>食品饮料ETF银华</b><br><span style="color:#868e96;font-size:12px">sz159862</span></td>
+          <td><span class="score-pill" style="background:#fff0f0;color:#c92a2a">75</span></td>
+          <td class="up">+8.2%</td>
+          <td>多头</td>
+          <td>华夏中证细分食品饮料产业主题ETF联接</td>
+          <td>013126</td>
+          <td>33%</td>
+        </tr><tr>
+          <td><b>消费ETF华夏</b><br><span style="color:#868e96;font-size:12px">sh510630</span></td>
+          <td><span class="score-pill" style="background:#fff0f0;color:#c92a2a">75</span></td>
+          <td class="up">+7.6%</td>
+          <td>多头</td>
+          <td>汇添富中证主要消费ETF联接</td>
+          <td>000249</td>
+          <td>33%</td>
+        </tr></tbody></table>
+<div class="note">规则：20日动量&gt;0 且 MACD 多头才持仓；每10个交易日收盘后重算；MACD死叉或浮亏-5~-8%立即离场；不足3只按实际持有，0只空仓。</div>
+</div>
+<div class="card"><h2>风控纪律</h2>
+<div class="advice">单标的 ≤ 总资金 20% · 持仓 ≤ 3 只（控制相关性）· 场外C类份额执行（成本0.25%/年）· 信号转空无条件离场，空仓等待也是策略</div>
+</div>
+<div class="card" style="border-color:#ffc9c9"><div style="font-size:13px;color:#a61e1e"><b>免责声明</b>：本报告基于公开数据和量化分析，仅供参考，不构成投资建议。市场有风险，投资需谨慎。过往表现不预示未来收益。</div></div>
+<footer>数据来源：腾讯自选股 · 本地库 D:\CodeX\InvestmentLearningJourney\03_ShortETF\etf_strategy.db · 本页面为量化研究工具</footer>
+</div></body></html>

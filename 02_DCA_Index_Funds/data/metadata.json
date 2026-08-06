@@ -9,10 +9,10 @@
       "source": "Yahoo Finance chart API",
       "valuation_symbol": "沪深300",
       "sina_symbol": null,
-      "rows": 1299,
+      "rows": 1300,
       "first_date": "2021-03-11",
-      "last_date": "2026-07-31",
-      "refreshed_at": "2026-08-03T11:28:25",
+      "last_date": "2026-08-06",
+      "refreshed_at": "2026-08-07T00:56:14",
       "years": [
         2021,
         2022,
@@ -21,19 +21,17 @@
         2025,
         2026
       ],
-      "valuation_rows": 5179,
+      "valuation_rows": 5183,
       "valuation_metrics": [
         "earnings_yield",
         "pe_ttm",
         "pb"
       ],
-      "assessment_rows": 1299,
-      "last_update_status": "cached_checked",
-      "new_rows": 0,
-      "valuation_new_rows": 0,
-      "last_checked_on": "2026-08-03",
-      "valuation_first_date": "2005-04-08",
-      "valuation_last_date": "2026-07-31"
+      "assessment_rows": 1300,
+      "last_update_status": "appended",
+      "new_rows": 1,
+      "valuation_new_rows": 4,
+      "last_checked_on": "2026-08-07"
     },
     "csi_500": {
       "slug": "csi_500",
@@ -44,10 +42,10 @@
       "source": "Yahoo Finance chart API",
       "valuation_symbol": "中证500",
       "sina_symbol": "sh000905",
-      "rows": 2569,
+      "rows": 2573,
       "first_date": "2016-01-04",
-      "last_date": "2026-07-31",
-      "refreshed_at": "2026-08-03T11:28:25",
+      "last_date": "2026-08-06",
+      "refreshed_at": "2026-08-07T00:56:47",
       "years": [
         2016,
         2017,
@@ -61,19 +59,17 @@
         2025,
         2026
       ],
-      "valuation_rows": 4750,
+      "valuation_rows": 4754,
       "valuation_metrics": [
         "earnings_yield",
         "pe_ttm",
         "pb"
       ],
-      "assessment_rows": 2569,
-      "last_update_status": "cached_checked",
-      "new_rows": 0,
-      "valuation_new_rows": 0,
-      "last_checked_on": "2026-08-03",
-      "valuation_first_date": "2007-01-15",
-      "valuation_last_date": "2026-07-31"
+      "assessment_rows": 2573,
+      "last_update_status": "appended",
+      "new_rows": 4,
+      "valuation_new_rows": 4,
+      "last_checked_on": "2026-08-07"
     },
     "chi_next": {
       "slug": "chi_next",
@@ -84,10 +80,10 @@
       "source": "Yahoo Finance chart API",
       "valuation_symbol": null,
       "sina_symbol": "sz399006",
-      "rows": 3926,
+      "rows": 3930,
       "first_date": "2010-06-01",
-      "last_date": "2026-07-31",
-      "refreshed_at": "2026-08-03T11:28:25",
+      "last_date": "2026-08-06",
+      "refreshed_at": "2026-08-07T00:56:49",
       "years": [
         2010,
         2011,
@@ -109,11 +105,11 @@
       ],
       "valuation_rows": 0,
       "valuation_metrics": [],
-      "assessment_rows": 3926,
-      "last_update_status": "cached_checked",
-      "new_rows": 0,
+      "assessment_rows": 3930,
+      "last_update_status": "appended",
+      "new_rows": 4,
       "valuation_new_rows": 0,
-      "last_checked_on": "2026-08-03"
+      "last_checked_on": "2026-08-07"
     },
     "csi_dividend": {
       "slug": "csi_dividend",
@@ -124,10 +120,10 @@
       "source": "ETF proxy (515080) via Yahoo Finance chart API",
       "valuation_symbol": null,
       "sina_symbol": null,
-      "rows": 1603,
+      "rows": 1605,
       "first_date": "2019-11-28",
-      "last_date": "2026-08-03",
-      "refreshed_at": "2026-08-03T11:28:07",
+      "last_date": "2026-08-05",
+      "refreshed_at": "2026-08-07T00:56:49",
       "years": [
         2019,
         2020,
@@ -140,11 +136,11 @@
       ],
       "valuation_rows": 0,
       "valuation_metrics": [],
-      "assessment_rows": 1603,
-      "last_update_status": "cached_today",
-      "new_rows": 0,
+      "assessment_rows": 1605,
+      "last_update_status": "appended",
+      "new_rows": 2,
       "valuation_new_rows": 0,
-      "last_checked_on": "2026-08-03"
+      "last_checked_on": "2026-08-07"
     },
     "hang_seng": {
       "slug": "hang_seng",
@@ -155,10 +151,10 @@
       "source": "Yahoo Finance chart API",
       "valuation_symbol": null,
       "sina_symbol": null,
-      "rows": 2600,
+      "rows": 2603,
       "first_date": "2016-01-04",
-      "last_date": "2026-07-31",
-      "refreshed_at": "2026-08-03T11:28:07",
+      "last_date": "2026-08-05",
+      "refreshed_at": "2026-08-07T00:56:50",
       "years": [
         2016,
         2017,
@@ -174,11 +170,11 @@
       ],
       "valuation_rows": 0,
       "valuation_metrics": [],
-      "assessment_rows": 2600,
-      "last_update_status": "cached_checked",
-      "new_rows": 0,
+      "assessment_rows": 2603,
+      "last_update_status": "appended",
+      "new_rows": 3,
       "valuation_new_rows": 0,
-      "last_checked_on": "2026-08-03"
+      "last_checked_on": "2026-08-07"
     },
     "hsi_dividend_lowvol": {
       "slug": "hsi_dividend_lowvol",
@@ -189,10 +185,10 @@
       "source": "ETF proxy (159545) via Yahoo Finance chart API",
       "valuation_symbol": null,
       "sina_symbol": null,
-      "rows": 555,
+      "rows": 558,
       "first_date": "2024-04-15",
-      "last_date": "2026-08-03",
-      "refreshed_at": "2026-08-03T11:28:07",
+      "last_date": "2026-08-06",
+      "refreshed_at": "2026-08-07T00:56:50",
       "years": [
         2024,
         2025,
@@ -200,11 +196,11 @@
       ],
       "valuation_rows": 0,
       "valuation_metrics": [],
-      "assessment_rows": 555,
-      "last_update_status": "cached_today",
-      "new_rows": 0,
+      "assessment_rows": 558,
+      "last_update_status": "appended",
+      "new_rows": 3,
       "valuation_new_rows": 0,
-      "last_checked_on": "2026-08-03"
+      "last_checked_on": "2026-08-07"
     },
     "sp500": {
       "slug": "sp500",
@@ -215,10 +211,10 @@
       "source": "Yahoo Finance chart API",
       "valuation_symbol": null,
       "sina_symbol": null,
-      "rows": 2659,
+      "rows": 2663,
       "first_date": "2016-01-04",
-      "last_date": "2026-07-31",
-      "refreshed_at": "2026-08-03T11:28:08",
+      "last_date": "2026-08-06",
+      "refreshed_at": "2026-08-07T00:56:50",
       "years": [
         2016,
         2017,
@@ -234,11 +230,11 @@
       ],
       "valuation_rows": 0,
       "valuation_metrics": [],
-      "assessment_rows": 2659,
-      "last_update_status": "cached_checked",
-      "new_rows": 0,
+      "assessment_rows": 2663,
+      "last_update_status": "appended",
+      "new_rows": 4,
       "valuation_new_rows": 0,
-      "last_checked_on": "2026-08-03"
+      "last_checked_on": "2026-08-07"
     },
     "nasdaq_100": {
       "slug": "nasdaq_100",
@@ -249,10 +245,10 @@
       "source": "Yahoo Finance chart API",
       "valuation_symbol": null,
       "sina_symbol": null,
-      "rows": 2659,
+      "rows": 2663,
       "first_date": "2016-01-04",
-      "last_date": "2026-07-31",
-      "refreshed_at": "2026-08-03T11:28:08",
+      "last_date": "2026-08-06",
+      "refreshed_at": "2026-08-07T00:56:51",
       "years": [
         2016,
         2017,
@@ -268,11 +264,11 @@
       ],
       "valuation_rows": 0,
       "valuation_metrics": [],
-      "assessment_rows": 2659,
-      "last_update_status": "cached_checked",
-      "new_rows": 0,
+      "assessment_rows": 2663,
+      "last_update_status": "appended",
+      "new_rows": 4,
       "valuation_new_rows": 0,
-      "last_checked_on": "2026-08-03"
+      "last_checked_on": "2026-08-07"
     }
   }
 }
