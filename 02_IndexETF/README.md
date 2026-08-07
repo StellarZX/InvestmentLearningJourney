@@ -57,28 +57,17 @@
 
 基金池与基础权重定义在 `02_IndexETF/lib/dca.py`（FUNDS / US_FUNDS），可按自己的计划修改。下单前请在各平台确认基金可买与限购情况。
 
-每月执行记录保存在本地数据库 `data/market.db`（通过 `/portfolio.html` 页面管理）；当前持仓以根 README 为准（唯一事实来源）。
+定投记录手动维护在根 README 的当前持仓表中（唯一事实来源）；行情与估值数据存放在本地数据库 `data/market.db`。
 
 ## 目录结构
 
 ```text
 02_IndexETF/
 ├── script.py            # 主脚本：抓取数据并启动看板
-├── update_portfolio.py  # 重算根 README 的当前占比与收益率
-├── lib/                 # 核心模块（db.py / dca.py / holdings.py / portfolio.py）
+├── lib/                 # 核心模块（db.py / dca.py）
 ├── static/              # 网页前端
 └── data/                # 本地数据库 market.db
 ```
-
-## 持仓应急评估
-
-看板还提供应急评估页（`/holdings.html`，数据来自 `/api/holdings`）。它读取根 `README.md` 中的实际持仓（唯一事实来源），为每个跟踪指数附上市场指标（相对 200 日均线的趋势、近 6 个月动量、回撤、估值/价格分位），并按透明的卖出优先级打分排序：
-
-- 40% 趋势（相对 200 日均线的距离）
-- 30% 动量（近 6 个月收益）
-- 30% 估值/价格分位
-
-每只持仓会得到一档评级（优先卖出 / 可考虑卖出 / 继续持有），并附赎回到账速度说明（A股基金 T+1~T+3，IBKR T+2 交割，QDII T+7~T+10）。这是决策支持框架，不构成投资建议。
 
 ## 运行
 

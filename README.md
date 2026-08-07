@@ -27,7 +27,7 @@
 - 恒生指数：配置香港上市的中国优质企业（腾讯、阿里、小米、网易等），很多优秀公司不在 A 股上市。
 - 恒生红利低波：增强港股价值属性、降低波动，也是未来长期现金流的重要来源。
 
-指数**不会更换**：以后收入提高只增加金额，比例永久不变。
+指数**不会更换**：以后收入提高只增加金额。
 
 ### 美股指数（每月 ¥1,000）
 
@@ -36,7 +36,7 @@
 | 标普500 | ¥400 | 每日 ¥10 定投：摩根标普500 A（019305）+ 摩根标普500 C（017641） |
 | 纳斯达克100 | ¥600 | 每日 ¥10 定投：摩根纳斯达克100 A（019172）+ 招商纳斯达克100 A（019547）+ 华安纳斯达克100 A（040046） |
 
-标普500代表美国整体经济，纳斯达克代表美国科技创新，覆盖苹果、微软、英伟达、亚马逊、Google、Meta，长期足够。美股通过国内平台每日定投执行，不再使用 IBKR。
+标普500代表美国整体经济，纳斯达克代表美国科技创新，覆盖苹果、微软、英伟达、亚马逊、Google、Meta，长期足够。
 
 ### 估值调整机制
 
@@ -50,12 +50,12 @@
 
 ## 1. 基础课程
 
-40 课投资基础课程，分 6 个部分：基础概念（01–07）、金融市场（08–14）、核心投资原则（15–21）、ETF 投资（22–28）、经济理解（29–34）、投资心理（35–40），每课配有中文导读。课程在 [01_Foundations](01_Foundations/) 目录内按需阅读，不在首页展示。
+40 课投资基础课程，分 6 个部分：基础概念（01–07）、金融市场（08–14）、核心投资原则（15–21）、ETF 投资（22–28）、经济理解（29–34）、投资心理（35–40），每课配有中文导读。课程在 [01_Foundations](01_Foundations/) 目录内按需阅读。
 
 ## 2. 指数定投
 
-- [定投指数基金看板](02_IndexETF/README.md)：8 个相关指数的行情数据、月度定投分配（A股 ¥1,500 + 美股 ¥1,000）与应急持仓评估。
-- 页面：`/` 指数看板、`/dca.html` 定投决策、`/portfolio.html` 持仓记录、`/holdings.html` 持仓应急。
+- [定投指数基金看板](02_IndexETF/README.md)：8 个相关指数的行情数据与月度定投分配（A股 ¥1,500 + 美股 ¥1,000）。
+- 页面：`/` 指数看板、`/dca.html` 定投决策。
 - 行情、估值与定投记录统一存放在本地数据库 `02_IndexETF/data/market.db`。
 
 使用：
@@ -65,7 +65,6 @@
 .\.venv\Scripts\python.exe .\02_IndexETF\script.py --fetch-only # 只更新数据，不启动
 .\.venv\Scripts\python.exe .\02_IndexETF\script.py --refresh    # 强制全量刷新
 .\.venv\Scripts\python.exe .\02_IndexETF\script.py --dca-check  # 控制台打印当月定投分配
-.\.venv\Scripts\python.exe .\02_IndexETF\update_portfolio.py    # 重算持仓占比与收益率
 ```
 
 启动后打开 `http://127.0.0.1:8050`。每月定投流程见下方「组合持仓」；更详细的说明见 [02_IndexETF/README.md](02_IndexETF/README.md)。
@@ -96,42 +95,32 @@ ETF 动量轮动策略：拉取场内 ETF 日 K，计算动量与 MACD 信号，
 每月流程：
 1. 更新数据 — 运行 `.\.venv\Scripts\python.exe .\02_IndexETF\script.py --fetch-only`（行情自动增量更新）
 2. 买入 — 打开定投决策页查看当月分配，在 App 中手动下单
-3. 记录 — 在持仓记录页（`/portfolio.html`）添加定投记录；保存到本地数据库并自动更新根 [README.md](D:/CodeX/InvestmentLearningJourney/README.md) 的当前持仓表
-4. 重算比例 — 运行 `.\.venv\Scripts\python.exe .\02_IndexETF\update_portfolio.py`，自动重算当前占比与收益率
+3. 记录 — 手动更新根 [README.md](D:/CodeX/InvestmentLearningJourney/README.md) 当前持仓表中的持仓金额与累计成本
 
 ### 当前持仓
 
-<table>
-  <thead>
-    <tr>
-      <th>类型</th><th>市场</th><th>基金</th><th>代码</th><th>目标占比</th><th>当前占比</th><th>当前持仓</th><th>累计成本</th><th>收益率</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td rowspan="8">指数</td><td>沪深</td><td>华泰柏瑞沪深300</td><td>460300</td><td>25%</td><td>42%</td><td>¥2,536.48</td><td>¥2,625</td><td>-3.4%</td></tr>
-    <tr><td>沪深</td><td>南方中证500</td><td>160119</td><td>15%</td><td>6.2%</td><td>¥375</td><td>¥371</td><td>1.1%</td></tr>
-    <tr><td>沪深</td><td>易方达创业板</td><td>110026</td><td>10%</td><td>2.1%</td><td>¥125</td><td>¥125</td><td>0.0%</td></tr>
-    <tr><td>沪深</td><td>富国中证红利指数增强</td><td>100032</td><td>15%</td><td>3.1%</td><td>¥188</td><td>¥188</td><td>0.0%</td></tr>
-    <tr><td>港股</td><td>汇添富恒生指数</td><td>164705</td><td>15%</td><td>20.6%</td><td>¥1,243.61</td><td>¥1,187</td><td>4.8%</td></tr>
-    <tr><td>港股</td><td>易方达恒生红利低波</td><td>021457</td><td>20%</td><td>26%</td><td>¥1,572.82</td><td>¥1,500</td><td>4.9%</td></tr>
-    <tr><td>美股</td><td>标普500</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr><td>美股</td><td>纳斯达克100</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr class="subtotal"><td colspan="2">指数 合计</td><td>-</td><td>-</td><td>100%</td><td>100%</td><td>¥6,040.91</td><td>¥5,996</td><td>0.7%</td></tr>
-    <tr><td rowspan="3">量化</td><td>沪深</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr><td>沪深</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr><td>沪深</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr class="subtotal"><td colspan="2">量化 合计</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr><td rowspan="3">行业</td><td>沪深</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr><td>沪深</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr><td>沪深</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr class="subtotal"><td colspan="2">行业 合计</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr><td rowspan="1">其他</td><td>美股</td><td>安硕标普500</td><td>SXR8</td><td>-</td><td>-</td><td>0.6 份</td><td>€500</td><td>-</td></tr>
-    <tr class="subtotal"><td colspan="2">其他 合计</td><td>-</td><td>-</td><td>-</td><td>-</td><td>0.6 份</td><td>€500</td><td>-</td></tr>
-    <tr class="total"><td colspan="2">总计</td><td>-</td><td>-</td><td>-</td><td>-</td><td>¥6,040.91 + 0.6 份</td><td>¥5,996 + €500</td><td>-</td></tr>
-  </tbody>
-</table>
-
-定投记录在持仓记录页（`/portfolio.html`）管理，存放于本地数据库 `02_IndexETF/data/market.db`。
+| 类型 | 市场 | 基金 | 代码 | 当前持仓 | 累计成本 | 收益率 |
+|---|---|---|---|---|---|---|
+| 指数 | 沪深 | 华泰柏瑞沪深300 | 460300 | ¥2,536.48 | ¥2,625 | -3.4% |
+| 指数 | 沪深 | 南方中证500 | 160119 | ¥375 | ¥371 | 1.1% |
+| 指数 | 沪深 | 易方达创业板 | 110026 | ¥125 | ¥125 | 0.0% |
+| 指数 | 沪深 | 富国中证红利指数增强 | 100032 | ¥188 | ¥188 | 0.0% |
+| 指数 | 港股 | 汇添富恒生指数 | 164705 | ¥1,243.61 | ¥1,187 | 4.8% |
+| 指数 | 港股 | 易方达恒生红利低波 | 021457 | ¥1,572.82 | ¥1,500 | 4.9% |
+| 指数 | 美股 | 标普500 | - | - | - | - |
+| 指数 | 美股 | 纳斯达克100 | - | - | - | - |
+| <span style="color:#e8590c;font-weight:700">指数 合计</span> | - | - | - | **¥6,040.91** | **¥5,996** | **0.7%** |
+| 量化 | 沪深 | - | - | - | - | - |
+| 量化 | 沪深 | - | - | - | - | - |
+| 量化 | 沪深 | - | - | - | - | - |
+| <span style="color:#e8590c;font-weight:700">量化 合计</span> | - | - | - | **-** | **-** | **-** |
+| 行业 | 沪深 | - | - | - | - | - |
+| 行业 | 沪深 | - | - | - | - | - |
+| 行业 | 沪深 | - | - | - | - | - |
+| <span style="color:#e8590c;font-weight:700">行业 合计</span> | - | - | - | **-** | **-** | **-** |
+| 其他 | 美股 | 安硕标普500 | SXR8 | €500 | €500 | - |
+| <span style="color:#e8590c;font-weight:700">其他 合计</span> | - | - | - | **€500** | **€500** | **-** |
+| <span style="color:#7048e8;font-weight:700">总计</span> | - | - | - | **¥6,040.91 + €500** | **¥5,996 + €500** | - |
 
 ## 6. 资料
 

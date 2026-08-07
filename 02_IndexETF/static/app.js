@@ -64,8 +64,6 @@ const translations = {
     assessmentAria: "综合评估评分走势图",
     navIndices: "指数看板",
     navDca: "定投决策",
-    navPortfolio: "持仓记录",
-    navHoldings: "持仓应急",
   },
 };
 

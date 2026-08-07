@@ -1,0 +1,5 @@
+# 02_IndexETF 与 03_ShortETF 共用依赖
+pandas
+numpy
+curl_cffi
+akshare

@@ -13,8 +13,6 @@ const translations = {
     dcaMonthlyTotal: "月度总投入（¥）",
     navIndices: "指数看板",
     navDca: "定投决策",
-    navPortfolio: "持仓记录",
-    navHoldings: "持仓应急",
     dcaRefresh: "重新计算",
     dcaRunHint: "每月 10 号：先运行 .\\.venv\\Scripts\\python.exe .\\02_IndexETF\\script.py --fetch-only，再打开本页查看当月分配。",
     dcaAsOf: "决策日期",

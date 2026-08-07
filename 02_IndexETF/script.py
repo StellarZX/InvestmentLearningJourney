@@ -35,8 +35,6 @@ from curl_cffi import requests
 
 import db
 import dca
-import holdings
-import portfolio
 
 
 DEFAULT_HOST = "127.0.0.1"
@@ -605,41 +603,10 @@ class MarketHandler(BaseHTTPRequestHandler):
             except Exception as exc:  # noqa: BLE001
                 self.send_json({"error": str(exc)}, HTTPStatus.INTERNAL_SERVER_ERROR)
             return
-        if path == "/api/holdings":
-            try:
-                self.send_json(holdings.build_holdings_decision())
-            except Exception as exc:  # noqa: BLE001
-                self.send_json({"error": str(exc)}, HTTPStatus.INTERNAL_SERVER_ERROR)
-            return
-        if path == "/api/portfolio":
-            try:
-                self.send_json(portfolio.get_portfolio())
-            except Exception as exc:  # noqa: BLE001
-                self.send_json({"error": str(exc)}, HTTPStatus.INTERNAL_SERVER_ERROR)
-            return
         if path.startswith("/data/"):
             self.send_file(BASE_DIR / path.lstrip("/"))
             return
         self.send_file(STATIC_DIR / path.lstrip("/"))
-
-    def do_POST(self) -> None:
-        parsed = urlparse(self.path)
-        if parsed.path == "/api/records":
-            try:
-                length = int(self.headers.get("Content-Length", 0) or 0)
-                body = json.loads(self.rfile.read(length).decode("utf-8")) if length else {}
-                row = portfolio.add_record(
-                    code=str(body.get("code", "")),
-                    position=body.get("position"),
-                    cost=body.get("cost"),
-                    note=str(body.get("note", "")),
-                    rec_date=str(body.get("date", "")),
-                )
-                self.send_json({"ok": True, "record": row, "portfolio": portfolio.get_portfolio()})
-            except Exception as exc:  # noqa: BLE001
-                self.send_json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
-            return
-        self.send_error(HTTPStatus.NOT_FOUND)
 
 
 def run_server(host: str, port: int) -> None:
