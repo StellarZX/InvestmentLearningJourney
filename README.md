@@ -8,45 +8,27 @@ The goal is not to chase short-term profits, but to build a systematic understan
 
 The Foundations section is a 40-lesson beginner path from basic investing ideas to a first long-term investment plan.
 
-### Part I - Foundations
 
-This part explains why investing matters before introducing any products. It starts with [why people invest](01_Foundations/Part_I_Foundations/Lesson01.md), then builds the basic language of [stocks](01_Foundations/Part_I_Foundations/Lesson02.md), [stock exchanges](01_Foundations/Part_I_Foundations/Lesson03.md), [market indices](01_Foundations/Part_I_Foundations/Lesson04.md), [ETFs](01_Foundations/Part_I_Foundations/Lesson05.md), and the difference between [mutual funds and ETFs](01_Foundations/Part_I_Foundations/Lesson06.md). It ends by connecting these ideas into a simple [investment framework](01_Foundations/Part_I_Foundations/Lesson07.md).
+## 2. Index ETF
 
-### Part II - Understanding Financial Markets
-
-This part introduces the major markets a beginner investor may hear about in financial news. It covers the [Chinese stock market](01_Foundations/Part_II_Understanding_Financial_Markets/Lesson08.md), the [Hong Kong stock market](01_Foundations/Part_II_Understanding_Financial_Markets/Lesson09.md), and the [U.S. stock market](01_Foundations/Part_II_Understanding_Financial_Markets/Lesson10.md), then explains [bull and bear markets](01_Foundations/Part_II_Understanding_Financial_Markets/Lesson11.md), [market capitalization](01_Foundations/Part_II_Understanding_Financial_Markets/Lesson12.md), [growth vs. value investing](01_Foundations/Part_II_Understanding_Financial_Markets/Lesson13.md), and how [global markets](01_Foundations/Part_II_Understanding_Financial_Markets/Lesson14.md) influence each other.
-
-### Part III - Core Investment Principles
-
-This part teaches the principles behind long-term investment success. It explains [compound interest](01_Foundations/Part_III_Core_Investment_Principles/Lesson15.md), [inflation](01_Foundations/Part_III_Core_Investment_Principles/Lesson16.md), [investment risk](01_Foundations/Part_III_Core_Investment_Principles/Lesson17.md), why [volatility is not the same as risk](01_Foundations/Part_III_Core_Investment_Principles/Lesson18.md), and how [diversification](01_Foundations/Part_III_Core_Investment_Principles/Lesson19.md) and [asset allocation](01_Foundations/Part_III_Core_Investment_Principles/Lesson20.md) help build a portfolio. It closes with a summary of the [core investment principles](01_Foundations/Part_III_Core_Investment_Principles/Lesson21.md).
-
-### Part IV - ETF Investing
-
-This part focuses on using ETFs as practical tools for beginner investors. It explains [how ETFs work](01_Foundations/Part_IV_ETF_Investing/Lesson22.md), why the [expense ratio](01_Foundations/Part_IV_ETF_Investing/Lesson23.md) matters, how to understand [tracking error](01_Foundations/Part_IV_ETF_Investing/Lesson24.md), and why [liquidity](01_Foundations/Part_IV_ETF_Investing/Lesson25.md) affects trading costs. It then introduces [dollar-cost averaging](01_Foundations/Part_IV_ETF_Investing/Lesson26.md), [portfolio construction](01_Foundations/Part_IV_ETF_Investing/Lesson27.md), and how to build an [ETF portfolio](01_Foundations/Part_IV_ETF_Investing/Lesson28.md).
-
-### Part V - Understanding the Economy
-
-This part connects investing with businesses and the broader economy. It introduces [financial statements](01_Foundations/Part_V_Understanding_the_Economy/Lesson29.md), basic [valuation](01_Foundations/Part_V_Understanding_the_Economy/Lesson30.md), [economic cycles](01_Foundations/Part_V_Understanding_the_Economy/Lesson31.md), [interest rates](01_Foundations/Part_V_Understanding_the_Economy/Lesson32.md), and [central banks](01_Foundations/Part_V_Understanding_the_Economy/Lesson33.md). It ends by explaining the relationship between [the economy and financial markets](01_Foundations/Part_V_Understanding_the_Economy/Lesson34.md).
-
-### Part VI - Investment Psychology
-
-This part focuses on the investor's behavior. It introduces [behavioral finance](01_Foundations/Part_VI_Investment_Psychology/Lesson35.md), the role of [fear and greed](01_Foundations/Part_VI_Investment_Psychology/Lesson36.md), and the danger of [FOMO](01_Foundations/Part_VI_Investment_Psychology/Lesson37.md). It also summarizes [common beginner mistakes](01_Foundations/Part_VI_Investment_Psychology/Lesson38.md), helps readers build their own [investment philosophy](01_Foundations/Part_VI_Investment_Psychology/Lesson39.md), and finishes with a first [long-term investment plan](01_Foundations/Part_VI_Investment_Psychology/Lesson40.md).
-
-
-## 2. DCA Index Funds
-
-- [DCA Index Funds Dashboard](02_DCA_Index_Funds/README.md) - data for the 8 fund-related indices, monthly DCA allocation (¥2,000 + €50), and an emergency position review.
-- Run locally with `.\.venv\Scripts\python.exe .\02_DCA_Index_Funds\script.py`, then open `http://127.0.0.1:8050`.
+- [DCA Index Funds Dashboard](02_IndexETF/README.md) - data for the 8 fund-related indices, monthly DCA allocation (¥2,000 + €50), and an emergency position review.
+- Run locally with `.\.venv\Scripts\python.exe .\02_IndexETF\script.py`, then open `http://127.0.0.1:8050`.
 - Pages: `/` index dashboard, `/dca.html` monthly DCA decision, `/holdings.html` emergency review.
 
 
-## 3. Portfolio
+## 3. Short ETF
+
+
+## 4. Sector ETF
+
+
+## 5. Portfolio
 
 The monthly workflow:
-1. Refresh data — run .\\.venv\\Scripts\\python.exe .\\02_DCA_Index_Funds\\script.py --fetch-only (market data updates automatically)
+1. Refresh data — run .\\.venv\\Scripts\\python.exe .\\02_IndexETF\\script.py --fetch-only (market data updates automatically)
 2. Buy — open the DCA decision page, read this month's allocation, place the orders manually
-3. Record — add a DCA record on the portfolio page (`/portfolio.html`); it saves to `02_DCA_Index_Funds/data/dca_records.csv` and updates the Current Holdings table in the root [README.md](D:/CodeX/InvestmentLearningJourney/README.md) automatically
-4. Recalculate ratios — run the new .\\.venv\\Scripts\\python.exe .\\02_DCA_Index_Funds\\update_portfolio.py, which automatically recomputes the Current % and Return % columns
+3. Record — add a DCA record on the portfolio page (`/portfolio.html`); it saves to `02_IndexETF/data/dca_records.csv` and updates the Current Holdings table in the root [README.md](D:/CodeX/InvestmentLearningJourney/README.md) automatically
+4. Recalculate ratios — run the new .\\.venv\\Scripts\\python.exe .\\02_IndexETF\\update_portfolio.py, which automatically recomputes the Current % and Return % columns
 
 ### Current Holdings
 
@@ -61,7 +43,7 @@ The monthly workflow:
 | United States | IBKR | iShares Core S&P 500 UCITS ETF USD (Acc) | SXR8 | - | - | 0.6 shares | €425.918 | - |
 | Cash | IBKR | EUR cash | EUR | - | - | €74.082 | €74.082 | - |
 
-DCA records are managed on the portfolio page (`/portfolio.html`) and stored in [dca_records.csv](02_DCA_Index_Funds/data/dca_records.csv).
+DCA records are managed on the portfolio page (`/portfolio.html`) and stored in [dca_records.csv](02_IndexETF/data/dca_records.csv).
 
 ## 4. Resources
 
