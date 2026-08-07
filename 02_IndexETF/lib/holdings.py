@@ -18,6 +18,7 @@ from typing import Any
 import pandas as pd
 
 import dca
+import readme_table
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SUMMARY_FILE = BASE_DIR.parent / "README.md"
@@ -85,35 +86,22 @@ def parse_summary_holdings() -> list[dict[str, str]]:
     if not SUMMARY_FILE.exists():
         return FALLBACK_HOLDINGS
     lines = SUMMARY_FILE.read_text(encoding="utf-8").splitlines()
-    start = next((i for i, line in enumerate(lines) if re.match(r"^#{2,3}\s+(Current Holdings|当前持仓)", line)), None)
-    if start is None:
-        return FALLBACK_HOLDINGS
-    table_start = next(
-        (i for i in range(start + 1, len(lines)) if lines[i].startswith("|") and ("Market" in lines[i] or "市场" in lines[i])),
-        None,
-    )
-    if table_start is None:
-        return FALLBACK_HOLDINGS
+    parsed = readme_table.parse_rows(lines)
     rows: list[dict[str, str]] = []
-    for i in range(table_start + 1, len(lines)):
-        line = lines[i]
-        if not line.startswith("|"):
-            break
-        if "---" in line:
+    for r in parsed:
+        if r["kind"] != "data" or r["code"] in ("", "-"):
             continue
-        cells = [c.strip() for c in line.strip().strip("|").split("|")]
-        if len(cells) >= 9 and cells[3]:
-            rows.append({
-                "market": cells[0],
-                "platform": cells[1],
-                "fund": cells[2],
-                "code": cells[3],
-                "target": cells[4],
-                "current_pct": cells[5],
-                "position": cells[6],
-                "cost": cells[7],
-                "return_pct": cells[8],
-            })
+        rows.append({
+            "market": r["market"],
+            "platform": "",
+            "fund": r["fund"],
+            "code": r["code"],
+            "target": r["target"],
+            "current_pct": r["current_pct"],
+            "position": r["position"],
+            "cost": r["cost"],
+            "return_pct": r["return_pct"],
+        })
     return rows or FALLBACK_HOLDINGS
 
 

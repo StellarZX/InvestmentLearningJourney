@@ -101,23 +101,35 @@ ETF 动量轮动策略：拉取场内 ETF 日 K，计算动量与 MACD 信号，
 
 ### 当前持仓
 
-| 类型 | 市场 |     基金     | 代码     | 目标占比 | 当前占比  | 当前持仓      |   累计成本 |   收益率 |
-|:--:|:--:|:----------:|--------|------|-------|-----------|-------:|------:|
-| 指数 | 沪深 | 华泰柏瑞沪深300  | 460300 | 25%  | 42%   | ¥2,536.48 | ¥2,625 | -3.4% |
-| 指数 | 沪深 |  南方中证500   | 160119 | 15%  | 6.2%  | ¥375      |   ¥371 |  1.1% |
-| 指数 | 沪深 |   易方达创业板   | 110026 | 10%  | 2.1%  | ¥125      |   ¥125 |  0.0% |
-| 指数 | 沪深 | 富国中证红利指数增强 | 100032 | 15%  | 3.1%  | ¥188      |   ¥188 |  0.0% |
-| 指数 | 港股 |  汇添富恒生指数   | 164705 | 15%  | 20.6% | ¥1,243.61 | ¥1,187 |  4.8% |
-| 指数 | 港股 | 易方达恒生红利低波  | 021457 | 20%  | 26%   | ¥1,572.82 | ¥1,500 |  4.9% |
-| 指数 | 美股 |   标普500    | -      | -    | -     | -         |      - |     - |
-| 指数 | 美股 |  纳斯达克100   | -      | -    | -     | -         |      - |     - |
-| 量化 | 沪深 |     -      | -      | -    | -     | -         |      - |     - |
-| 量化 | 沪深 |     -      | -      | -    | -     | -         |      - |     - |
-| 量化 | 沪深 |     -      | -      | -    | -     | -         |      - |     - |
-| 行业 | 沪深 |     -      | -      | -    | -     | -         |      - |     - |
-| 行业 | 沪深 |     -      | -      | -    | -     | -         |      - |     - |
-| 行业 | 沪深 |     -      | -      | -    | -     | -         |      - |     - |
-| 指数 | 美股 |  安硕标普500   | SXR8   | -    | -     | 0.6 份     |   €500 |     - |
+<table>
+  <thead>
+    <tr>
+      <th>类型</th><th>市场</th><th>基金</th><th>代码</th><th>目标占比</th><th>当前占比</th><th>当前持仓</th><th>累计成本</th><th>收益率</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td rowspan="8">指数</td><td>沪深</td><td>华泰柏瑞沪深300</td><td>460300</td><td>25%</td><td>42%</td><td>¥2,536.48</td><td>¥2,625</td><td>-3.4%</td></tr>
+    <tr><td>沪深</td><td>南方中证500</td><td>160119</td><td>15%</td><td>6.2%</td><td>¥375</td><td>¥371</td><td>1.1%</td></tr>
+    <tr><td>沪深</td><td>易方达创业板</td><td>110026</td><td>10%</td><td>2.1%</td><td>¥125</td><td>¥125</td><td>0.0%</td></tr>
+    <tr><td>沪深</td><td>富国中证红利指数增强</td><td>100032</td><td>15%</td><td>3.1%</td><td>¥188</td><td>¥188</td><td>0.0%</td></tr>
+    <tr><td>港股</td><td>汇添富恒生指数</td><td>164705</td><td>15%</td><td>20.6%</td><td>¥1,243.61</td><td>¥1,187</td><td>4.8%</td></tr>
+    <tr><td>港股</td><td>易方达恒生红利低波</td><td>021457</td><td>20%</td><td>26%</td><td>¥1,572.82</td><td>¥1,500</td><td>4.9%</td></tr>
+    <tr><td>美股</td><td>标普500</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>美股</td><td>纳斯达克100</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr class="subtotal"><td colspan="2">指数 合计</td><td>-</td><td>-</td><td>100%</td><td>100%</td><td>¥6,040.91</td><td>¥5,996</td><td>0.7%</td></tr>
+    <tr><td rowspan="3">量化</td><td>沪深</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>沪深</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>沪深</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr class="subtotal"><td colspan="2">量化 合计</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td rowspan="3">行业</td><td>沪深</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>沪深</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>沪深</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr class="subtotal"><td colspan="2">行业 合计</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td rowspan="1">其他</td><td>美股</td><td>安硕标普500</td><td>SXR8</td><td>-</td><td>-</td><td>0.6 份</td><td>€500</td><td>-</td></tr>
+    <tr class="subtotal"><td colspan="2">其他 合计</td><td>-</td><td>-</td><td>-</td><td>-</td><td>0.6 份</td><td>€500</td><td>-</td></tr>
+    <tr class="total"><td colspan="2">总计</td><td>-</td><td>-</td><td>-</td><td>-</td><td>¥6,040.91 + 0.6 份</td><td>¥5,996 + €500</td><td>-</td></tr>
+  </tbody>
+</table>
 
 定投记录在持仓记录页（`/portfolio.html`）管理，存放于本地数据库 `02_IndexETF/data/market.db`。
 

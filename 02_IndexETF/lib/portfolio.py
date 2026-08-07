@@ -9,7 +9,6 @@
 
 from __future__ import annotations
 
-import re
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -18,6 +17,7 @@ import pandas as pd
 
 import dca
 import db
+import readme_table
 import update_portfolio
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -96,30 +96,25 @@ def _fmt_amount(value: float, currency: str) -> str:
 
 def update_readme_holdings(code: str, position: float, cost: float) -> None:
     lines = README.read_text(encoding="utf-8").splitlines()
-    start = next((i for i, line in enumerate(lines) if re.match(r"^#{2,3}\s+(Current Holdings|当前持仓)", line)), None)
-    if start is None:
+    block = readme_table.find_table_block(lines)
+    if block is None:
         return
-    table_start = next(
-        (i for i in range(start + 1, len(lines)) if lines[i].startswith("|") and ("Market" in lines[i] or "市场" in lines[i])),
-        None,
-    )
-    if table_start is None:
-        return
+    rows = readme_table.parse_rows(lines)
     currency = CURRENCY.get(code, "CNY")
-    for i in range(table_start + 1, len(lines)):
-        line = lines[i]
-        if not line.startswith("|"):
+    pos_text = f"{position:g} 份" if currency == "EUR" else _fmt_amount(position, currency)
+    cost_text = _fmt_amount(cost, currency)
+    found = False
+    for r in rows:
+        if r["kind"] == "data" and r["code"] == code:
+            r["position"] = pos_text
+            r["cost"] = cost_text
+            found = True
             break
-        if "---" in line:
-            continue
-        cells = [c.strip() for c in line.strip().strip("|").split("|")]
-        if len(cells) >= 9 and cells[3] == code:
-            pos_text = f"{position:g} 份" if currency == "EUR" else _fmt_amount(position, currency)
-            cost_text = _fmt_amount(cost, currency)
-            cells[6] = pos_text
-            cells[7] = cost_text
-            lines[i] = "| " + " | ".join(cells) + " |"
-            break
+    if not found:
+        return
+    data_rows = [r for r in rows if r["kind"] == "data"]
+    start, end = block
+    lines[start : end + 1] = readme_table.render_table(data_rows).splitlines()
     README.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 

@@ -1,10 +1,10 @@
 """
-重算根 README 持仓表中的当前占比与收益率两列。
+重算根 README 持仓表中的当前占比与收益率，并同步每组小计与总计。
 
 在根 README 更新持仓金额/累计成本后运行：
     python update_portfolio.py
 
-当前占比 = 持仓 / 人民币持仓合计（欧元行不参与）
+当前占比 = 持仓 / 人民币持仓合计（欧元/份额行不参与）
 收益率   = (当前持仓 - 累计成本) / 累计成本
 """
 
@@ -12,10 +12,17 @@ from __future__ import annotations
 
 import argparse
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent
+LIB_DIR = BASE_DIR / "lib"
+sys.path.insert(0, str(LIB_DIR))
+
+import readme_table
+
+ROOT = BASE_DIR.parent
 README = ROOT / "README.md"
 
 
@@ -39,58 +46,38 @@ def fmt_return(value: float | None) -> str:
 
 
 def recompute_readme(path: Path = README) -> dict[str, Any]:
-    """重算 README 持仓表中的当前占比/收益率列，返回汇总。"""
+    """重算 README 持仓表中的当前占比/收益率列，并刷新小计/总计，返回汇总。"""
     lines = path.read_text(encoding="utf-8").splitlines()
-    start = next((i for i, line in enumerate(lines) if re.match(r"^#{2,3}\s+(Current Holdings|当前持仓)", line)), None)
-    if start is None:
-        return {"error": "未找到当前持仓标题"}
-
-    table_start = next(
-        (i for i in range(start + 1, len(lines)) if lines[i].startswith("|") and ("Market" in lines[i] or "市场" in lines[i])),
-        None,
-    )
-    if table_start is None:
+    block = readme_table.find_table_block(lines)
+    if block is None:
         return {"error": "未找到持仓表"}
 
-    rows: list[tuple[int, list[str]]] = []
-    for i in range(table_start + 1, len(lines)):
-        line = lines[i]
-        if not line.startswith("|"):
-            break
-        if "---" in line:
-            continue
-        cells = [c.strip() for c in line.strip().strip("|").split("|")]
-        if len(cells) >= 9 and cells[3]:
-            rows.append((i, cells))
+    rows = readme_table.parse_rows(lines)
+    data_rows = [r for r in rows if r["kind"] == "data"]
 
-    rmb_total = sum(
-        pos for _, cells in rows
-        if (pos := extract_amount(cells[6])) is not None and "€" not in cells[6]
-    )
+    rmb_total = 0.0
+    for r in data_rows:
+        pos = extract_amount(r["position"])
+        is_eur = "€" in r["position"] or "份" in r["position"] or "share" in r["position"].lower()
+        if pos is not None and not is_eur:
+            rmb_total += pos
 
     changed = []
-    for i, cells in rows:
-        position = extract_amount(cells[6])
-        cost = extract_amount(cells[7])
-        is_eur = "€" in cells[6] or "份" in cells[6] or "share" in cells[6].lower()
-
+    for r in data_rows:
+        position = extract_amount(r["position"])
+        cost = extract_amount(r["cost"])
+        is_eur = "€" in r["position"] or "份" in r["position"] or "share" in r["position"].lower()
         if is_eur or position is None:
             new_current, new_return = "-", "-"
         else:
             new_current = fmt_current(position / rmb_total * 100) if rmb_total else "0%"
             new_return = fmt_return((position - cost) / cost * 100) if cost and position else "-"
+        if r["current_pct"] != new_current or r["return_pct"] != new_return:
+            changed.append((r["code"], r["current_pct"], new_current, r["return_pct"], new_return))
+            r["current_pct"], r["return_pct"] = new_current, new_return
 
-        if cells[5] != new_current or cells[8] != new_return:
-            old_current, old_return = cells[5], cells[8]
-            cells[5], cells[8] = new_current, new_return
-            lines[i] = "| " + " | ".join(cells) + " |"
-            changed.append((cells[3], old_current, new_current, old_return, new_return))
-
-    for i in range(start + 1, len(lines)):
-        if "Current % = position" in lines[i]:
-            lines[i] = re.sub(r"\(¥[\d,]+\)", f"(¥{rmb_total:,.0f})", lines[i])
-            break
-
+    start, end = block
+    lines[start : end + 1] = readme_table.render_table(data_rows).splitlines()
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return {"total": rmb_total, "changed": changed}
 
