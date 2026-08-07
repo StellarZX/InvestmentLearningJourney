@@ -49,16 +49,16 @@ NASDAQ-100 and S&P 500 are bought on IBKR only (EQQQ and SXR8); the CNY list foc
 Monthly flow (run on the 10th):
 
 ```powershell
-.\.venv\Scripts\python.exe .\02_DCA_Index_Funds\script.py --fetch-only
+.\.venv\Scripts\python.exe .\02_IndexETF\script.py --fetch-only
 ```
 
 Then open `http://127.0.0.1:8050` to read the allocation. To print the allocation in the console instead:
 
 ```powershell
-.\.venv\Scripts\python.exe .\02_DCA_Index_Funds\script.py --dca-check
+.\.venv\Scripts\python.exe .\02_IndexETF\script.py --dca-check
 ```
 
-The fund universe and base weights are defined in `02_DCA_Index_Funds/dca.py` (FUNDS list) and can be edited to match your own plan. Verify fund availability and purchase limits in your apps before buying.
+The fund universe and base weights are defined in `02_IndexETF/dca.py` (FUNDS list) and can be edited to match your own plan. Verify fund availability and purchase limits in your apps before buying.
 
 Monthly execution records are kept in `data/dca_records.csv` (managed via the `/portfolio.html` page); current holdings live in the repository root README (single source of truth).
 
@@ -77,7 +77,7 @@ Each holding gets a tier (sell first / may sell / keep) plus a redemption-liquid
 From the project root:
 
 ```powershell
-.\.venv\Scripts\python.exe .\02_DCA_Index_Funds\script.py
+.\.venv\Scripts\python.exe .\02_IndexETF\script.py
 ```
 
 Then open:
@@ -93,17 +93,17 @@ By default, the script uses incremental updates. It checks whether today's data 
 Force a full data refresh only when you want to rebuild the local data files:
 
 ```powershell
-.\.venv\Scripts\python.exe .\02_DCA_Index_Funds\script.py --refresh
+.\.venv\Scripts\python.exe .\02_IndexETF\script.py --refresh
 ```
 
 Fetch data without starting the server:
 
 ```powershell
-.\.venv\Scripts\python.exe .\02_DCA_Index_Funds\script.py --fetch-only
+.\.venv\Scripts\python.exe .\02_IndexETF\script.py --fetch-only
 ```
 
 Change history length:
 
 ```powershell
-.\.venv\Scripts\python.exe .\02_DCA_Index_Funds\script.py --years 15
+.\.venv\Scripts\python.exe .\02_IndexETF\script.py --years 15
 ```

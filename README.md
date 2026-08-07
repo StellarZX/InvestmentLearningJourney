@@ -45,7 +45,6 @@ The monthly workflow:
 
 DCA records are managed on the portfolio page (`/portfolio.html`) and stored in [dca_records.csv](02_IndexETF/data/dca_records.csv).
 
-## 4. Resources
+## 6. Resources
 
-- [Financial Glossary](Glossary/Vocabulary.md)
 - [指数基金投资指南.epub](Glossary/指数基金投资指南.epub)

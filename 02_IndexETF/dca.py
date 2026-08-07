@@ -1,5 +1,5 @@
 """
-Monthly DCA allocation decision for the 02_DCA_Index_Funds dashboard.
+Monthly DCA allocation decision for the 02_IndexETF dashboard.
 
 Defines a fund universe available from the Bank of China app (CNY) and
 Interactive Brokers (EUR), maps each fund to its tracking index, and computes
@@ -519,7 +519,7 @@ def print_dca(payload: dict[str, Any]) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="02_DCA_Index_Funds monthly DCA allocation")
+    parser = argparse.ArgumentParser(description="02_IndexETF monthly DCA allocation")
     parser.add_argument("--check", action="store_true", help="Print this month's allocation to the console")
     parser.add_argument("--refresh", action="store_true", help="Refresh valuation/price data first")
     parser.add_argument("--force", action="store_true", help="With --refresh: force a full refresh")
