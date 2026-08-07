@@ -1,65 +1,11 @@
 "use strict";
 
 const state = {
-  lang: localStorage.getItem("marketDashboardLanguage") || "en",
+  lang: "zh",
   payload: null,
 };
 
 const translations = {
-  en: {
-    holdingsPageTitle: "Emergency Position Review",
-    holdingsPageSubtitle: "Which holdings to sell first if you need cash in a crash.",
-    holdingsEyebrow: "Crash scenario",
-    navIndices: "Index Dashboard",
-    navDca: "DCA Decision",
-    navPortfolio: "Portfolio",
-    navHoldings: "Emergency Review",
-    holdingsSourceNote: "Holdings are read from the repository root README.md.",
-    holdingsRefresh: "Recalculate",
-    holdingsTableTitle: "Position Review",
-    holdingsOrderCaption: "Sorted by sell priority (trend 40% / momentum 30% / valuation 30%).",
-    holdingsOrderTitle: "Suggested Sell Order",
-    holdingsOrderNote: "From a quality perspective. For urgent cash, follow liquidity first.",
-    holdingsNotesTitle: "How to read this",
-    hFund: "Fund",
-    hCode: "Code",
-    hClass: "Role",
-    hPosition: "Position",
-    hTrend: "Trend",
-    hMomentum: "6M",
-    hDrawdown: "Drawdown",
-    hValuation: "Valuation",
-    hScore: "Sell Score",
-    hTier: "Tier",
-    hLiquidity: "Liquidity",
-    hRecommendation: "Recommendation",
-    hAsOf: "As of",
-    hCash: "Cash buffer",
-    hPositions: "positions",
-    hScoreSub: "Higher = sell first",
-    classCore: "Core holding",
-    classSatellite: "Satellite",
-    classUnknown: "Unknown",
-    trendAbove: "Above 200-day MA",
-    trendBelow: "Below 200-day MA",
-    sourcePe: "PE(TTM) history percentile",
-    sourcePrice3y: "3-year price percentile",
-    sourceNone: "No data",
-    liqFast: "Fast: redemption T+1~T+3",
-    liqSlow: "Slow: QDII redemption ~T+7~T+10",
-    liqMedium: "Medium: same-day sell, T+2 settlement",
-    liqCash: "Settled",
-    liqUnknown: "Unknown",
-    cashRec: "Cash is the emergency buffer; use it before selling funds",
-    disclaimerZh: "Decision reference only; not investment advice.",
-    tierHigh: "Sell first",
-    tierMedium: "May sell",
-    tierLow: "Keep",
-    tierCash: "Keep cash",
-    tierNone: "No data",
-    unableToLoad: "Unable to load data",
-    languageButton: "中文",
-  },
   zh: {
     holdingsPageTitle: "持仓应急评估",
     holdingsPageSubtitle: "大跌需要现金时，先卖哪些、保留哪些。",
@@ -118,14 +64,13 @@ const translations = {
     tierCash: "保留现金",
     tierNone: "数据不足",
     unableToLoad: "无法加载数据",
-    languageButton: "English",
   },
 };
 
 const fmt = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
 function t(key) {
-  return translations[state.lang][key] || translations.en[key] || key;
+  return translations[state.lang][key] || key;
 }
 
 function applyTranslations() {
@@ -134,7 +79,6 @@ function applyTranslations() {
   document.querySelectorAll("[data-i18n]").forEach((node) => {
     node.textContent = t(node.dataset.i18n);
   });
-  document.querySelector("#languageButton").textContent = t("languageButton");
 }
 
 function tierLabel(level, rawLabel) {
@@ -251,13 +195,6 @@ async function loadHoldings() {
     box.classList.remove("hidden");
   }
 }
-
-document.querySelector("#languageButton").addEventListener("click", () => {
-  state.lang = state.lang === "en" ? "zh" : "en";
-  localStorage.setItem("marketDashboardLanguage", state.lang);
-  applyTranslations();
-  if (state.payload) renderHoldings(state.payload);
-});
 
 document.querySelector("#holdingsRefreshButton").addEventListener("click", loadHoldings);
 

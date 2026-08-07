@@ -1,53 +1,20 @@
 "use strict";
 
 const state = {
-  lang: localStorage.getItem("marketDashboardLanguage") || "en",
+  lang: "zh",
   portfolio: null,
 };
 
 const translations = {
-  en: {
-    portfolioTitle: "Portfolio",
-    portfolioSubtitle: "Current holdings and DCA records (stored in CSV).",
-    portfolioEyebrow: "Holdings & records",
-    navIndices: "Index Dashboard",
-    navDca: "DCA Decision",
-    navPortfolio: "Portfolio",
-    navHoldings: "Emergency Review",
-    portfolioSourceNote: "Records are stored in 02_DCA_Index_Funds/data/dca_records.csv.",
-    addRecord: "Add Record",
-    addRecordTitle: "Add DCA Record",
-    fFund: "Fund",
-    fDate: "Date",
-    fPosition: "Position (current total)",
-    fCost: "Cost (cumulative)",
-    fNote: "Note",
-    formSave: "Save",
-    formCancel: "Cancel",
-    currentHoldings: "Current Holdings",
-    recordHistory: "Record History",
-    hFund2: "Fund",
-    dcaCode: "Code",
-    dcaQuota: "Target",
-    curPct: "Current %",
-    curPosition: "Position",
-    curCost: "Cost",
-    curReturn: "Return %",
-    holdingsCount: "holdings",
-    shares: "shares",
-    languageButton: "中文",
-    unableToLoad: "Unable to load data",
-    saved: "Record saved",
-  },
   zh: {
     portfolioTitle: "持仓记录",
-    portfolioSubtitle: "当前持仓与定投记录（CSV 保存）。",
+    portfolioSubtitle: "当前持仓与定投记录（数据库保存）。",
     portfolioEyebrow: "持仓与记录",
     navIndices: "指数看板",
     navDca: "定投决策",
     navPortfolio: "持仓记录",
     navHoldings: "持仓应急",
-    portfolioSourceNote: "记录保存在 02_DCA_Index_Funds/data/dca_records.csv。",
+    portfolioSourceNote: "记录保存在本地数据库 02_IndexETF/data/market.db。",
     addRecord: "添加记录",
     addRecordTitle: "添加定投记录",
     fFund: "基金",
@@ -68,7 +35,6 @@ const translations = {
     curReturn: "收益率",
     holdingsCount: "项持仓",
     shares: "份",
-    languageButton: "English",
     unableToLoad: "无法加载数据",
     saved: "记录已保存",
   },
@@ -77,7 +43,7 @@ const translations = {
 const fmt = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
 function t(key) {
-  return translations[state.lang][key] || translations.en[key] || key;
+  return translations[state.lang][key] || key;
 }
 
 function applyTranslations() {
@@ -86,7 +52,6 @@ function applyTranslations() {
   document.querySelectorAll("[data-i18n]").forEach((node) => {
     node.textContent = t(node.dataset.i18n);
   });
-  document.querySelector("#languageButton").textContent = t("languageButton");
 }
 
 function positionText(item) {
@@ -174,13 +139,6 @@ document.querySelector("#formSave").addEventListener("click", async () => {
   } catch (error) {
     document.querySelector("#formError").textContent = `${t("unableToLoad")}: ${error.message}`;
   }
-});
-
-document.querySelector("#languageButton").addEventListener("click", () => {
-  state.lang = state.lang === "en" ? "zh" : "en";
-  localStorage.setItem("marketDashboardLanguage", state.lang);
-  applyTranslations();
-  if (state.portfolio) render(state.portfolio);
 });
 
 applyTranslations();

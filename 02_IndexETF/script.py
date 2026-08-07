@@ -1,20 +1,22 @@
 """
-Local market index dashboard.
+本地市场指数看板。
 
-Run with:
-    ..\\.venv\\Scripts\\python.exe script.py
+运行：
+    .\\.venv\\Scripts\\python.exe .\\02_IndexETF\\script.py
 
-Then open:
+然后打开：
     http://127.0.0.1:8050
+
+数据统一存放在 SQLite（data/market.db），不再使用按年 CSV。
 """
 
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import math
 import mimetypes
+import sys
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta, timezone
 from http import HTTPStatus
@@ -22,21 +24,21 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, unquote, urlparse
+BASE_DIR = Path(__file__).resolve().parent
+LIB_DIR = BASE_DIR / "lib"
+STATIC_DIR = BASE_DIR / "static"
+sys.path.insert(0, str(LIB_DIR))
+sys.path.insert(0, str(BASE_DIR))
 
 import pandas as pd
 from curl_cffi import requests
 
+import db
 import dca
 import holdings
 import portfolio
 
 
-BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data" / "indices"
-VALUATION_DIR = BASE_DIR / "data" / "valuations"
-ASSESSMENT_DIR = BASE_DIR / "data" / "assessments"
-STATIC_DIR = BASE_DIR / "static"
-METADATA_FILE = BASE_DIR / "data" / "metadata.json"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8050
 
@@ -155,14 +157,11 @@ def fetch_index_sina(config: IndexConfig, start: date, end: date) -> pd.DataFram
 
 
 def save_index_by_year(config: IndexConfig, df: pd.DataFrame) -> None:
-    index_dir = DATA_DIR / config.slug
-    index_dir.mkdir(parents=True, exist_ok=True)
-    df = df.copy()
-    df["year"] = pd.to_datetime(df["date"]).dt.year
-    for year, year_df in df.groupby("year"):
-        out = index_dir / f"{int(year)}.csv"
-        year_df = year_df.drop(columns=["year"])
-        year_df.to_csv(out, index=False, encoding="utf-8", quoting=csv.QUOTE_MINIMAL)
+    if df.empty:
+        return
+    rows = df.copy()
+    rows["slug"] = config.slug
+    db.upsert_indices(rows.to_dict(orient="records"))
 
 
 def fetch_valuation(config: IndexConfig) -> pd.DataFrame:
@@ -205,55 +204,29 @@ def fetch_valuation(config: IndexConfig) -> pd.DataFrame:
 def save_valuation_by_year(config: IndexConfig, df: pd.DataFrame) -> None:
     if df.empty:
         return
-    index_dir = VALUATION_DIR / config.slug
-    index_dir.mkdir(parents=True, exist_ok=True)
-    df = df.copy()
-    df["year"] = pd.to_datetime(df["date"]).dt.year
-    for year, year_df in df.groupby("year"):
-        out = index_dir / f"{int(year)}.csv"
-        year_df.drop(columns=["year"]).to_csv(out, index=False, encoding="utf-8", quoting=csv.QUOTE_MINIMAL)
+    rows = df.copy()
+    rows["slug"] = config.slug
+    db.upsert_valuations(rows.to_dict(orient="records"))
 
 
 def save_assessment_by_year(config: IndexConfig, df: pd.DataFrame) -> None:
     if df.empty:
         return
-    index_dir = ASSESSMENT_DIR / config.slug
-    index_dir.mkdir(parents=True, exist_ok=True)
-    df = df.copy()
-    df["year"] = pd.to_datetime(df["date"]).dt.year
-    for year, year_df in df.groupby("year"):
-        out = index_dir / f"{int(year)}.csv"
-        year_df.drop(columns=["year"]).to_csv(out, index=False, encoding="utf-8", quoting=csv.QUOTE_MINIMAL)
+    rows = df.copy()
+    rows["slug"] = config.slug
+    db.upsert_assessments(rows.to_dict(orient="records"))
 
 
 def read_index_csvs(slug: str) -> pd.DataFrame:
-    index_dir = DATA_DIR / slug
-    frames = []
-    for path in sorted(index_dir.glob("*.csv")):
-        frames.append(pd.read_csv(path))
-    if not frames:
-        return pd.DataFrame()
-    return pd.concat(frames, ignore_index=True).sort_values("date")
+    return db.read_indices(slug)
 
 
 def read_valuation_csvs(slug: str) -> pd.DataFrame:
-    index_dir = VALUATION_DIR / slug
-    frames = []
-    for path in sorted(index_dir.glob("*.csv")):
-        frames.append(pd.read_csv(path))
-    if not frames:
-        return pd.DataFrame()
-    return pd.concat(frames, ignore_index=True).sort_values("date")
+    return db.read_valuations(slug)
 
 
 def read_assessment_csvs(slug: str) -> pd.DataFrame:
-    index_dir = ASSESSMENT_DIR / slug
-    frames = []
-    for path in sorted(index_dir.glob("*.csv")):
-        frames.append(pd.read_csv(path))
-    if not frames:
-        return pd.DataFrame()
-    return pd.concat(frames, ignore_index=True).sort_values("date")
+    return db.read_assessments(slug)
 
 
 def dataframe_records(df: pd.DataFrame) -> list[dict[str, Any]]:
@@ -333,20 +306,15 @@ def update_valuation_data(config: IndexConfig, start: date, force: bool = False)
 
 
 def load_metadata() -> dict[str, Any]:
-    if not METADATA_FILE.exists():
-        return {}
-    return json.loads(METADATA_FILE.read_text(encoding="utf-8"))
+    return db.get_metadata()
 
 
 def save_metadata(metadata: dict[str, Any]) -> None:
-    METADATA_FILE.parent.mkdir(parents=True, exist_ok=True)
-    METADATA_FILE.write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
+    db.save_metadata(metadata)
 
 
 def refresh_data(years: int = 10, force: bool = False) -> dict[str, Any]:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    VALUATION_DIR.mkdir(parents=True, exist_ok=True)
-    ASSESSMENT_DIR.mkdir(parents=True, exist_ok=True)
+    db.init_db()
     today = date.today()
     start = date(today.year - years, 1, 1)
     metadata = load_metadata()
@@ -597,7 +565,7 @@ class MarketHandler(BaseHTTPRequestHandler):
             slug = path.removeprefix("/api/index/").strip("/")
             config = next((item for item in INDICES if item.slug == slug), None)
             if not config:
-                self.send_json({"error": "Unknown index"}, HTTPStatus.NOT_FOUND)
+                self.send_json({"error": "未知指数"}, HTTPStatus.NOT_FOUND)
                 return
             records = records_for_slug(slug)
             limit = int(query.get("limit", [0])[0] or 0)
@@ -609,7 +577,7 @@ class MarketHandler(BaseHTTPRequestHandler):
             slug = path.removeprefix("/api/valuation/").strip("/")
             config = next((item for item in INDICES if item.slug == slug), None)
             if not config:
-                self.send_json({"error": "Unknown index"}, HTTPStatus.NOT_FOUND)
+                self.send_json({"error": "未知指数"}, HTTPStatus.NOT_FOUND)
                 return
             records = valuation_for_slug(slug)
             limit = int(query.get("limit", [0])[0] or 0)
@@ -621,7 +589,7 @@ class MarketHandler(BaseHTTPRequestHandler):
             slug = path.removeprefix("/api/assessment/").strip("/")
             config = next((item for item in INDICES if item.slug == slug), None)
             if not config:
-                self.send_json({"error": "Unknown index"}, HTTPStatus.NOT_FOUND)
+                self.send_json({"error": "未知指数"}, HTTPStatus.NOT_FOUND)
                 return
             records = assessment_for_slug(slug)
             limit = int(query.get("limit", [0])[0] or 0)
@@ -631,7 +599,9 @@ class MarketHandler(BaseHTTPRequestHandler):
             return
         if path == "/api/dca":
             try:
-                self.send_json(dca.build_dca_decision())
+                monthly_raw = query.get("monthly", [""])[0]
+                monthly = float(monthly_raw) if monthly_raw else dca.MONTHLY_BUDGET
+                self.send_json(dca.build_dca_decision(monthly * dca.CN_SHARE, monthly * dca.US_SHARE))
             except Exception as exc:  # noqa: BLE001
                 self.send_json({"error": str(exc)}, HTTPStatus.INTERNAL_SERVER_ERROR)
             return
@@ -675,26 +645,35 @@ class MarketHandler(BaseHTTPRequestHandler):
 def run_server(host: str, port: int) -> None:
     server = ThreadingHTTPServer((host, port), MarketHandler)
     url = f"http://{host}:{port}"
-    print(f"Market dashboard is running: {url}")
-    print("Press Ctrl+C to stop.")
+    print(f"看板已启动：{url}")
+    print("按 Ctrl+C 停止。")
     server.serve_forever()
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Fetch major index data and run the local market dashboard.")
+    parser = argparse.ArgumentParser(description="抓取主要指数数据并运行本地看板。")
     parser.add_argument("--host", default=DEFAULT_HOST)
     parser.add_argument("--port", default=DEFAULT_PORT, type=int)
-    parser.add_argument("--years", default=10, type=int, help="How many years of daily data to fetch.")
-    parser.add_argument("--refresh", action="store_true", help="Force a full data refresh before starting.")
-    parser.add_argument("--fetch-only", action="store_true", help="Fetch data and exit without starting the server.")
-    parser.add_argument("--dca-check", action="store_true", help="Print the monthly DCA allocation and exit.")
+    parser.add_argument("--years", default=10, type=int, help="抓取多少年的日线数据。")
+    parser.add_argument("--refresh", action="store_true", help="启动前强制全量刷新数据。")
+    parser.add_argument("--fetch-only", action="store_true", help="只抓取数据，不启动服务器。")
+    parser.add_argument("--dca-check", action="store_true", help="打印当月定投分配后退出。")
     args = parser.parse_args()
 
-    print("Preparing market index data...")
+    print("正在准备指数数据...")
     result = refresh_data(years=args.years, force=args.refresh)
+    status_zh = {
+        "refreshed": "已刷新",
+        "created": "已创建",
+        "cached_today": "已有今日数据",
+        "cached_checked": "今日已检查",
+        "appended": "已追加",
+        "checked": "已检查",
+    }
     for item in result["results"]:
-        suffix = f", +{item['new_rows']} new" if item.get("new_rows") else ""
-        print(f"  {item['name']}: {item['status']} ({item['rows']} rows{suffix})")
+        suffix = f"，新增 {item['new_rows']}" if item.get("new_rows") else ""
+        label = status_zh.get(item["status"], item["status"])
+        print(f"  {item['name']}: {label}（{item['rows']} 行{suffix}）")
     if args.fetch_only:
         return
     if args.dca_check:

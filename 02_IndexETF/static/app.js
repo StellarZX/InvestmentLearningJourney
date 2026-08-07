@@ -5,70 +5,11 @@ const state = {
   valuations: [],
   assessments: [],
   currentIndex: null,
-  lang: localStorage.getItem("marketDashboardLanguage") || "en",
+  lang: "zh",
 };
 
 const fmt = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 const translations = {
-  en: {
-    appTitle: "DCA Index Funds Dashboard",
-    appSubtitle: "Global index data, monthly DCA allocation and emergency review, stored locally.",
-    eyebrow: "Local market data",
-    loading: "Loading...",
-    range: "Range",
-    range1y: "1Y",
-    range3y: "3Y",
-    range5y: "5Y",
-    rangeAll: "All",
-    language: "Language",
-    reload: "Reload",
-    closePrice: "Close Price",
-    valuationMetrics: "Valuation & Assessment",
-    metric: "Metric",
-    earningsYield: "Earnings Yield",
-    peTtm: "P/E TTM",
-    pb: "P/B",
-    valuationUnavailable: "Assessment history is not available for this index yet.",
-    latestRecords: "Latest Records",
-    recordsSubtitle: "Daily OHLC data from local CSV files.",
-    date: "Date",
-    open: "Open",
-    high: "High",
-    low: "Low",
-    close: "Close",
-    volume: "Volume",
-    latestClose: "Latest Close",
-    dailyChange: "Daily Change",
-    totalChange: "Total Change",
-    records: "Records",
-    tradingDays: "trading days",
-    valuationNoCsv: "No assessment data is available for this index.",
-    assessmentScore: "Composite Assessment Score",
-    assessmentNote: "Higher score means the index has a more attractive combination of valuation, price position, drawdown, and trend.",
-    adviceTitle: "Extra investment suggestion",
-    adviceHigh: "The composite score is high. If this fits your allocation plan, it may be reasonable to consider an extra contribution.",
-    adviceMedium: "The composite score is neutral. Consider waiting, observing, or adding only a small amount through your normal dollar-cost averaging plan.",
-    adviceLow: "The composite score is low. It may be better to avoid extra contributions for now and follow the regular plan.",
-    adviceUnavailable: "No score is available yet. Keep the regular plan and wait for more data.",
-    confidenceValuation: "Valuation-supported score",
-    confidencePriceOnly: "Price-only score",
-    method: "Method",
-    scoreBreakdown: "Breakdown",
-    valuationScore: "Valuation",
-    priceScore: "Price position",
-    drawdownScore: "Drawdown",
-    trendScore: "Trend",
-    recordsCount: "records",
-    unableToLoad: "Unable to load data",
-    to: "to",
-    languageButton: "中文",
-    valuationAria: "Valuation metric chart",
-    assessmentAria: "Composite assessment score chart",
-    navIndices: "Index Dashboard",
-    navDca: "DCA Decision",
-    navPortfolio: "Portfolio",
-    navHoldings: "Emergency Review",
-  },
   zh: {
     appTitle: "定投指数基金看板",
     appSubtitle: "全球指数数据、每月定投分配与应急评估，数据存储在本地。",
@@ -79,7 +20,6 @@ const translations = {
     range3y: "3年",
     range5y: "5年",
     rangeAll: "全部",
-    language: "语言",
     reload: "刷新",
     closePrice: "收盘价",
     valuationMetrics: "估值与投入评估",
@@ -89,7 +29,7 @@ const translations = {
     pb: "市净率",
     valuationUnavailable: "该指数暂时没有可用的评估历史数据。",
     latestRecords: "最新记录",
-    recordsSubtitle: "来自本地 CSV 文件的每日 OHLC 数据。",
+    recordsSubtitle: "来自本地数据库的每日 OHLC 数据。",
     date: "日期",
     open: "开盘",
     high: "最高",
@@ -120,7 +60,6 @@ const translations = {
     recordsCount: "条记录",
     unableToLoad: "无法加载数据",
     to: "至",
-    languageButton: "English",
     valuationAria: "估值指标走势图",
     assessmentAria: "综合评估评分走势图",
     navIndices: "指数看板",
@@ -151,7 +90,7 @@ const regionTranslations = {
 };
 
 function t(key) {
-  return translations[state.lang][key] || translations.en[key] || key;
+  return translations[state.lang][key] || key;
 }
 
 function indexName(item) {
@@ -168,7 +107,6 @@ function applyTranslations() {
   document.querySelectorAll("[data-i18n]").forEach((node) => {
     node.textContent = t(node.dataset.i18n);
   });
-  document.querySelector("#languageButton").textContent = t("languageButton");
   document.querySelector("#valuationChart").setAttribute("aria-label", t("valuationAria"));
   document.querySelector("#assessmentChart").setAttribute("aria-label", t("assessmentAria"));
 }
@@ -427,11 +365,6 @@ async function init() {
 document.querySelector("#rangeSelect").addEventListener("change", renderValuationChart);
 document.querySelector("#valuationMetric").addEventListener("change", renderValuationChart);
 document.querySelector("#reloadButton").addEventListener("click", () => selectIndex(state.selectedSlug));
-document.querySelector("#languageButton").addEventListener("click", () => {
-  state.lang = state.lang === "en" ? "zh" : "en";
-  localStorage.setItem("marketDashboardLanguage", state.lang);
-  rerenderCurrentView();
-});
 window.addEventListener("resize", () => {
   renderValuationChart();
 });

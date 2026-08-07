@@ -1,50 +1,124 @@
-# Investment Learning Journey
+# 投资方法与记录
 
-This repository records my journey of learning long-term investing from zero.
+这个仓库记录我的投资方法、执行记录与复盘。
 
-The goal is not to chase short-term profits, but to build a systematic understanding of investing, ETFs, market indices, portfolio management, and financial English.
+## 投资体系
 
-## 1. Foundations
+整个投资体系分为四个部分：**长期资产（核心）**、行业基金（增强）、量化基金（增强）、应急资金。
 
-The Foundations section is a 40-lesson beginner path from basic investing ideas to a first long-term investment plan.
+| 部分 | A股长期指数 | 美股长期指数 | 行业基金 | 量化基金 |
+|---|---:|---:|---:|---:|
+| 方式 | 每月定投 | 每月定投 | 一次性固定 | 一次性固定 |
+| 金额 | ¥1,500 | ¥1,000 | ¥5,000 | ¥3,000 |
+
+长期指数投资是核心，行业基金和量化基金只是增强收益。
+
+### A股长期指数（每月 ¥1,500，比例永久不变）
+
+| 指数 | 沪深300 | 中证500 | 创业板 | 中证红利 | 恒生指数 | 恒生红利低波 | **合计** |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 比例 | 25% | 15% | 10% | 15% | 15% | 20% | **100%** |
+| 每月 | ¥375 | ¥225 | ¥150 | ¥225 | ¥225 | ¥300 | **¥1,500** |
+
+- 沪深300：中国核心资产（银行、保险、消费、制造业龙头），负责稳定。
+- 中证500：中盘成长，提高长期收益。
+- 创业板：科技创新，成长性最高，比例不宜太高。
+- 中证红利：降低组合波动，提高现金流质量。
+- 恒生指数：配置香港上市的中国优质企业（腾讯、阿里、小米、网易等），很多优秀公司不在 A 股上市。
+- 恒生红利低波：增强港股价值属性、降低波动，也是未来长期现金流的重要来源。
+
+指数**不会更换**：以后收入提高只增加金额，比例永久不变。
+
+### 美股指数（每月 ¥1,000）
+
+| 指数 | 每月 | 执行方式 |
+|---|---:|---|
+| 标普500 | ¥400 | 每日 ¥10 定投：摩根标普500 A（019305）+ 摩根标普500 C（017641） |
+| 纳斯达克100 | ¥600 | 每日 ¥10 定投：摩根纳斯达克100 A（019172）+ 招商纳斯达克100 A（019547）+ 华安纳斯达克100 A（040046） |
+
+标普500代表美国整体经济，纳斯达克代表美国科技创新，覆盖苹果、微软、英伟达、亚马逊、Google、Meta，长期足够。美股通过国内平台每日定投执行，不再使用 IBKR。
+
+### 估值调整机制
+
+战略比例**永远不变**，只调整当月投入金额：
+
+- 历史分位 <30%：买入 1.5 倍
+- 30% ~ 70%：正常投入
+- >70%：买入 0.5 倍
+
+不是停止定投，只是便宜多买、贵时少买，避免择时。
+
+## 1. 基础课程
+
+40 课投资基础课程，分 6 个部分：基础概念（01–07）、金融市场（08–14）、核心投资原则（15–21）、ETF 投资（22–28）、经济理解（29–34）、投资心理（35–40），每课配有中文导读。课程在 [01_Foundations](01_Foundations/) 目录内按需阅读，不在首页展示。
+
+## 2. 指数定投
+
+- [定投指数基金看板](02_IndexETF/README.md)：8 个相关指数的行情数据、月度定投分配（A股 ¥1,500 + 美股 ¥1,000）与应急持仓评估。
+- 页面：`/` 指数看板、`/dca.html` 定投决策、`/portfolio.html` 持仓记录、`/holdings.html` 持仓应急。
+- 行情、估值与定投记录统一存放在本地数据库 `02_IndexETF/data/market.db`。
+
+使用：
+
+```powershell
+.\.venv\Scripts\python.exe .\02_IndexETF\script.py              # 更新数据并启动看板
+.\.venv\Scripts\python.exe .\02_IndexETF\script.py --fetch-only # 只更新数据，不启动
+.\.venv\Scripts\python.exe .\02_IndexETF\script.py --refresh    # 强制全量刷新
+.\.venv\Scripts\python.exe .\02_IndexETF\script.py --dca-check  # 控制台打印当月定投分配
+.\.venv\Scripts\python.exe .\02_IndexETF\update_portfolio.py    # 重算持仓占比与收益率
+```
+
+启动后打开 `http://127.0.0.1:8050`。每月定投流程见下方「组合持仓」；更详细的说明见 [02_IndexETF/README.md](02_IndexETF/README.md)。
 
 
-## 2. Index ETF
+## 3. 短线 ETF
 
-- [DCA Index Funds Dashboard](02_IndexETF/README.md) - data for the 8 fund-related indices, monthly DCA allocation (¥2,000 + €50), and an emergency position review.
-- Run locally with `.\.venv\Scripts\python.exe .\02_IndexETF\script.py`, then open `http://127.0.0.1:8050`.
-- Pages: `/` index dashboard, `/dca.html` monthly DCA decision, `/holdings.html` emergency review.
+ETF 动量轮动策略：拉取场内 ETF 日 K，计算动量与 MACD 信号，生成 TOP N 持仓建议和可视化报告（用场外 C 类份额执行，并标注 7 天免赎回费标的）。
+
+使用：
+
+```powershell
+.\.venv\Scripts\python.exe .\03_ShortETF\run.py               # 全流程：拉数据 + 算信号 + 出策略
+.\.venv\Scripts\python.exe .\03_ShortETF\run.py --update      # 仅更新数据
+.\.venv\Scripts\python.exe .\03_ShortETF\run.py --signal      # 仅用本地数据算信号（不联网）
+.\.venv\Scripts\python.exe .\03_ShortETF\run.py --universe 19 # 使用 19 只小池（默认 100 只）
+.\.venv\Scripts\python.exe .\03_ShortETF\run.py --top 3       # TOP N 持仓数量
+```
+
+输出：`strategy_latest.json` 最新策略、`strategy_report.html` 可视化报告、`data/etf_strategy.db` 本地数据库；历史报告保存在 `reports/`。
 
 
-## 3. Short ETF
+## 4. 行业 ETF
 
 
-## 4. Sector ETF
+## 5. 组合持仓
 
+每月流程：
+1. 更新数据 — 运行 `.\.venv\Scripts\python.exe .\02_IndexETF\script.py --fetch-only`（行情自动增量更新）
+2. 买入 — 打开定投决策页查看当月分配，在 App 中手动下单
+3. 记录 — 在持仓记录页（`/portfolio.html`）添加定投记录；保存到本地数据库并自动更新根 [README.md](D:/CodeX/InvestmentLearningJourney/README.md) 的当前持仓表
+4. 重算比例 — 运行 `.\.venv\Scripts\python.exe .\02_IndexETF\update_portfolio.py`，自动重算当前占比与收益率
 
-## 5. Portfolio
+### 当前持仓
 
-The monthly workflow:
-1. Refresh data — run .\\.venv\\Scripts\\python.exe .\\02_IndexETF\\script.py --fetch-only (market data updates automatically)
-2. Buy — open the DCA decision page, read this month's allocation, place the orders manually
-3. Record — add a DCA record on the portfolio page (`/portfolio.html`); it saves to `02_IndexETF/data/dca_records.csv` and updates the Current Holdings table in the root [README.md](D:/CodeX/InvestmentLearningJourney/README.md) automatically
-4. Recalculate ratios — run the new .\\.venv\\Scripts\\python.exe .\\02_IndexETF\\update_portfolio.py, which automatically recomputes the Current % and Return % columns
+| 类型 | 市场 | 基金                 | 代码     | 目标占比 | 当前占比  | 当前持仓      |   累计成本 |   收益率 |
+|----|----|--------------------|--------|------|-------|-----------|-------:|------:|
+| 指数 | 沪深 | 华泰柏瑞沪深300ETF联接A    | 460300 | 25%  | 42%   | ¥2,536.48 | ¥2,625 | -3.4% |
+| 指数 | 沪深 | 南方中证500ETF联接(LOF)A | 160119 | 15%  | 6.2%  | ¥375      |   ¥371 |  1.1% |
+| 指数 | 沪深 | 易方达创业板ETF联接A       | 110026 | 10%  | 2.1%  | ¥125      |   ¥125 |  0.0% |
+| 指数 | 沪深 | 富国中证红利指数增强A        | 100032 | 15%  | 3.1%  | ¥188      |   ¥188 |  0.0% |
+| 指数 | 港股 | 汇添富恒生指数（QDII-LOF）  | 164705 | 15%  | 20.6% | ¥1,243.61 | ¥1,187 |  4.8% |
+| 指数 | 港股 | 易方达恒生红利低波ETF联接A    | 021457 | 20%  | 26%   | ¥1,572.82 | ¥1,500 |  4.9% |
+| 指数 | 美股 | 安硕标普500 UCITS ETF  | SXR8   | -    | -     | 0.6 份     |   €500 |     - |
+| 量化 | 沪深 | -                  | -      | -    | -     | -         |      - |     - |
+| 量化 | 沪深 | -                  | -      | -    | -     | -         |      - |     - |
+| 量化 | 沪深 | -                  | -      | -    | -     | -         |      - |     - |
+| 行业 | 沪深 | -                  | -      | -    | -     | -         |      - |     - |
+| 行业 | 沪深 | -                  | -      | -    | -     | -         |      - |     - |
+| 行业 | 沪深 | -                  | -      | -    | -     | -         |      - |     - |
 
-### Current Holdings
+定投记录在持仓记录页（`/portfolio.html`）管理，存放于本地数据库 `02_IndexETF/data/market.db`。
 
-| Market | Platform | Fund | Code | Target % | Current % | Current Position | Current Cost | Return % |
-|---|---|---|---|---|---|---|---:|---:|
-| China A-share | Domestic fund platform | 华泰柏瑞沪深300ETF联接A | 460300 | 25% | 42% | ¥2,536.48 | ¥2,625 | -3.4% |
-| China A-share | Domestic fund platform | 南方中证500ETF联接(LOF)A | 160119 | 15% | 6.2% | ¥375 | ¥371 | 1.1% |
-| China A-share | Domestic fund platform | 易方达创业板ETF联接A | 110026 | 10% | 2.1% | ¥125 | ¥125 | 0.0% |
-| China A-share | Domestic fund platform | 富国中证红利指数增强A | 100032 | 15% | 3.1% | ¥188 | ¥188 | 0.0% |
-| Hong Kong | Domestic fund platform | 汇添富恒生指数（QDII-LOF） | 164705 | 15% | 20.6% | ¥1,243.61 | ¥1,187 | 4.8% |
-| Hong Kong | Domestic fund platform | 易方达恒生红利低波ETF联接A | 021457 | 20% | 26% | ¥1,572.82 | ¥1,500 | 4.9% |
-| United States | IBKR | iShares Core S&P 500 UCITS ETF USD (Acc) | SXR8 | - | - | 0.6 shares | €425.918 | - |
-| Cash | IBKR | EUR cash | EUR | - | - | €74.082 | €74.082 | - |
-
-DCA records are managed on the portfolio page (`/portfolio.html`) and stored in [dca_records.csv](02_IndexETF/data/dca_records.csv).
-
-## 6. Resources
+## 6. 资料
 
 - [指数基金投资指南.epub](Glossary/指数基金投资指南.epub)

@@ -1,11 +1,11 @@
 """
-Recompute the Current % and Return % columns in the root README holdings table.
+重算根 README 持仓表中的当前占比与收益率两列。
 
-Run after updating Current Position / Current Cost in the root README:
+在根 README 更新持仓金额/累计成本后运行：
     python update_portfolio.py
 
-Current %  = position / total RMB positions (EUR rows excluded)
-Return %   = (Current Position - Current Cost) / Current Cost
+当前占比 = 持仓 / 人民币持仓合计（欧元行不参与）
+收益率   = (当前持仓 - 累计成本) / 累计成本
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ README = ROOT / "README.md"
 
 
 def extract_amount(raw: str) -> float | None:
-    if not raw or "share" in raw.lower():
+    if not raw or "share" in raw.lower() or "份" in raw:
         return None
     match = re.search(r"\d+(?:\.\d+)?", raw.replace(",", ""))
     return float(match.group()) if match else None
@@ -39,18 +39,18 @@ def fmt_return(value: float | None) -> str:
 
 
 def recompute_readme(path: Path = README) -> dict[str, Any]:
-    """Recompute Current % / Return % columns in the README holdings table. Returns a summary."""
+    """重算 README 持仓表中的当前占比/收益率列，返回汇总。"""
     lines = path.read_text(encoding="utf-8").splitlines()
-    start = next((i for i, line in enumerate(lines) if re.match(r"^#{2,3}\s+Current Holdings", line)), None)
+    start = next((i for i, line in enumerate(lines) if re.match(r"^#{2,3}\s+(Current Holdings|当前持仓)", line)), None)
     if start is None:
-        return {"error": "Current Holdings heading not found"}
+        return {"error": "未找到当前持仓标题"}
 
     table_start = next(
-        (i for i in range(start + 1, len(lines)) if lines[i].startswith("|") and "Market" in lines[i]),
+        (i for i in range(start + 1, len(lines)) if lines[i].startswith("|") and ("Market" in lines[i] or "市场" in lines[i])),
         None,
     )
     if table_start is None:
-        return {"error": "Holdings table not found"}
+        return {"error": "未找到持仓表"}
 
     rows: list[tuple[int, list[str]]] = []
     for i in range(table_start + 1, len(lines)):
@@ -72,7 +72,7 @@ def recompute_readme(path: Path = README) -> dict[str, Any]:
     for i, cells in rows:
         position = extract_amount(cells[6])
         cost = extract_amount(cells[7])
-        is_eur = "€" in cells[6] or "share" in cells[6].lower()
+        is_eur = "€" in cells[6] or "份" in cells[6] or "share" in cells[6].lower()
 
         if is_eur or position is None:
             new_current, new_return = "-", "-"
@@ -96,20 +96,20 @@ def recompute_readme(path: Path = README) -> dict[str, Any]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Recompute Current % / Return % in the root README holdings table")
-    parser.add_argument("--path", type=Path, default=README, help="Target README path (for testing)")
+    parser = argparse.ArgumentParser(description="重算根 README 持仓表中的当前占比与收益率")
+    parser.add_argument("--path", type=Path, default=README, help="目标 README 路径（用于测试）")
     args = parser.parse_args()
     result = recompute_readme(args.path)
     if "error" in result:
         print(result["error"])
         return
     rmb_total, changed = result["total"], result["changed"]
-    print(f"RMB total position: ¥{rmb_total:,.0f}")
+    print(f"人民币持仓合计：¥{rmb_total:,.0f}")
     if changed:
         for code, oc, nc, or_, nr in changed:
-            print(f"  {code}: Current % {oc} -> {nc} | Return % {or_} -> {nr}")
+            print(f"  {code}：当前占比 {oc} -> {nc} | 收益率 {or_} -> {nr}")
     else:
-        print("No changes needed (Current % / Return % already up to date).")
+        print("无需修改（当前占比/收益率已是最新）。")
 
 
 if __name__ == "__main__":

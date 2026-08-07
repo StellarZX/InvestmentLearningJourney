@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title data-i18n="dcaPageTitle">Monthly DCA Allocation</title>
+  <title data-i18n="dcaPageTitle">每月定投分配决策</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body class="dca-page">
@@ -11,15 +11,15 @@
     <div class="brand">
       <div class="brand-mark">ILJ</div>
       <div>
-        <h1 data-i18n="dcaPageTitle">Monthly DCA Allocation</h1>
+        <h1 data-i18n="dcaPageTitle">每月定投分配决策</h1>
         <p class="muted" data-i18n="dcaPageSubtitle"></p>
       </div>
     </div>
     <nav class="page-nav">
-      <a href="/" class="nav-link" data-i18n="navIndices">Index Dashboard</a>
-      <a href="/dca.html" class="nav-link active" data-i18n="navDca">DCA Decision</a>
-      <a href="/portfolio.html" class="nav-link" data-i18n="navPortfolio">Portfolio</a>
-      <a href="/holdings.html" class="nav-link" data-i18n="navHoldings">Emergency Review</a>
+      <a href="/" class="nav-link" data-i18n="navIndices">指数看板</a>
+      <a href="/dca.html" class="nav-link active" data-i18n="navDca">定投决策</a>
+      <a href="/portfolio.html" class="nav-link" data-i18n="navPortfolio">持仓记录</a>
+      <a href="/holdings.html" class="nav-link" data-i18n="navHoldings">持仓应急</a>
     </nav>
     <div class="sidebar-note">
       <p class="muted" data-i18n="dcaRunHint"></p>
@@ -29,13 +29,16 @@
   <main class="main">
     <section class="toolbar">
       <div>
-        <p class="eyebrow" data-i18n="dcaEyebrow">Monthly plan</p>
+        <p class="eyebrow" data-i18n="dcaEyebrow">月度计划</p>
         <h2 id="dcaTitle"></h2>
         <p id="dcaCaption" class="muted"></p>
       </div>
       <div class="toolbar-actions">
-        <button id="languageButton" type="button">中文</button>
-        <button id="dcaRefreshButton" type="button" data-i18n="dcaRefresh">Recalculate</button>
+        <label>
+          <span data-i18n="dcaMonthlyTotal">月度总投入（¥）</span>
+          <input type="number" id="monthlyTotalInput" min="0" step="100" value="2500" />
+        </label>
+        <button id="dcaRefreshButton" type="button" data-i18n="dcaRefresh">重新计算</button>
       </div>
     </section>
 

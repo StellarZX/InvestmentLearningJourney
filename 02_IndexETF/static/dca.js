@@ -1,58 +1,22 @@
 "use strict";
 
 const state = {
-  lang: localStorage.getItem("marketDashboardLanguage") || "en",
+  lang: "zh",
   dca: null,
 };
 
 const translations = {
-  en: {
-    dcaPageTitle: "Monthly DCA Allocation",
-    dcaPageSubtitle: "Valuation-based monthly plan: ¥2,000 (CNY) + €50 (EUR).",
-    dcaEyebrow: "Monthly plan",
-    navIndices: "Index Dashboard",
-    navDca: "DCA Decision",
-    navPortfolio: "Portfolio",
-    navHoldings: "Emergency Review",
-    dcaRefresh: "Recalculate",
-    dcaRunHint: "Monthly flow: run .\\.venv\\Scripts\\python.exe .\\02_DCA_Index_Funds\\script.py --fetch-only on the 10th, then open this page.",
-    dcaAsOf: "As of",
-    dcaBudget: "Monthly budget",
-    dcaFund: "Fund",
-    dcaCode: "Code",
-    dcaQuota: "Quota",
-    dcaTracking: "Tracking index",
-    dcaPercentile: "Percentile",
-    dcaZone: "Zone",
-    dcaMultiplier: "Multiplier",
-    dcaAmount: "Amount",
-    dcaTotal: "Total",
-    dcaRule: "Rule: percentile <30% → 1.5×, 30-70% → 1.0×, >70% → 0.5×, normalized to the budget.",
-    groupCN: "Bank of China App (CNY)",
-    groupIBKR: "Interactive Brokers (EUR)",
-    zoneCheap: "Cheap",
-    zoneNeutral: "Neutral",
-    zoneExpensive: "Expensive",
-    zoneNone: "N/A",
-    sourceLegulegu: "Legulegu PE(TTM) history percentile",
-    sourcePrice3y: "3-year price percentile",
-    sourceProxy: "3-year price percentile (ETF proxy)",
-    sourceNone: "No data, treated as 1.0×",
-    proxyCsiDividend: "Price proxy: CSI Dividend ETF (515080)",
-    proxyHsDlv: "Price proxy: HS Dividend Low Vol ETF (159545)",
-    languageButton: "中文",
-    unableToLoad: "Unable to load data",
-  },
   zh: {
     dcaPageTitle: "每月定投分配决策",
-    dcaPageSubtitle: "按估值/价格分位调整的月度计划：人民币 ¥2,000 + 欧元 €50。",
+    dcaPageSubtitle: "按估值/价格分位调整的月度计划：A股 ¥1,500 + 美股 ¥1,000（默认合计 ¥2,500，可调整）。",
     dcaEyebrow: "月度计划",
+    dcaMonthlyTotal: "月度总投入（¥）",
     navIndices: "指数看板",
     navDca: "定投决策",
     navPortfolio: "持仓记录",
     navHoldings: "持仓应急",
     dcaRefresh: "重新计算",
-    dcaRunHint: "每月 10 号：先运行 .\\.venv\\Scripts\\python.exe .\\02_DCA_Index_Funds\\script.py --fetch-only，再打开本页查看当月分配。",
+    dcaRunHint: "每月 10 号：先运行 .\\.venv\\Scripts\\python.exe .\\02_IndexETF\\script.py --fetch-only，再打开本页查看当月分配。",
     dcaAsOf: "决策日期",
     dcaBudget: "月度预算",
     dcaFund: "基金",
@@ -65,12 +29,13 @@ const translations = {
     dcaAmount: "本月金额",
     dcaTotal: "合计",
     dcaRule: "规则：分位 <30% 买 1.5 倍，30%-70% 买 1.0 倍，>70% 买 0.5 倍，再归一化到月度预算。",
-    groupCN: "中国银行 App（人民币）",
-    groupIBKR: "盈透证券 IBKR（欧元）",
+    groupCN: "A股长期指数（月度定投）",
+    groupUS: "美股长期指数（每日 ¥10 定投）",
     zoneCheap: "便宜",
     zoneNeutral: "中性",
     zoneExpensive: "偏贵",
     zoneNone: "无数据",
+    zoneFixed: "固定",
     sourceLegulegu: "乐咕乐股 PE(TTM) 历史分位",
     sourcePrice3y: "价格分位（近3年）",
     sourceProxy: "ETF 价格分位（近3年，代理）",
@@ -79,10 +44,10 @@ const translations = {
     proxyHsDlv: "用恒生红利低波ETF(159545)价格代理",
     notesZh: [
       "规则：分位 <30% 买 1.5 倍，30%-70% 买 1.0 倍，>70% 买 0.5 倍，再归一化到月度预算。",
-      "港股/美股/红利等无估值数据的标的用近 3 年价格分位替代，仅供参考。",
-      "金额为计划金额，不含手续费与申购限制；QDII 基金可能存在限购，请以 App 实际为准。",
+      "A股与美股比例固定 60%/40%（默认 ¥1,500 + ¥1,000）；修改上方月度总投入后点“重新计算”。",
+      "美股通过国内平台每日 ¥10 定投：标普500 = 摩根A + 摩根C；纳斯达克100 = 摩根A / 招商A / 华泰A；金额固定、不随估值调整。",
+      "港股/美股/红利等无估值数据的标的用近 3 年价格分位作参考；金额为计划金额，不含手续费与申购限制。",
     ],
-    languageButton: "English",
     unableToLoad: "无法加载数据",
   },
 };
@@ -90,7 +55,7 @@ const translations = {
 const fmt = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
 function t(key) {
-  return translations[state.lang][key] || translations.en[key] || key;
+  return translations[state.lang][key] || key;
 }
 
 function applyTranslations() {
@@ -99,11 +64,10 @@ function applyTranslations() {
   document.querySelectorAll("[data-i18n]").forEach((node) => {
     node.textContent = t(node.dataset.i18n);
   });
-  document.querySelector("#languageButton").textContent = t("languageButton");
 }
 
 function zoneLabel(zone) {
-  const key = { cheap: "zoneCheap", neutral: "zoneNeutral", expensive: "zoneExpensive", none: "zoneNone" }[zone];
+  const key = { cheap: "zoneCheap", neutral: "zoneNeutral", expensive: "zoneExpensive", none: "zoneNone", fixed: "zoneFixed" }[zone];
   return key ? t(key) : zone;
 }
 
@@ -131,7 +95,7 @@ function renderDca(payload) {
   host.innerHTML = payload.groups.map((g) => `
     <div class="dca-group">
       <div class="dca-group-header">
-        <h4>${g.market === "cn" ? t("groupCN") : t("groupIBKR")}</h4>
+        <h4>${g.market === "cn" ? t("groupCN") : t("groupUS")}</h4>
         <span class="dca-budget">${t("dcaBudget")}: ${currencySymbol(g)}${fmt.format(g.budget)}</span>
       </div>
       <div class="table-wrap">
@@ -188,7 +152,9 @@ function renderDca(payload) {
 
 async function loadDca() {
   try {
-    const response = await fetch("/api/dca");
+    const monthly = document.querySelector("#monthlyTotalInput").value;
+    const url = monthly ? `/api/dca?monthly=${encodeURIComponent(monthly)}` : "/api/dca";
+    const response = await fetch(url);
     if (!response.ok) throw new Error(`Request failed: /api/dca`);
     const payload = await response.json();
     state.dca = payload;
@@ -199,13 +165,6 @@ async function loadDca() {
     box.classList.remove("hidden");
   }
 }
-
-document.querySelector("#languageButton").addEventListener("click", () => {
-  state.lang = state.lang === "en" ? "zh" : "en";
-  localStorage.setItem("marketDashboardLanguage", state.lang);
-  applyTranslations();
-  if (state.dca) renderDca(state.dca);
-});
 
 document.querySelector("#dcaRefreshButton").addEventListener("click", loadDca);
 

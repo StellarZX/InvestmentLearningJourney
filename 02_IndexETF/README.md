@@ -1,108 +1,116 @@
-# DCA Index Funds Dashboard
+# 定投指数基金看板
 
-This folder contains a local market index data system.
+本目录是本地指数数据与定投决策系统。
 
-It can:
+功能：
 
-- fetch major index data from Yahoo Finance chart API;
-- store each index as yearly CSV files under `data/indices`;
-- store available valuation metrics under `data/valuations`;
-- store composite assessment scores under `data/assessments`;
-- run a local dashboard at `http://127.0.0.1:8050`;
-- show latest index values, daily changes, long-term change, a close-price chart, valuation curves, and recent OHLC records.
-- switch the dashboard between English and Chinese with one button.
+- 从 Yahoo Finance / 新浪 / 乐咕乐股（经 AkShare）增量抓取主要指数数据；
+- 数据统一存放在本地数据库 `data/market.db`（不再使用按年 CSV）；
+- 在 `http://127.0.0.1:8050` 运行本地看板；
+- 展示最新指数点位、日涨跌、长期涨跌、收盘价走势、估值曲线与近期 OHLC 记录。
 
-The current valuation module supports CSI 300 data from Legulegu through AkShare, including earnings yield, P/E TTM, and P/B.
+估值模块当前支持沪深300、中证500（乐咕乐股，经 AkShare），含盈利收益率、PE(TTM)、PB。
 
-The dashboard also calculates a `Composite Assessment Score` for every index.
+看板还会为每个指数计算「综合评估评分」：
 
-For indices with valuation data, the score uses:
+有估值数据的指数：
 
-- 45% valuation score;
-- 25% price percentile score;
-- 20% drawdown score;
-- 10% trend score.
+- 45% 估值分
+- 25% 价格分位分
+- 20% 回撤分
+- 10% 趋势分
 
-For indices without valuation data, the score uses:
+没有估值数据的指数：
 
-- 45% price percentile score;
-- 35% drawdown score;
-- 20% trend score.
+- 45% 价格分位分
+- 35% 回撤分
+- 20% 趋势分
 
-A higher score means the index has a more attractive combination of valuation, price position, drawdown, and trend. This is only a preliminary reference for long-term investors, not investment advice.
+分数越高，表示估值、价格位置、回撤与趋势组合越有吸引力。仅作长期投资的前置参考，不构成投资建议。
 
-## Monthly DCA Decision
+## 月度定投决策
 
-The dashboard also includes a monthly dollar-cost-averaging (DCA) allocation panel (`/api/dca`). It splits a monthly budget of ¥2,000 (Bank of China app funds, CNY) and €50 (IBKR ETFs, EUR) across a configurable fund universe.
+看板包含月度定投分配面板（`/api/dca`）。按固定比例 60%/40% 拆分月度预算：A股长期指数 ¥1,500 + 美股长期指数 ¥1,000（国内平台每日 ¥10 定投）。月度总投入可在决策页输入框中调整。
 
-How it works:
+工作原理：
 
-- each fund maps to its tracking index;
-- each fund has a quota weight (base_weight): the CNY side currently targets CSI 300 / CSI 500 / ChiNext / CSI Dividend / Hang Seng / Hang Seng Dividend Low Volatility at 25/15/10/15/15/20 (weights 2.5/1.5/1.0/1.5/1.5/2.0);
-- when valuation data exists (CSI 300, CSI 500 via Legulegu/AkShare), the decision uses the PE(TTM) history percentile;
-- otherwise it uses a 3-year price percentile (Hang Seng, S&P 500, NASDAQ-100, MSCI World, ChiNext, CSI Dividend);
-- percentile < 30% → 1.5× the normal weight, 30-70% → 1.0×, >70% → 0.5×;
-- weights are normalized to the exact monthly budget.
+- 每只基金映射到其跟踪指数；
+- 每只基金有配额权重（base_weight）：A股侧目前为 沪深300 / 中证500 / 创业板 / 中证红利 / 恒生指数 / 恒生红利低波 = 25/15/10/15/15/20（权重 2.5/1.5/1.0/1.5/1.5/2.0）；美股侧为 标普500 40% / 纳斯达克100 60%，每只基金等权（摩根标普500 A/C；摩根/招商/华安 纳斯达克100 A）；
+- 有估值数据时（沪深300、中证500，乐咕乐股/AkShare）用 PE(TTM) 历史分位；
+- 否则用近 3 年价格分位（恒生、标普500、纳斯达克100、创业板、中证红利等）；
+- 分位 <30% → 1.5 倍权重，30-70% → 1.0 倍，>70% → 0.5 倍；
+- 权重归一化到精确的月度预算。
 
-NASDAQ-100 and S&P 500 are bought on IBKR only (EQQQ and SXR8); the CNY list focuses on China/HK indices.
+美股通过国内平台每日 ¥10 定投执行（标普500：摩根标普500 A/C；纳斯达克100：摩根纳斯达克100 A / 招商纳斯达克100 A / 华安纳斯达克100 A），金额固定、不随估值调整；IBKR 已从资产配置中去掉。
 
-Monthly flow (run on the 10th):
+每月 10 号流程：
 
 ```powershell
 .\.venv\Scripts\python.exe .\02_IndexETF\script.py --fetch-only
 ```
 
-Then open `http://127.0.0.1:8050` to read the allocation. To print the allocation in the console instead:
+然后打开 `http://127.0.0.1:8050` 查看当月分配；也可以在控制台直接打印：
 
 ```powershell
 .\.venv\Scripts\python.exe .\02_IndexETF\script.py --dca-check
 ```
 
-The fund universe and base weights are defined in `02_IndexETF/dca.py` (FUNDS list) and can be edited to match your own plan. Verify fund availability and purchase limits in your apps before buying.
+基金池与基础权重定义在 `02_IndexETF/lib/dca.py`（FUNDS / US_FUNDS），可按自己的计划修改。下单前请在各平台确认基金可买与限购情况。
 
-Monthly execution records are kept in `data/dca_records.csv` (managed via the `/portfolio.html` page); current holdings live in the repository root README (single source of truth).
+每月执行记录保存在本地数据库 `data/market.db`（通过 `/portfolio.html` 页面管理）；当前持仓以根 README 为准（唯一事实来源）。
 
-## Emergency Position Review
+## 目录结构
 
-The dashboard also has an emergency review page (`/holdings.html`, data from `/api/holdings`). It reads the actual holdings from the repository root `README.md` (the single source of truth), attaches market metrics for each tracked index (trend vs. the 200-day average, 6-month momentum, drawdown, valuation/price percentile), and ranks them by a transparent sell-priority score:
+```text
+02_IndexETF/
+├── script.py            # 主脚本：抓取数据并启动看板
+├── update_portfolio.py  # 重算根 README 的当前占比与收益率
+├── lib/                 # 核心模块（db.py / dca.py / holdings.py / portfolio.py）
+├── static/              # 网页前端
+└── data/                # 本地数据库 market.db
+```
 
-- 40% trend (distance from the 200-day average)
-- 30% momentum (6-month return)
-- 30% valuation/price percentile
+## 持仓应急评估
 
-Each holding gets a tier (sell first / may sell / keep) plus a redemption-liquidity note (A-share funds T+1~T+3, IBKR T+2 settlement, QDII T+7~T+10). This is a decision-support framework, not investment advice.
+看板还提供应急评估页（`/holdings.html`，数据来自 `/api/holdings`）。它读取根 `README.md` 中的实际持仓（唯一事实来源），为每个跟踪指数附上市场指标（相对 200 日均线的趋势、近 6 个月动量、回撤、估值/价格分位），并按透明的卖出优先级打分排序：
 
-## Run
+- 40% 趋势（相对 200 日均线的距离）
+- 30% 动量（近 6 个月收益）
+- 30% 估值/价格分位
 
-From the project root:
+每只持仓会得到一档评级（优先卖出 / 可考虑卖出 / 继续持有），并附赎回到账速度说明（A股基金 T+1~T+3，IBKR T+2 交割，QDII T+7~T+10）。这是决策支持框架，不构成投资建议。
+
+## 运行
+
+在项目根目录：
 
 ```powershell
 .\.venv\Scripts\python.exe .\02_IndexETF\script.py
 ```
 
-Then open:
+然后打开：
 
 ```text
 http://127.0.0.1:8050
 ```
 
-## Refresh Data
+## 更新数据
 
-By default, the script uses incremental updates. It checks whether today's data already exists locally. If it does, the local CSV files are used directly. If it does not, the script fetches only the recent missing window, merges it with local CSV files, and saves the updated yearly files.
+默认使用增量更新：先检查本地是否已有今日数据，有则直接使用；没有则只抓取缺失的时间窗口，与数据库合并后保存。
 
-Force a full data refresh only when you want to rebuild the local data files:
+强制全量刷新：
 
 ```powershell
 .\.venv\Scripts\python.exe .\02_IndexETF\script.py --refresh
 ```
 
-Fetch data without starting the server:
+只抓取数据、不启动服务器：
 
 ```powershell
 .\.venv\Scripts\python.exe .\02_IndexETF\script.py --fetch-only
 ```
 
-Change history length:
+修改历史长度：
 
 ```powershell
 .\.venv\Scripts\python.exe .\02_IndexETF\script.py --years 15
