@@ -179,6 +179,14 @@ def compute_signal(df):
     m60 = close.iloc[-1] / close.iloc[-min(60, n)] - 1 if n > 60 else m20
     dif, dea = macd_series(close)
     macd_bull = bool(dif.iloc[-1] > dea.iloc[-1])
+    macd_hist = 2.0 * (dif - dea)  # MACD 柱
+    # 多头衰竭判断：柱为正（多头）但较 3 天前明显缩短 → 动能衰减警告
+    macd_weakening = False
+    if macd_bull and n >= 4:
+        h0 = abs(macd_hist.iloc[-1])
+        h3 = abs(macd_hist.iloc[-4])
+        if h3 > 1e-6 and h0 < h3 * 0.6:
+            macd_weakening = True
     ma20 = close.rolling(20).mean().iloc[-1]
     ma60 = close.rolling(60).mean().iloc[-1] if n >= 60 else ma20
     above_ma60 = bool(close.iloc[-1] > ma60)
@@ -205,7 +213,8 @@ def compute_signal(df):
     return {
         'date': str(df['date'].iloc[-1]), 'mom5': round(float(m5)*100, 2),
         'mom20': round(float(m20)*100, 2), 'mom60': round(float(m60)*100, 2),
-        'macd_bull': macd_bull, 'above_ma60': above_ma60, 'score': s,
+        'macd_bull': macd_bull, 'macd_weakening': macd_weakening,
+        'above_ma60': above_ma60, 'score': s,
         'signal': signal, 'reason': reason, 'last': round(float(close.iloc[-1]), 4),
     }
 
@@ -302,17 +311,31 @@ def build_strategy(universe, top_n=3, db_path=DB_PATH, show_top=10):
     print(f'TOP{top_n} 持仓建议:')
     for s in top:
         fee = '✅7天免赎' if s.get('fee_free7') else '⚠️' + (s.get('fee_desc') or '未核实')
-        print(f'  {s["code"]} {s["name"]:12s} 评分{s["score"]:3d} 20D:{s["mom20"]:+6.1f}% -> {s["otc_fund"] or "无映射"} C:{s["otc_c"] or "-"} [{fee}]')
+        macd_s = '多头' if s.get('macd_bull') else '空头'
+        if s.get('macd_weakening'):
+            macd_s = '多头⚠️衰竭'
+        print(f'  {s["code"]} {s["name"]:12s} 评分{s["score"]:3d} 20D:{s["mom20"]:+6.1f}% MACD:{macd_s} -> {s["otc_fund"] or "无映射"} C:{s["otc_c"] or "-"} [{fee}]')
     if len(top) < top_n:
         print(f'  [提示] 满足条件的仅 {len(top)} 只，不足 {top_n}；若为 0 应全部空仓')
     print(f'\n候选池 TOP{show_top}（挑选 7 天免赎标的执行，[]内为费率标签）:')
     for i, s in enumerate(candidates):
         fee = '✅7天免赎' if s.get('fee_free7') else '⚠️' + (s.get('fee_desc') or '未核实')
+        macd_s = '多头' if s.get('macd_bull') else '空头'
+        if s.get('macd_weakening'):
+            macd_s = '多头⚠️衰竭'
         mark = ' <-- 持仓' if i < top_n else ''
-        print(f'  {i+1:2d}. {s["otc_fund"] or s["name"]} C:{s["otc_c"] or "-"} 20D:{s["mom20"]:+6.1f}% [{fee}]{mark}')
+        print(f'  {i+1:2d}. {s["otc_fund"] or s["name"]} C:{s["otc_c"] or "-"} 20D:{s["mom20"]:+6.1f}% MACD:{macd_s} [{fee}]{mark}')
     return result
 
 # ================= 报告输出 =================
+def macd_tag(s):
+    """MACD 状态彩色标签：红=多头 / 橙=多头衰竭警告 / 绿=空头"""
+    if s.get('macd_bull'):
+        if s.get('macd_weakening'):
+            return '<span style="color:#e8590c;font-weight:700">🟠多头·衰竭警告</span>'
+        return '<span style="color:#e03131;font-weight:700">🟥多头</span>'
+    return '<span style="color:#0ca678;font-weight:700">🟩空头</span>'
+
 def write_report(result):
     top = result['strategy']
     rows_html = ''
@@ -322,7 +345,7 @@ def write_report(result):
           <td><b>{s['name']}</b><br><span style="color:#868e96;font-size:12px">{s['code']}</span></td>
           <td><span class="score-pill" style="background:#fff0f0;color:#c92a2a">{s['score']}</span></td>
           <td class="up">+{s['mom20']:.1f}%</td>
-          <td>{'多头' if s['macd_bull'] else '空头'}</td>
+          <td>{macd_tag(s)}</td>
           <td>{s['otc_fund'] or '—'}<br>{fee_tag}</td>
           <td>{s['otc_c'] or '—'}</td>
           <td>{(1.0/len(top)*100) if top else 0:.0f}%</td>
@@ -338,7 +361,7 @@ def write_report(result):
           <td>{i+1}</td>
           <td><b>{s['name']}</b><br><span style="color:#868e96;font-size:12px">{s['code']}</span></td>
           <td class="up">+{s['mom20']:.1f}%</td>
-          <td>{'多头' if s['macd_bull'] else '空头'}</td>
+          <td>{macd_tag(s)}</td>
           <td>{s['otc_fund'] or '—'}<br>{fee_tag}</td>
           <td>{s['otc_c'] or '—'}</td>
           <td>{pick}</td>
