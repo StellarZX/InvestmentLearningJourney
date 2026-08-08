@@ -277,7 +277,8 @@ def build_strategy(universe, top_n=3, db_path=DB_PATH, show_top=10):
             dedup[key] = s
     unique = sorted(dedup.values(), key=lambda x: -x['mom20'])
     top = unique[:top_n]
-    candidates = unique[:show_top]  # 候选池（供挑选 7 天免赎标的）
+    # 候选池（供挑选 7 天免赎标的）：show_top<=0 表示展示全部双多标的
+    candidates = unique if (show_top is None or show_top <= 0) else unique[:show_top]
     today = datetime.datetime.now().strftime('%Y-%m-%d')
 
     # 写入策略日志
@@ -317,7 +318,8 @@ def build_strategy(universe, top_n=3, db_path=DB_PATH, show_top=10):
         print(f'  {s["code"]} {s["name"]:12s} 评分{s["score"]:3d} 20D:{s["mom20"]:+6.1f}% MACD:{macd_s} -> {s["otc_fund"] or "无映射"} C:{s["otc_c"] or "-"} [{fee}]')
     if len(top) < top_n:
         print(f'  [提示] 满足条件的仅 {len(top)} 只，不足 {top_n}；若为 0 应全部空仓')
-    print(f'\n候选池 TOP{show_top}（挑选 7 天免赎标的执行，[]内为费率标签）:')
+    cand_label = f'全部 {len(candidates)} 只' if (show_top is None or show_top <= 0) else f'TOP{show_top}'
+    print(f'\n双多候选池（{cand_label}，挑选 7 天免赎标的执行，[]内为费率标签）:')
     for i, s in enumerate(candidates):
         fee = '✅7天免赎' if s.get('fee_free7') else '⚠️' + (s.get('fee_desc') or '未核实')
         macd_s = '多头' if s.get('macd_bull') else '空头'
@@ -367,6 +369,26 @@ def write_report(result):
           <td>{pick}</td>
           <td>{in_top}</td>
         </tr>'''
+    # 全池信号一览：池内全部标的（含非双多），按评分降序
+    all_rows_html = ''
+    all_sorted = sorted(result.get('all_signals', []), key=lambda x: -x.get('score', 0))
+    for i, s in enumerate(all_sorted):
+        free7 = s.get('fee_free7')
+        fee_tag = '<span style="color:#0ca678;font-weight:700">✅7天免赎</span>' if free7 else '<span style="color:#f59f00">⚠️' + (s.get('fee_desc') or '未核实') + '</span>'
+        mom5 = s.get('mom5', 0); mom20 = s.get('mom20', 0); mom60 = s.get('mom60', 0)
+        all_rows_html += f'''<tr>
+          <td>{i+1}</td>
+          <td><b>{s['name']}</b><br><span style="color:#868e96;font-size:12px">{s['code']}</span></td>
+          <td><span class="score-pill" style="background:#fff0f0;color:#c92a2a">{s['score']}</span></td>
+          <td class="{'up' if mom5 > 0 else 'down'}">{mom5:+.1f}%</td>
+          <td class="{'up' if mom20 > 0 else 'down'}">{mom20:+.1f}%</td>
+          <td class="{'up' if mom60 > 0 else 'down'}">{mom60:+.1f}%</td>
+          <td>{macd_tag(s)}</td>
+          <td>{s.get('signal', '—')}</td>
+          <td>{s.get('otc_fund') or '—'}<br>{fee_tag}</td>
+          <td>{s.get('otc_c') or '—'}</td>
+        </tr>'''
+    cand_title = f"候选池（全部 {len(result.get('candidates', []))} 只双多，从中挑选 7 天免赎标的执行）" if result.get('show_top', 0) <= 0 else f"候选池 TOP{result.get('show_top')}（从中挑选 7 天免赎标的执行）"
     empty_note = '<div class="advice warn"><h4>空仓提示</h4><p>当前无标的同时满足动量&gt;0 与 MACD 多头，按策略应全部空仓等待。</p></div>' if not top else ''
     html = f'''<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8"><title>ETF 动量策略日报</title><style>
@@ -402,10 +424,28 @@ footer{{text-align:center;color:var(--sub);font-size:12px;margin-top:20px}}
 <tbody>{rows_html}</tbody></table>
 <div class="note">规则：20日动量&gt;0 且 MACD 多头才持仓；每10个交易日收盘后重算；MACD死叉或浮亏-5~-8%立即离场；不足{result['top_n']}只按实际持有，0只空仓。</div>
 </div>
-<div class="card"><h2>候选池 TOP{result.get('show_top', 10)}（从中挑选 7 天免赎标的执行）</h2>
+<div class="card"><h2>{cand_title}</h2>
 <p style="font-size:13px;color:#5b6472;margin-bottom:10px">按 20 日动量排序（已按场外基金去重）。<b style="color:#0ca678">✔ 优先选 7 天免赎</b>的标的——每 10 交易日调仓约 14 自然日，若落在 7-30 天区间、收费基金每次调仓多付 0.5% 赎回费。</p>
 <table><thead><tr><th>#</th><th>候选标的</th><th>20日动量</th><th>MACD</th><th>场外基金</th><th>C类代码</th><th>挑选</th><th>策略</th></tr></thead>
 <tbody>{cand_rows_html}</tbody></table>
+</div>
+<div class="card"><h2>全池信号一览（{result['universe_size']} 只，按评分降序）</h2>
+<p style="font-size:13px;color:#5b6472;margin-bottom:10px">当前股票池内全部标的的信号明细（含非双多标的）。<b style="color:#e03131">红色/正数</b>为上涨动量，<b style="color:#0ca678">绿色/负数</b>为下跌；「🟠多头·衰竭警告」表示红柱缩短、死叉在即，不要追高。</p>
+<table><thead><tr><th>#</th><th>标的</th><th>评分</th><th>5日动量</th><th>20日动量</th><th>60日动量</th><th>MACD</th><th>信号</th><th>场外基金</th><th>C类代码</th></tr></thead>
+<tbody>{all_rows_html}</tbody></table>
+</div>
+<div class="card"><h2>评分计算说明</h2>
+<p style="font-size:13.5px;margin-bottom:8px">每只标的按以下六项加分，总分上限 <b>100 分</b>：</p>
+<table><thead><tr><th>加分项</th><th>条件</th><th>分值</th></tr></thead>
+<tbody>
+<tr><td>① 20日动量</td><td>最新收盘较 20 个交易日前上涨（m20 &gt; 0）</td><td>+25</td></tr>
+<tr><td>② 5日动量</td><td>最新收盘较 5 个交易日前上涨（m5 &gt; 0）</td><td>+15</td></tr>
+<tr><td>③ MACD 多头</td><td>DIF &gt; DEA（EMA12 − EMA26 快线在慢线上方）</td><td>+20</td></tr>
+<tr><td>④ 站上 MA60</td><td>收盘价 &gt; 60 日均线</td><td>+20</td></tr>
+<tr><td>⑤ 60日动量</td><td>最新收盘较 60 个交易日前上涨（m60 &gt; 0）</td><td>+10</td></tr>
+<tr><td>⑥ 强趋势奖励</td><td>20 日动量超过 +5%</td><td>+10</td></tr>
+</tbody></table>
+<p style="font-size:13.5px;margin-top:10px">信号分级：<b>≥70 且 20日动量&gt;0 且 MACD多头</b> → 申购/加仓；<b>≥50 且 20日动量&gt;0</b> → 持有；<b>≥40</b> → 观察；<b>跌破 MA60</b> → 减持/赎回；其余 → 赎回/规避。</p>
 </div>
 <div class="card"><h2>风控纪律</h2>
 <div class="advice">单标的 ≤ 总资金 20% · 持仓 ≤ {result['top_n']} 只（控制相关性）· 场外C类份额执行（成本0.25%/年）· 信号转空无条件离场，空仓等待也是策略</div>
@@ -427,7 +467,7 @@ def main():
     parser.add_argument('--signal', action='store_true', help='仅算信号+出策略（不联网）')
     parser.add_argument('--universe', type=int, default=100, help='标的池大小: 100(默认) 或 19(小池)')
     parser.add_argument('--top', type=int, default=3, help='TOP N 持仓数量')
-    parser.add_argument('--show-top', type=int, default=10, help='报告候选池展示数量（默认10，供挑选7天免赎标的）')
+    parser.add_argument('--show-top', type=int, default=0, help='报告候选池展示数量（0=展示全部双多标的，默认全部）')
     parser.add_argument('--limit', type=int, default=130, help='每只拉取K线根数')
     args = parser.parse_args()
 
