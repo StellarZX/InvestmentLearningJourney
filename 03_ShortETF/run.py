@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
 """
-ETF 动量策略自动化管线
-========================
-一次运行完成: 拉取数据 -> 更新本地 SQLite -> 计算信号 -> 生成操作策略
+ETF 动量策略自动化管线（行业级决策版）
+========================================
+一次运行完成: 拉取数据 -> 更新本地 SQLite -> 计算信号 -> 生成行业级操作策略
+
+设计说明:
+    - 决策只基于场内 ETF 的动量/MACD 信号，直接给出「行业」维度的操作建议
+    - 同一行业只保留动量最强的一只代表，避免行业内部重复持仓
+    - 不再映射场外基金（场外标的代码与费率在入场时人工确认）
 
 用法:
     python run.py                 # 全流程（拉数据+算信号+出策略）
     python run.py --update        # 仅更新数据
     python run.py --signal        # 仅用库内数据算信号+出策略（不联网）
     python run.py --universe 19   # 用小池(19只) / 默认100只
-    python run.py --top 3         # TOP N 持仓数量
+    python run.py --top 3         # TOP N 行业数量
 
 输出:
     - etf_strategy.db   本地数据库(kline/signals/strategy_log 表)
@@ -22,10 +27,34 @@ import numpy as np
 
 # ================= 配置 =================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-LIB_DIR = os.path.join(BASE_DIR, 'lib')       # 依赖：otc_map.py / top100_etf.json
-DATA_DIR = os.path.join(BASE_DIR, 'data')     # 数据：etf_strategy.db / fee_db.json
+LIB_DIR = os.path.join(BASE_DIR, 'lib')       # 依赖：top100_etf.json（otc_map.py 仅作入场核对参考）
+DATA_DIR = os.path.join(BASE_DIR, 'data')     # 数据：etf_strategy.db
 REPORT_DIR = os.path.join(BASE_DIR, 'reports')  # 历史报告（带日期）
 DB_PATH = os.path.join(DATA_DIR, 'etf_strategy.db')
+
+# 行业分类（与 rebuild_pool.py 的 INDUSTRY_CLASS 同口径，用于行业级去重与决策）
+INDUSTRY_CLASS = [
+    ('半导体', ['半导体','芯片','集成电路','功率半导体','存储','GPU','CPU','光刻','晶圆','封测','第三代半导体','科创芯片','科创半导体','IGBT','碳化硅','电子']),
+    ('通信TMT', ['通信','5G','6G','光模块','CPO','光通信','电信','数据中心','IDC','算力','云计算','云','大数据','人工智能','AI','软件','信创','数据','数字','互联网','区块链','元宇宙','网络安全','量子']),
+    ('传媒游戏', ['传媒','游戏','动漫','影视','视频','音乐','电竞','在线消费','直播','元宇宙']),
+    ('医药医疗', ['医药','医疗','创新药','生物','中药','疫苗','血制品','医疗器械','医疗服务','CXO','制药','化学制药','医美','健康']),
+    ('消费', ['消费','食品','饮料','白酒','酒','调味','乳业','家电','零售','免税','旅游','酒店','餐饮','农业','养殖','猪','粮食','种子','纺织','家居','教育']),
+    ('汽车', ['汽车','智能驾驶','车联网','新能源车','整车','零部件','汽零']),
+    ('新能源', ['新能源','光伏','风电','储能','电池','锂','氢能','燃料电池','充电桩','碳中和','绿色电力','清洁能源','太阳能','电力设备','特高压']),
+    ('军工', ['军工','国防','航天','卫星','航空','船舶','无人机','低空']),
+    ('金融地产', ['银行','证券','保险','券商','金融','地产','房地产','REITs','金融科技','互联网金融']),
+    ('周期资源', ['有色','稀土','黄金','贵金属','化工','钢铁','煤炭','石油','油气','建材','水泥','稀有金属','小金属','锂矿','盐湖','工业金属','商品']),
+    ('高端制造', ['机器人','机械','工业母机','高端装备','工程机械','自动化','机床','专用设备','智能制造','工业']),
+    ('电力公用', ['电力','水电','火电','核电','燃气','环保','公用事业','水务']),
+    ('港股科技', ['港股通科技','香港科技','港股科技','恒生科技','港股互联网','恒生互联网','港股通互联网','中概互联','中概互联网','港股新经济','港股通新经济']),
+]
+
+def classify_industry(name):
+    """按名称关键词归入行业，无法归入返回'其他'"""
+    for cls, kws in INDUSTRY_CLASS:
+        if any(k in name for k in kws):
+            return cls
+    return '其他'
 NODE = r"C:\Users\Zuoxin\.workbuddy\binaries\node\versions\22.22.2\node.exe"
 WESTOCK_CLI = r"C:\Program Files\WorkBuddy\resources\app.asar.unpacked\resources\builtin-skills\westock-data\scripts\index.js"
 OUT_JSON = os.path.join(BASE_DIR, 'strategy_latest.json')
@@ -174,18 +203,22 @@ def compute_signal(df):
     n = len(df)
     if n < 65:
         return None
+    # 动量 = 今日收盘 / N个交易日前收盘 - 1
+    # 注意：iloc[-N] 是第 N-1 个交易日前，因此 5/20/60 日动量应分别用 iloc[-6]/[-21]/[-61]
     m5 = close.iloc[-1] / close.iloc[-6] - 1 if n > 6 else 0
-    m20 = close.iloc[-1] / close.iloc[-min(20, n)] - 1
-    m60 = close.iloc[-1] / close.iloc[-min(60, n)] - 1 if n > 60 else m20
+    m20 = close.iloc[-1] / close.iloc[-min(21, n)] - 1
+    m60 = close.iloc[-1] / close.iloc[-min(61, n)] - 1 if n > 60 else m20
     dif, dea = macd_series(close)
     macd_bull = bool(dif.iloc[-1] > dea.iloc[-1])
     macd_hist = 2.0 * (dif - dea)  # MACD 柱
-    # 多头衰竭判断：柱为正（多头）但较 3 天前明显缩短 → 动能衰减警告
+    # 多头衰竭判断：仅当红柱（柱>0）且较近10日峰值明显回落（<60%）时提示动能衰减。
+    # 修复：原逻辑用 abs() 比较，会把"绿柱收窄、刚翻红第一天"误判为衰竭。
+    # 现在用带符号柱值 + 历史峰值比较——刚金叉（此前无红柱峰值）不再误报。
     macd_weakening = False
-    if macd_bull and n >= 4:
-        h0 = abs(macd_hist.iloc[-1])
-        h3 = abs(macd_hist.iloc[-4])
-        if h3 > 1e-6 and h0 < h3 * 0.6:
+    if macd_bull and n >= 10:
+        h0 = macd_hist.iloc[-1]                  # 今日柱（带符号，>0 为红柱）
+        peak = macd_hist.iloc[-10:-1].max()      # 近10日（不含今日）红柱峰值
+        if h0 > 0 and peak > 1e-6 and h0 < peak * 0.6:
             macd_weakening = True
     ma20 = close.rolling(20).mean().iloc[-1]
     ma60 = close.rolling(60).mean().iloc[-1] if n >= 60 else ma20
@@ -218,22 +251,12 @@ def compute_signal(df):
         'signal': signal, 'reason': reason, 'last': round(float(close.iloc[-1]), 4),
     }
 
-# ================= 场外映射 =================
-def load_otc_map():
-    sys.path.insert(0, LIB_DIR)
-    sys.path.insert(0, BASE_DIR)
-    try:
-        from otc_map import map_fund
-        return map_fund
-    except Exception:
-        return lambda name: None
-
-# ================= 策略生成（TOP N 轮动） =================
+# ================= 策略生成（行业级 TOP N 轮动） =================
 def build_strategy(universe, top_n=3, db_path=DB_PATH, show_top=10):
-    """从库内最新数据计算信号，生成 TOP N 轮动策略并入库。
-    show_top: 报告候选池展示数量（默认 TOP10），供人工挑选 7 天免赎标的。"""
+    """从库内最新数据计算信号，生成行业级 TOP N 轮动策略并入库。
+    决策只基于场内 ETF 信号，不映射场外基金（场外标的在入场时另行确认）。
+    show_top: 报告候选池展示数量（<=0 表示全部）。"""
     conn = init_db(db_path)
-    map_fund = load_otc_map()
     all_sig = []
     for code, name in universe.items():
         df = get_kline(conn, code)
@@ -243,21 +266,7 @@ def build_strategy(universe, top_n=3, db_path=DB_PATH, show_top=10):
         if not sig:
             continue
         sig['code'] = code; sig['name'] = name
-        otc = map_fund(name)
-        sig['otc_fund'] = otc[0] if otc else None
-        sig['otc_c'] = otc[2] if otc else None
-        # 查询C类赎回费率，标注"7天免费"标签
-        sig['fee_free7'] = False
-        sig['fee_desc'] = '费率未核实'
-        if sig['otc_c']:
-            try:
-                import otc_map as _om
-                fr = _om.get_fee(sig['otc_c'])
-                if fr:
-                    sig['fee_free7'] = fr[1]
-                    sig['fee_desc'] = fr[2]
-            except Exception:
-                pass
+        sig['industry'] = classify_industry(name)   # 行业标签
         # 写入 signals 表
         conn.execute("""INSERT OR REPLACE INTO signals
             (code,date,mom5,mom20,mom60,macd_bull,above_ma60,score,signal,reason)
@@ -267,17 +276,17 @@ def build_strategy(universe, top_n=3, db_path=DB_PATH, show_top=10):
         all_sig.append(sig)
     conn.commit()
 
-    # 过滤: 动量>0 且 MACD 多头；同一场外基金（同主题）只保留动量最强的一只，避免重复持仓
+    # 过滤: 动量>0 且 MACD 多头；同一行业只保留动量最强的一只代表，避免行业重复持仓
     eligible = [s for s in all_sig if s['mom20'] > 0 and s['macd_bull']]
     eligible.sort(key=lambda x: -x['mom20'])
     dedup = {}
     for s in eligible:
-        key = s['otc_c'] or s['otc_fund'] or s['name'][:4]
+        key = s['industry']
         if key not in dedup:
             dedup[key] = s
     unique = sorted(dedup.values(), key=lambda x: -x['mom20'])
     top = unique[:top_n]
-    # 候选池（供挑选 7 天免赎标的）：show_top<=0 表示展示全部双多标的
+    # 候选池：show_top<=0 表示展示全部行业代表
     candidates = unique if (show_top is None or show_top <= 0) else unique[:show_top]
     today = datetime.datetime.now().strftime('%Y-%m-%d')
 
@@ -288,13 +297,14 @@ def build_strategy(universe, top_n=3, db_path=DB_PATH, show_top=10):
             (date,rank,code,name,action,weight,score,mom20,otc_fund,otc_c)
             VALUES(?,?,?,?,?,?,?,?,?,?)""",
             (today, i+1, s['code'], s['name'], '持有', round(1.0/top_n, 4),
-             s['score'], s['mom20'], s['otc_fund'], s['otc_c']))
+             s['score'], s['mom20'], None, None))
     conn.commit(); conn.close()
 
     result = {
         'generated_at': datetime.datetime.now().strftime('%Y-%m-%d %H:%M'),
         'universe_size': len(all_sig),
         'eligible_count': len(eligible),
+        'industry_count': len(unique),
         'top_n': top_n,
         'show_top': show_top,
         'strategy': top,
@@ -308,25 +318,23 @@ def build_strategy(universe, top_n=3, db_path=DB_PATH, show_top=10):
         json.dump(result, f, ensure_ascii=False, indent=1)
     print(f'策略已保存: {json_path}')
     print(f'\n=== 策略信号（{today}）===')
-    print(f'池内有效标的: {len(all_sig)} | 动量+MACD双多可买: {len(eligible)}')
-    print(f'TOP{top_n} 持仓建议:')
+    print(f'池内有效标的: {len(all_sig)} | 动量+MACD双多可买: {len(eligible)} | 双多行业: {len(unique)}')
+    print(f'TOP{top_n} 行业持仓建议:')
     for s in top:
-        fee = '✅7天免赎' if s.get('fee_free7') else '⚠️' + (s.get('fee_desc') or '未核实')
         macd_s = '多头' if s.get('macd_bull') else '空头'
         if s.get('macd_weakening'):
             macd_s = '多头⚠️衰竭'
-        print(f'  {s["code"]} {s["name"]:12s} 评分{s["score"]:3d} 20D:{s["mom20"]:+6.1f}% MACD:{macd_s} -> {s["otc_fund"] or "无映射"} C:{s["otc_c"] or "-"} [{fee}]')
+        print(f'  [{s["industry"]}] {s["code"]} {s["name"]:12s} 评分{s["score"]:3d} 20D:{s["mom20"]:+6.1f}% MACD:{macd_s}')
     if len(top) < top_n:
-        print(f'  [提示] 满足条件的仅 {len(top)} 只，不足 {top_n}；若为 0 应全部空仓')
-    cand_label = f'全部 {len(candidates)} 只' if (show_top is None or show_top <= 0) else f'TOP{show_top}'
-    print(f'\n双多候选池（{cand_label}，挑选 7 天免赎标的执行，[]内为费率标签）:')
+        print(f'  [提示] 满足条件的行业仅 {len(top)} 个，不足 {top_n}；若为 0 应全部空仓')
+    cand_label = f'全部 {len(candidates)} 个行业' if (show_top is None or show_top <= 0) else f'TOP{show_top}'
+    print(f'\n双多行业候选池（{cand_label}，每行业只列动量最强代表）:')
     for i, s in enumerate(candidates):
-        fee = '✅7天免赎' if s.get('fee_free7') else '⚠️' + (s.get('fee_desc') or '未核实')
         macd_s = '多头' if s.get('macd_bull') else '空头'
         if s.get('macd_weakening'):
             macd_s = '多头⚠️衰竭'
         mark = ' <-- 持仓' if i < top_n else ''
-        print(f'  {i+1:2d}. {s["otc_fund"] or s["name"]} C:{s["otc_c"] or "-"} 20D:{s["mom20"]:+6.1f}% MACD:{macd_s} [{fee}]{mark}')
+        print(f'  {i+1:2d}. [{s["industry"]}] {s["code"]} {s["name"]} 20D:{s["mom20"]:+6.1f}% MACD:{macd_s}{mark}')
     return result
 
 # ================= 报告输出 =================
@@ -342,42 +350,34 @@ def write_report(result):
     top = result['strategy']
     rows_html = ''
     for i, s in enumerate(top):
-        fee_tag = '<span style="color:#0ca678;font-weight:700">✅7天免赎</span>' if s.get('fee_free7') else '<span style="color:#f59f00">⚠️' + (s.get('fee_desc') or '未核实') + '</span>'
         rows_html += f'''<tr>
+          <td><span class="industry-pill">{s.get('industry', '—')}</span></td>
           <td><b>{s['name']}</b><br><span style="color:#868e96;font-size:12px">{s['code']}</span></td>
           <td><span class="score-pill" style="background:#fff0f0;color:#c92a2a">{s['score']}</span></td>
           <td class="up">+{s['mom20']:.1f}%</td>
           <td>{macd_tag(s)}</td>
-          <td>{s['otc_fund'] or '—'}<br>{fee_tag}</td>
-          <td>{s['otc_c'] or '—'}</td>
           <td>{(1.0/len(top)*100) if top else 0:.0f}%</td>
         </tr>'''
-    # 候选池 TOP{show_top}（按动量排序，7天免赎优先高亮）
+    # 候选池（行业级代表，按动量排序）
     cand_rows_html = ''
     for i, s in enumerate(result.get('candidates', [])):
-        free7 = s.get('fee_free7')
-        fee_tag = '<span style="color:#0ca678;font-weight:700">✅7天免赎</span>' if free7 else '<span style="color:#f59f00">⚠️' + (s.get('fee_desc') or '未核实') + '</span>'
-        pick = '<span style="color:#0ca678;font-weight:700">✔ 优先选</span>' if free7 else '<span style="color:#adb5bd">可选</span>'
         in_top = '<span style="color:#2f5af5;font-weight:700">TOP' + str(result['top_n']) + '</span>' if i < result['top_n'] else '—'
         cand_rows_html += f'''<tr>
           <td>{i+1}</td>
+          <td><span class="industry-pill">{s.get('industry', '—')}</span></td>
           <td><b>{s['name']}</b><br><span style="color:#868e96;font-size:12px">{s['code']}</span></td>
           <td class="up">+{s['mom20']:.1f}%</td>
           <td>{macd_tag(s)}</td>
-          <td>{s['otc_fund'] or '—'}<br>{fee_tag}</td>
-          <td>{s['otc_c'] or '—'}</td>
-          <td>{pick}</td>
           <td>{in_top}</td>
         </tr>'''
     # 全池信号一览：池内全部标的（含非双多），按评分降序
     all_rows_html = ''
     all_sorted = sorted(result.get('all_signals', []), key=lambda x: -x.get('score', 0))
     for i, s in enumerate(all_sorted):
-        free7 = s.get('fee_free7')
-        fee_tag = '<span style="color:#0ca678;font-weight:700">✅7天免赎</span>' if free7 else '<span style="color:#f59f00">⚠️' + (s.get('fee_desc') or '未核实') + '</span>'
         mom5 = s.get('mom5', 0); mom20 = s.get('mom20', 0); mom60 = s.get('mom60', 0)
         all_rows_html += f'''<tr>
           <td>{i+1}</td>
+          <td><span class="industry-pill">{s.get('industry', '—')}</span></td>
           <td><b>{s['name']}</b><br><span style="color:#868e96;font-size:12px">{s['code']}</span></td>
           <td><span class="score-pill" style="background:#fff0f0;color:#c92a2a">{s['score']}</span></td>
           <td class="{'up' if mom5 > 0 else 'down'}">{mom5:+.1f}%</td>
@@ -385,11 +385,9 @@ def write_report(result):
           <td class="{'up' if mom60 > 0 else 'down'}">{mom60:+.1f}%</td>
           <td>{macd_tag(s)}</td>
           <td>{s.get('signal', '—')}</td>
-          <td>{s.get('otc_fund') or '—'}<br>{fee_tag}</td>
-          <td>{s.get('otc_c') or '—'}</td>
         </tr>'''
-    cand_title = f"候选池（全部 {len(result.get('candidates', []))} 只双多，从中挑选 7 天免赎标的执行）" if result.get('show_top', 0) <= 0 else f"候选池 TOP{result.get('show_top')}（从中挑选 7 天免赎标的执行）"
-    empty_note = '<div class="advice warn"><h4>空仓提示</h4><p>当前无标的同时满足动量&gt;0 与 MACD 多头，按策略应全部空仓等待。</p></div>' if not top else ''
+    cand_title = f"行业候选池（全部 {len(result.get('candidates', []))} 个双多行业）" if result.get('show_top', 0) <= 0 else f"行业候选池 TOP{result.get('show_top')}"
+    empty_note = '<div class="advice warn"><h4>空仓提示</h4><p>当前无行业同时满足动量&gt;0 与 MACD 多头，按策略应全部空仓等待。</p></div>' if not top else ''
     html = f'''<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8"><title>ETF 动量策略日报</title><style>
 :root{{--bg:#f5f6f8;--card:#fff;--ink:#1a2233;--sub:#5b6472;--line:#e4e7ee;--up:#e03131;--down:#0ca678;--accent:#2f5af5}}
@@ -408,6 +406,7 @@ table{{width:100%;border-collapse:collapse;font-size:13.5px}}
 th{{background:#f3f5f9;color:var(--sub);text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}}
 td{{padding:9px 10px;border-bottom:1px solid #eef0f5}}
 .score-pill{{display:inline-block;min-width:36px;text-align:center;border-radius:8px;padding:2px 6px;font-weight:700;font-size:12.5px}}
+.industry-pill{{display:inline-block;background:#eef2ff;color:#2f5af5;border-radius:6px;padding:2px 8px;font-weight:700;font-size:12px;white-space:nowrap}}
 .advice{{border-left:4px solid var(--accent);background:#eef2ff;border-radius:0 10px 10px 0;padding:13px 16px;font-size:13.5px}}
 .advice.warn{{border-color:#f59f00;background:#fff9e6}}
 .note{{font-size:12px;color:var(--sub);margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}}
@@ -420,18 +419,18 @@ footer{{text-align:center;color:var(--sub);font-size:12px;margin-top:20px}}
 <div class="wrap">
 <div class="card"><h2>今日操作策略（每10个交易日调仓）</h2>
 {empty_note}
-<table><thead><tr><th>持仓标的</th><th>评分</th><th>20日动量</th><th>MACD</th><th>场外基金</th><th>C类代码</th><th>建议仓位</th></tr></thead>
+<table><thead><tr><th>行业</th><th>持仓标的</th><th>评分</th><th>20日动量</th><th>MACD</th><th>建议仓位</th></tr></thead>
 <tbody>{rows_html}</tbody></table>
-<div class="note">规则：20日动量&gt;0 且 MACD 多头才持仓；每10个交易日收盘后重算；MACD死叉或浮亏-5~-8%立即离场；不足{result['top_n']}只按实际持有，0只空仓。</div>
+<div class="note">规则：20日动量&gt;0 且 MACD 多头才持仓；每10个交易日收盘后重算；MACD死叉或浮亏-5~-8%立即离场；不足{result['top_n']}个行业按实际持有，0个空仓。行业决策基于场内 ETF 信号，场外基金代码在入场时另行确认。</div>
 </div>
 <div class="card"><h2>{cand_title}</h2>
-<p style="font-size:13px;color:#5b6472;margin-bottom:10px">按 20 日动量排序（已按场外基金去重）。<b style="color:#0ca678">✔ 优先选 7 天免赎</b>的标的——每 10 交易日调仓约 14 自然日，若落在 7-30 天区间、收费基金每次调仓多付 0.5% 赎回费。</p>
-<table><thead><tr><th>#</th><th>候选标的</th><th>20日动量</th><th>MACD</th><th>场外基金</th><th>C类代码</th><th>挑选</th><th>策略</th></tr></thead>
+<p style="font-size:13px;color:#5b6472;margin-bottom:10px">按 20 日动量排序（同一行业只保留动量最强的一只代表）。<b style="color:#2f5af5">TOP{result['top_n']}</b> 为当前建议持仓行业，其余为可替换候选。</p>
+<table><thead><tr><th>#</th><th>行业</th><th>候选标的</th><th>20日动量</th><th>MACD</th><th>策略</th></tr></thead>
 <tbody>{cand_rows_html}</tbody></table>
 </div>
 <div class="card"><h2>全池信号一览（{result['universe_size']} 只，按评分降序）</h2>
 <p style="font-size:13px;color:#5b6472;margin-bottom:10px">当前股票池内全部标的的信号明细（含非双多标的）。<b style="color:#e03131">红色/正数</b>为上涨动量，<b style="color:#0ca678">绿色/负数</b>为下跌；「🟠多头·衰竭警告」表示红柱缩短、死叉在即，不要追高。</p>
-<table><thead><tr><th>#</th><th>标的</th><th>评分</th><th>5日动量</th><th>20日动量</th><th>60日动量</th><th>MACD</th><th>信号</th><th>场外基金</th><th>C类代码</th></tr></thead>
+<table><thead><tr><th>#</th><th>行业</th><th>标的</th><th>评分</th><th>5日动量</th><th>20日动量</th><th>60日动量</th><th>MACD</th><th>信号</th></tr></thead>
 <tbody>{all_rows_html}</tbody></table>
 </div>
 <div class="card"><h2>评分计算说明</h2>
@@ -448,7 +447,7 @@ footer{{text-align:center;color:var(--sub);font-size:12px;margin-top:20px}}
 <p style="font-size:13.5px;margin-top:10px">信号分级：<b>≥70 且 20日动量&gt;0 且 MACD多头</b> → 申购/加仓；<b>≥50 且 20日动量&gt;0</b> → 持有；<b>≥40</b> → 观察；<b>跌破 MA60</b> → 减持/赎回；其余 → 赎回/规避。</p>
 </div>
 <div class="card"><h2>风控纪律</h2>
-<div class="advice">单标的 ≤ 总资金 20% · 持仓 ≤ {result['top_n']} 只（控制相关性）· 场外C类份额执行（成本0.25%/年）· 信号转空无条件离场，空仓等待也是策略</div>
+<div class="advice">单行业 ≤ 总资金 20% · 持仓 ≤ {result['top_n']} 个行业（控制相关性）· 信号转空无条件离场，空仓等待也是策略 · 实际买入场外基金前核对代码与费率</div>
 </div>
 <div class="card" style="border-color:#ffc9c9"><div style="font-size:13px;color:#a61e1e"><b>免责声明</b>：本报告基于公开数据和量化分析，仅供参考，不构成投资建议。市场有风险，投资需谨慎。过往表现不预示未来收益。</div></div>
 <footer>数据来源：腾讯自选股 · 本地库 {DB_PATH} · 本页面为量化研究工具</footer>

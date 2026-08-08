@@ -14,16 +14,16 @@
 """
 import re, json, os, subprocess, sys, argparse
 
-BASE = r'D:\WorkBuddy\etf-analysis'
+BASE = os.path.dirname(os.path.abspath(__file__))     # 脚本所在目录（03_ShortETF/）
+LIB = os.path.join(BASE, 'lib')                        # 依赖与缓存目录
 NODE = r'C:\Users\Zuoxin\.workbuddy\binaries\node\versions\22.22.2\node.exe'
 CLI = r'C:\Program Files\WorkBuddy\resources\app.asar.unpacked\resources\builtin-skills\westock-tool\scripts\index.js'
-CACHE = os.path.join(BASE, 'etf_momentum_cache.json')  # 全市场动量榜缓存（当天复用）
+CACHE = os.path.join(LIB, 'etf_momentum_cache.json')   # 全市场动量榜缓存（当天复用，位于 lib/）
 
 exclude = [
     '港股通50','恒生50','港股通100','恒生ETF','港股通ETF','港股通恒生',
-    '恒生指数','恒指','港股通高股息','港股高股息','沪港深消费','中概互联','中概互联网',
-    '港股通互联网','恒生互联网','港股互联网','香港大盘','港股通新经济','港股通科技30',
-    '恒生科技','港股科技','恒生消费','港股通消费','港美互联网','中国A50','A50',
+    '恒生指数','恒指','港股通高股息','港股高股息','沪港深消费',
+    '香港大盘','恒生消费','港股通消费','中国A50','A50',
     '沪深300','中证500','上证50','中证1000','中证2000','中证800','创业板','科创50','科创100',
     '科创综指','上证指数','深证成指','中证全指','宽基','双创','红利','央企','国企','价值','质量',
     '低波','标普','纳指','纳斯达克','道琼斯','日经','德国','法国','富时','MSCI','REITs',
@@ -116,6 +116,7 @@ INDUSTRY_CLASS = [
     ('周期资源', ['有色','稀土','黄金','贵金属','化工','钢铁','煤炭','石油','油气','建材','水泥','稀有金属','小金属','锂矿','盐湖','工业金属','商品']),
     ('高端制造', ['机器人','机械','工业母机','高端装备','工程机械','自动化','机床','专用设备','智能制造','工业']),
     ('电力公用', ['电力','水电','火电','核电','燃气','环保','公用事业','水务']),
+    ('港股科技', ['港股通科技','香港科技','港股科技','恒生科技','港股互联网','恒生互联网','港股通互联网','中概互联','中概互联网','港股新经济','港股通新经济']),
 ]
 
 def classify(name):
@@ -221,10 +222,9 @@ def main():
         chosen = dict(sorted(chosen.items(), key=lambda x: -x[1]['active_score'])[:args.max_total])
     print(f'池大小: {len(chosen)} 只 | 覆盖行业: {len(groups)} 个')
 
-    # 落盘两处
+    # 落盘到 lib/（run.py 的 LIB_DIR 依赖查找路径）
     targets = [
-        os.path.join(BASE, 'top100_etf.json'),
-        r'D:\WorkBuddy\etf-analysis\03_ShortETF\lib\top100_etf.json',
+        os.path.join(LIB, 'top100_etf.json'),
     ]
     for t in targets:
         os.makedirs(os.path.dirname(t), exist_ok=True)
@@ -248,7 +248,7 @@ def main():
 
 def _old_codes():
     try:
-        return set(json.load(open(r'D:\WorkBuddy\etf-analysis\03_ShortETF\lib\top100_etf.json', encoding='utf-8')).keys())
+        return set(json.load(open(os.path.join(LIB, 'top100_etf.json'), encoding='utf-8')).keys())
     except Exception:
         return set()
 
