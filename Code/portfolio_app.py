@@ -16,6 +16,7 @@
 """
 import json
 import os
+import re
 import sys
 import sqlite3
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -141,6 +142,7 @@ def add_trans(p):
                   float(p.get('gain') or 0), p.get('note', '')))
     conn.commit()
     conn.close()
+    sync_readme()
 
 
 def update_trans(pid, p):
@@ -151,6 +153,7 @@ def update_trans(pid, p):
                   float(p.get('gain') or 0), p.get('note', ''), pid))
     conn.commit()
     conn.close()
+    sync_readme()
 
 
 def delete_trans(pid):
@@ -158,6 +161,78 @@ def delete_trans(pid):
     conn.execute('DELETE FROM trans WHERE id=?', (pid,))
     conn.commit()
     conn.close()
+    sync_readme()
+
+
+def sync_readme():
+    """流水变更后自动更新根 README 第 4 节「组合持仓」表（与 export_positions 同口径）"""
+    try:
+        if getattr(sys, 'frozen', False):
+            base = os.path.dirname(sys.executable)          # exe 所在目录（Code/）
+        else:
+            base = os.path.dirname(os.path.abspath(__file__))
+        readme = os.path.join(os.path.dirname(base), 'README.md')   # 项目根 README
+        if not os.path.exists(readme):
+            return
+        conn = sqlite3.connect(os.path.join(base, 'data', 'portfolio.db'))
+        rows = conn.execute('''
+            SELECT category, fund, code,
+              SUM(CASE WHEN direction IN ('买入','转入','收益') THEN amount
+                       WHEN direction IN ('卖出','转出') THEN -amount ELSE 0 END) AS amt
+            FROM trans GROUP BY code, category''').fetchall()
+        # 资金池推算余额
+        ci = None
+        r0 = conn.execute("SELECT MIN(date) FROM trans WHERE category='资金池' AND direction='转入'").fetchone()
+        if r0 and r0[0]:
+            first_in = r0[0]
+            fund_net = conn.execute('''
+                SELECT SUM(CASE WHEN direction IN ('买入') THEN amount
+                                WHEN direction IN ('卖出') THEN -amount ELSE 0 END)
+                FROM trans WHERE category IN ('指数','行业') AND date >= ?''', (first_in,)).fetchone()[0] or 0
+            cash_manual = conn.execute('''
+                SELECT SUM(CASE WHEN direction IN ('转入','收益') THEN amount
+                                WHEN direction IN ('转出') THEN -amount ELSE 0 END)
+                FROM trans WHERE category='资金池' ''').fetchone()[0] or 0
+            ci = round(cash_manual - fund_net, 2)
+        conn.close()
+        pos = {'指数': [], '行业': [], '其他': []}
+        for cat, fund, code, amt in rows:
+            if amt <= 0:
+                continue
+            key = cat if cat in ('指数', '行业') else '其他'
+            pos[key].append({'fund': fund, 'code': code, 'amt': round(amt, 2)})
+        for k in ('指数', '行业'):
+            pos[k].sort(key=lambda x: -x['amt'])
+        def _fmt(v):
+            return f'¥{v:,.2f}'
+        md = ['## 4. 组合持仓', '',
+              '|   类型   |   代码   |     当前持仓      |         基金          |',
+              '|:------:|:------:|:-------------:|:-------------------:|']
+        totals = {'指数': 0.0, '行业': 0.0}
+        for cat in ('指数', '行业'):
+            for it in pos[cat]:
+                md.append(f"|   {cat}   | {it['code']:>6} | {_fmt(it['amt']):>12} | {it['fund']:<16} |")
+                totals[cat] += it['amt']
+            md.append(f'| *{cat}合计* |  *-*   |  *{_fmt(totals[cat])}*  |         *-*         |')
+        cash_total = 0.0
+        for it in pos['其他']:
+            amt_show = ci if (it['code'] == 'ZFB' and ci is not None) else it['amt']
+            cash_total += amt_show
+            md.append(f"|   其他   | {it['code']:>6} | {_fmt(amt_show):>12} | {it['fund']:<16} |")
+        gt = totals['指数'] + totals['行业'] + cash_total
+        md.append(f'|  总计   |  *-*   | *{_fmt(gt)}*  |         *-*         |')
+        md.append('')
+        md.append('> 表格由 `Code/export_positions.py` 从 `Code/data/portfolio.db` 自动生成，与「持仓流水管理」当前持仓同口径；余额宝显示可用现金（转入-已投基金）。')
+        src = open(readme, encoding='utf-8').read()
+        m = re.search(r'## 4\. 组合持仓.*?(?=\n## )', src, re.S)
+        new = '\n'.join(md)
+        if m:
+            src = src[:m.start()] + new + '\n' + src[m.end():]
+        else:
+            src += '\n' + new + '\n'
+        open(readme, 'w', encoding='utf-8').write(src)
+    except Exception as e:
+        print(f'  [warn] README 持仓表自动更新失败: {e}')
 
 
 PAGE = '''<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><title>持仓流水管理</title>
@@ -205,7 +280,7 @@ form#editForm label{font-size:12px;color:var(--mut);display:block;margin-bottom:
 <div class="kpi"><div class="k">总资产</div><div class="v" id="kTotal">-</div></div>
 </div>
 <div class="card"><h2>当前持仓</h2>
-<table><thead><tr><th>类别</th><th>基金</th><th>代码</th><th>当前持仓</th><th>累计成本</th></tr></thead>
+<table><thead><tr><th>类别</th><th>基金</th><th>代码</th><th>当前持仓</th></tr></thead>
 <tbody id="holdTbody"></tbody></table>
 </div>
 <div class="card"><h2>新增 / 编辑流水</h2>
@@ -314,8 +389,7 @@ function loadSummary(){
         const amtShow = (cat==='资金池' && s.cash_implied!=null) ? s.cash_implied : f.amt;
         const tr=document.createElement('tr');
         tr.innerHTML='<td><span class="tag '+cls+'">'+cat+'</span></td><td style="text-align:left">'+f.fund
-          +'</td><td>'+f.code+'</td><td>¥'+amtShow.toLocaleString(undefined,{minimumFractionDigits:2})
-          +'</td><td>¥'+f.cost.toLocaleString(undefined,{minimumFractionDigits:2})+'</td>';
+          +'</td><td>'+f.code+'</td><td>¥'+amtShow.toLocaleString(undefined,{minimumFractionDigits:2})+'</td>';
         tb.appendChild(tr);
       });
     });

@@ -7,6 +7,7 @@
   python run.py --index      指数报告（启动指数看板，http://127.0.0.1:8050）
   python run.py --sector     行业报告（生成 03_SectorReport/sector_report.html）
   python run.py --portfolio  流水记录（启动持仓管理，http://127.0.0.1:8051）
+  python run.py --export     更新根 README 第 4 节「组合持仓」表
   python run.py --all        全部功能
 
 可组合：python run.py --sector --portfolio
@@ -40,6 +41,8 @@ def main():
         _run('sector_report.py')
     if '--portfolio' in args or '-p' in args:
         _run('portfolio_app.py')
+    if '--export' in args or '-e' in args:
+        _run('export_positions.py', '--write')
 
 
 if __name__ == '__main__':
