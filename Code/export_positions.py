@@ -18,6 +18,7 @@ import sqlite3
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 DB = os.path.join(BASE, 'data', 'portfolio.db')
+os.makedirs(os.path.dirname(DB), exist_ok=True)   # 首次运行自动创建 data/
 README = os.path.join(BASE, '..', 'README.md')   # 根 README
 
 

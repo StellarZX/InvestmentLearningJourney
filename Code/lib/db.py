@@ -15,6 +15,7 @@ import pandas as pd
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)   # 首次运行自动创建 data/
 DB_PATH = DATA_DIR / "market_index.db"
 
 

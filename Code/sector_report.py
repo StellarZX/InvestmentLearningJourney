@@ -36,6 +36,7 @@ from otc_map import OTC_MAP
 LOG_FILE = os.path.join(BASE, 'Sector.log')            # 旧持仓记录（已迁移到 portfolio.db，保留作历史）
 PORTFOLIO_DB = os.path.join(BASE, 'data', 'portfolio.db')  # 统一持仓流水库（行业/指数/资金池）
 DB = os.path.join(BASE, 'data', 'market_industry.db')   # 行业行情库：全市场清单 + 行业型K线（腾讯前复权）
+os.makedirs(os.path.dirname(DB), exist_ok=True)         # 首次运行自动创建 data/
 OUT_DIR = os.path.join(BASE, '..', '03_SectorReport')    # 报告输出到 03 行业报告目录（按日期命名）
 FEE = 0.005
 BUY_PCT = 0.3          # 低估参考线

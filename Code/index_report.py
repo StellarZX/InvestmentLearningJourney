@@ -33,6 +33,7 @@ from dca import FUNDS, US_FUNDS, build_dca_decision
 
 INDEX_DB = os.path.join(BASE, 'data', 'market_index.db')
 PORTFOLIO_DB = os.path.join(BASE, 'data', 'portfolio.db')
+os.makedirs(os.path.dirname(INDEX_DB), exist_ok=True)   # 首次运行自动创建 data/
 OUT_DIR = os.path.join(BASE, '..', '02_IndexReport')    # 报告输出到 02 指数报告目录（按日期命名）
 
 # 健康度权重（满分100）

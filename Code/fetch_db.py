@@ -18,7 +18,7 @@
 注意：腾讯 fqkline 接口有 WAF 风控，脚本已限速（0.2s/请求 + 失败重试）。
 全量拉取被 501 拦截时，请等待约 30-60 分钟再试。
 """
-import os, sys, sqlite3, argparse, time, datetime
+import os, sys, sqlite3, argparse, time, datetime, json
 import concurrent.futures as cf
 import requests
 
@@ -27,6 +27,7 @@ sys.path.insert(0, BASE); sys.path.insert(0, os.path.join(BASE, 'lib'))
 from signal_lib import is_industry
 
 DB = os.path.join(BASE, 'data', 'market_industry.db')
+os.makedirs(os.path.dirname(DB), exist_ok=True)   # 首次运行自动创建 data/
 URL = 'https://web.ifzq.gtimg.cn/appstock/app/fqkline/get'
 HEADERS = {'User-Agent': 'Mozilla/5.0'}
 PAGE = 640
@@ -135,6 +136,94 @@ def get_codes(types):
     return rows
 
 
+def fetch_meta_list():
+    """拉全市场 ETF 清单（首次运行 etf_meta 为空时自动重建）。
+    双数据源：东方财富优先，失败自动切新浪。返回 (code, name) 列表。
+    代码统一 6 位（如 159287 / 510010），不带市场前缀。"""
+    import requests as _r
+    H = {'User-Agent': 'Mozilla/5.0', 'Referer': 'https://finance.sina.com.cn'}
+    # 源1：东财（f12 为 6 位代码）
+    try:
+        url = 'https://push2.eastmoney.com/api/qt/clist/get'
+        out, pn = [], 1
+        while True:
+            params = {'pn': pn, 'pz': 100, 'po': 1, 'np': 1, 'fltt': 2, 'invt': 2,
+                      'fid': 'f3', 'fs': 'b:MK0021,b:MK0022,b:MK0023,b:MK0024',
+                      'fields': 'f12,f14'}
+            j = None
+            for _t in range(3):
+                try:
+                    j = _r.get(url, params=params, timeout=20, headers=H).json()
+                    break
+                except Exception:
+                    time.sleep(1.0)
+            diff = ((j or {}).get('data') or {}).get('diff') or []
+            if not diff:
+                break
+            out += [(str(d.get('f12') or '').zfill(6), d.get('f14') or '') for d in diff]
+            total = ((j or {}).get('data') or {}).get('total') or 0
+            if len(out) >= total or len(diff) < 100:
+                break
+            pn += 1
+            time.sleep(0.3)
+        if len(out) > 500:
+            return out
+    except Exception:
+        pass
+    # 源2：新浪（symbol 带 sh/sz 前缀，与腾讯 K 线 code 格式一致）
+    try:
+        import re as _re
+        url = 'https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData'
+        out, page = [], 1
+        while True:
+            r = _r.get(url, params={'page': page, 'num': 100, 'sort': 'symbol', 'asc': 1,
+                                    'node': 'etf_hq_fund'}, timeout=20, headers=H)
+            txt = r.text.strip()
+            if not txt or txt == 'null' or txt.startswith('<'):
+                break
+            d = json.loads(txt)
+            if not d:
+                break
+            # 用 symbol（sh510010）→ 与腾讯 K 线 code（sh510150）格式一致，可直接匹配
+            out += [(str(x.get('symbol') or ''), x.get('name') or '') for x in d if x.get('symbol')]
+            if len(d) < 100:
+                break
+            page += 1
+            time.sleep(0.3)
+        if out:
+            return out
+    except Exception:
+        pass
+    return []
+
+
+def rebuild_meta():
+    """重建 etf_meta 全市场清单（含类型标注）"""
+    from signal_lib import classify_industry, is_industry
+    lst = fetch_meta_list()
+    if not lst:
+        print('  [warn] 清单接口无数据，跳过重建')
+        return 0
+    conn = sqlite3.connect(DB)
+    conn.execute('''CREATE TABLE IF NOT EXISTS etf_meta(
+        code TEXT PRIMARY KEY, name TEXT, type TEXT, is_ind INTEGER DEFAULT 0)''')
+    conn.execute('DELETE FROM etf_meta')
+    rows = []
+    for code, name in lst:
+        if is_industry(name):
+            t = 'industry'
+        else:
+            t = classify_industry(name)
+        rows.append((code, name, t, 1 if t == 'industry' else 0))
+    conn.executemany('INSERT OR REPLACE INTO etf_meta(code,name,type,is_ind) VALUES(?,?,?,?)', rows)
+    conn.commit()
+    n = len(rows)
+    n_ind = sum(1 for r in rows if r[3])
+    conn.close()
+    print(f'  已重建清单: {n} 只（行业型 {n_ind}）')
+    return n
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--incremental', action='store_true', help='全部标的仅增量拉取')
@@ -145,6 +234,19 @@ def main():
     args = ap.parse_args()
 
     conn = sqlite3.connect(DB)
+    # 首次运行自动建表（幂等）：全市场清单 + K线
+    conn.execute('''CREATE TABLE IF NOT EXISTS etf_meta(
+        code TEXT PRIMARY KEY, name TEXT, type TEXT, is_ind INTEGER DEFAULT 0)''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS kline(
+        code TEXT, date TEXT, open REAL, close REAL, high REAL, low REAL,
+        volume REAL, amount REAL, PRIMARY KEY(code, date))''')
+    conn.execute('CREATE INDEX IF NOT EXISTS idx_kline_code ON kline(code)')
+    conn.commit()
+    # 清单为空（如克隆仓库后首次运行）→ 自动从接口重建全市场清单
+    n_meta0 = conn.execute('SELECT COUNT(*) FROM etf_meta').fetchone()[0]
+    if n_meta0 == 0:
+        print('  etf_meta 为空，自动重建全市场清单...')
+        rebuild_meta()
     codes = get_codes(args.types)
     print(f'标的清单: {len(codes)} 只（类型={args.types}）→ {DB}')
 

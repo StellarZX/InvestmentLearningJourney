@@ -31,6 +31,8 @@ if getattr(sys, 'frozen', False):
 else:
     BASE = os.path.dirname(os.path.abspath(__file__))
     DB = os.path.join(BASE, 'data', 'portfolio.db')
+# 确保数据目录存在（首次运行/克隆仓库后自动创建 data/）
+os.makedirs(os.path.dirname(DB), exist_ok=True)
 PORT = 8051
 
 # ---- 定投下拉标的（指数类别：选基金自动带出代码，避免手输丢前导零）----
@@ -53,6 +55,15 @@ def db():
     try:
         conn = sqlite3.connect(DB)
         conn.row_factory = sqlite3.Row
+        # 首次运行自动建表（幂等：已存在则跳过）
+        conn.execute('''CREATE TABLE IF NOT EXISTS trans(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT NOT NULL, category TEXT NOT NULL, fund TEXT NOT NULL,
+            code TEXT NOT NULL, direction TEXT NOT NULL, amount REAL NOT NULL,
+            gain REAL DEFAULT 0, note TEXT DEFAULT '')''')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_trans_cat ON trans(category)')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_trans_code ON trans(code)')
+        conn.commit()
         return conn
     except sqlite3.OperationalError as e:
         print(f'[db-error] {e} | DB={DB} | exists={os.path.exists(DB)}', flush=True)
