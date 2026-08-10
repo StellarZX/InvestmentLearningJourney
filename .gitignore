@@ -4,6 +4,14 @@
 *.db-wal
 *.db-shm
 
+# ===== 生成的报告（每天按日期生成，不入库）=====
+02_IndexReport/*.html
+03_SectorReport/*.html
+
+# ===== 历史记录（含个人数据，不提交）=====
+*.log
+Code/backup/
+
 # ===== Python 编译产物 =====
 __pycache__/
 *.pyc
