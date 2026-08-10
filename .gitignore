@@ -15,7 +15,9 @@ dist/
 .venv/
 venv/
 .workbuddy/
+workbuddy/
 .agents/
+agents/
 
 # ===== IDE =====
 .idea/
