@@ -5,16 +5,16 @@
 这个仓库记录我的投资方法、执行记录与复盘。
 
 > **统一入口**：根目录 `run.py` 通过参数调用全部功能：
-> - `python run.py --index` → 指数报告（看板 http://127.0.0.1:8050）
-> - `python run.py --sector` → 行业报告（生成 `03_SectorReport/sector_report.html`）
+> - `python run.py --index` → 宽基指数报告（生成 `02_IndexReport/YYYYMMDD.html`）
+> - `python run.py --sector` → 行业报告（生成 `03_SectorReport/YYYYMMDD.html`）
 > - `python run.py --portfolio` → 流水记录（http://127.0.0.1:8051）
 >
 > **目录结构**：
-> - `run.py`：统一入口（--index / --sector / --portfolio）
+> - `run.py`：统一入口（--index / --sector / --portfolio / --export）
 > - `Code/sector_report.py`：行业日报（读持仓→映射→算信号→生成日报到 `03_SectorReport/`）
-> - `Code/fetch_db.py`：数据维护（腾讯前复权，增量/全量/按类型扩展）
+> - `Code/index_report.py`：宽基指数报告（指数健康度 + 定投分配 → `02_IndexReport/`）
+> - `Code/fetch_db.py`：行业行情维护（腾讯前复权，增量/全量/按类型扩展）
 > - `Code/portfolio_app.py` / `.exe`：流水记录（增删改查，浏览器 8051）
-> - `Code/index_dashboard.py`：指数看板（8050）
 > - `Code/export_positions.py`：持仓汇总表生成（第 4 节）
 > - `Code/data/`：portfolio.db（持仓流水）/ market_index.db（指数行情）/ market_industry.db（行业行情）
 > - `Code/lib/signal_lib.py`：公共信号库（行业识别/MACD）；`lib/otc_map.py`：场外基金→主题映射
@@ -72,19 +72,18 @@
 
 ## 2. 指数报告
 
-- [定投指数基金看板](02_IndexReport/README.md)：8 个相关指数的行情数据与月度定投分配（A股 ¥1,500 + 美股 ¥1,000）。
-- 页面：`/` 指数看板、`/dca.html` 定投决策。
+- [宽基指数报告](02_IndexReport/20260810.html)：8 个定投指数的行情与健康度分析（A股 ¥1,500 + 美股 ¥1,000）。
+- 报告内容：当前持仓指数基金健康度分析（分位/趋势/动量/资金流综合评分 + 预警）、宽基指数全景、低估/高估方向、当月定投分配建议。
 - 行情、估值与定投记录统一存放在本地数据库 `Code/data/market_index.db`。
 
 使用（统一入口）：
 
 ```powershell
-.\.venv\Scripts\python.exe .\run.py --index                     # 更新数据并启动看板
-.\.venv\Scripts\python.exe .\Code\index_dashboard.py --fetch-only   # 只更新数据，不启动
-.\.venv\Scripts\python.exe .\Code\index_dashboard.py --dca-check   # 控制台打印当月定投分配
+.\.venv\Scripts\python.exe .\run.py --index                     # 生成宽基指数报告
+.\.venv\Scripts\python.exe .\Code\index_report.py --refresh     # 数据过旧时自动刷新并生成
 ```
 
-启动后打开 `http://127.0.0.1:8050`。每月定投流程见下方「组合持仓」；更详细的说明见 [02_IndexReport/README.md](02_IndexReport/README.md)。
+打开 `02_IndexReport\YYYYMMDD.html`（按数据日期命名，每天一份）查看。每月定投流程见下方「组合持仓」。
 
 ## 3. 行业报告
 
@@ -96,10 +95,10 @@
 ### 生成行业数据分析日报
 
 ```powershell
-.\.venv\Scripts\python.exe .\run.py --sector   # 生成日报（秒级）→ 03_SectorReport/sector_report.html
+.\.venv\Scripts\python.exe .\run.py --sector   # 生成日报（秒级）→ 03_SectorReport/YYYYMMDD.html
 ```
 
-- 打开 `03_SectorReport\sector_report.html` 查看：当前持仓与预警、低估/强势方向、行业全景排名
+- 打开 `03_SectorReport\YYYYMMDD.html`（按数据日期命名）查看：当前持仓与预警、低估/强势方向、行业全景排名
 - **记录买卖**：`python run.py --portfolio`（或双击 `Code\portfolio_app.exe`），浏览器打开 http://127.0.0.1:8051 录入——指数基金下拉自动带代码，行业自由输入，余额宝资金池记转入/转出
 - **更新行情**：`run.py --sector` 运行时会自动增量更新（数据已最新则跳过）；手动：`python Code\fetch_db.py`（腾讯前复权，日常秒级）
 

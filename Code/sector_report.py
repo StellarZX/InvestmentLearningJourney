@@ -22,7 +22,7 @@
   - lib/otc_map.py（场外基金代码 → 主题）→ 持仓映射
 
 用法：python sector_report.py
-输出：sector_report.html（最新报告）
+输出：03_SectorReport/YYYYMMDD.html（按数据日期命名的报告）
 """
 import os, sys, json, sqlite3, datetime
 import pandas as pd
@@ -36,7 +36,7 @@ from otc_map import OTC_MAP
 LOG_FILE = os.path.join(BASE, 'Sector.log')            # 旧持仓记录（已迁移到 portfolio.db，保留作历史）
 PORTFOLIO_DB = os.path.join(BASE, 'data', 'portfolio.db')  # 统一持仓流水库（行业/指数/资金池）
 DB = os.path.join(BASE, 'data', 'market_industry.db')   # 行业行情库：全市场清单 + 行业型K线（腾讯前复权）
-OUT_HTML = os.path.join(BASE, '..', '03_SectorReport', 'sector_report.html')  # 报告输出到 03 行业报告目录
+OUT_DIR = os.path.join(BASE, '..', '03_SectorReport')    # 报告输出到 03 行业报告目录（按日期命名）
 FEE = 0.005
 BUY_PCT = 0.3          # 低估参考线
 HIGH_PCT = 0.7         # 高估预警线
@@ -408,6 +408,10 @@ def main():
 
     gen_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
     market_date = data[next(iter(data))]['date'] if data else '—'
+    # 报告文件名按数据日期命名（20260810.html），目录本身已区分指数/行业
+    fname = market_date.replace('-', '') if market_date and market_date != '—' \
+        else datetime.datetime.now().strftime('%Y%m%d')
+    out_html = os.path.join(OUT_DIR, f'{fname}.html')
 
     html = f'''<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
 <title>行业数据分析日报</title>
@@ -478,9 +482,9 @@ tr:hover td{{background:#f8f9fa}}
 <div class="disclaimer">⚠️ 免责声明：本报告基于公开行情数据的量化分析，仅供参考，不构成投资建议。动量/分位/评分均为历史统计，不预示未来。任何操作请结合个人风险承受能力独立判断。场外基金费率与赎回到账时间以基金公司公告为准。</div>
 
 </div></body></html>'''
-    with open(OUT_HTML, 'w', encoding='utf-8') as f:
+    with open(out_html, 'w', encoding='utf-8') as f:
         f.write(html)
-    print(f'\n报告已生成: {OUT_HTML}')
+    print(f'\n报告已生成: {out_html}')
     print(f'持仓预警 {sum(1 for r in rows if any("⚠️" in w or "🟠" in w for w in r["warnings"]))} 笔 | 低估方向 {len(low_list)} | 强势方向 {len(strong_list)}')
 
 
