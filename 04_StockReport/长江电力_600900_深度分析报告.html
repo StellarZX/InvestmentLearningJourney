@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>长江电力（600900.SH）深度分析报告</title>
+<style>
+  :root{
+    --up:#e03131; --down:#2f9e44; --ink:#1f2430; --sub:#6b7280;
+    --line:#e5e7eb; --bg:#f6f7f9; --card:#ffffff; --accent:#0b5cad; --accent-soft:#e8f1fb;
+    --gold:#b45309; --gold-soft:#fdf3e3;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:14px;}
+  .wrap{max-width:1080px;margin:0 auto;padding:24px 20px 60px;}
+  /* Header */
+  .hero{background:linear-gradient(135deg,#0b3d78 0%,#0b5cad 55%,#1283c9 100%);color:#fff;border-radius:14px;padding:28px 30px;margin-bottom:20px;position:relative;overflow:hidden;}
+  .hero::after{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.07);}
+  .hero .tag{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);padding:2px 10px;border-radius:999px;font-size:12px;margin-right:8px;}
+  .hero h1{font-size:28px;margin:10px 0 4px;font-weight:700;}
+  .hero .code{font-size:14px;opacity:.85;}
+  .hero .price-row{display:flex;align-items:baseline;gap:14px;margin-top:12px;flex-wrap:wrap;}
+  .hero .price{font-size:40px;font-weight:800;}
+  .hero .chg{font-size:18px;font-weight:600;}
+  .hero .meta{font-size:12px;opacity:.75;margin-top:10px;}
+  /* KPI */
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 14px 12px;box-shadow:0 1px 3px rgba(16,24,40,.04);}
+  .kpi .k{font-size:12px;color:var(--sub);margin-bottom:4px;}
+  .kpi .v{font-size:19px;font-weight:700;}
+  .kpi .s{font-size:11px;color:var(--sub);margin-top:2px;}
+  /* Cards */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:16px;box-shadow:0 1px 3px rgba(16,24,40,.04);}
+  .card h2{font-size:17px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .card h2 .bar{width:4px;height:18px;background:var(--accent);border-radius:2px;}
+  .card h3{font-size:14px;color:var(--accent);margin:16px 0 8px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;}
+  th{background:#f0f3f8;color:#374151;font-weight:600;white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
+  .up{color:var(--up);font-weight:600;}
+  .down{color:var(--down);font-weight:600;}
+  .pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:600;}
+  .pill-ok{background:#e6f7ee;color:#1e7e46;}
+  .pill-warn{background:#fdf3e3;color:#b45309;}
+  .pill-info{background:var(--accent-soft);color:var(--accent);}
+  .note{font-size:12px;color:var(--sub);margin-top:8px;}
+  .swot{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .swot .box{border-radius:10px;padding:14px 16px;font-size:13px;}
+  .swot .s1{background:#eef7f0;border:1px solid #cfe9d6;}
+  .swot .s2{background:#fdf0ee;border:1px solid #f6d0ca;}
+  .swot .s3{background:#eef3fb;border:1px solid #d4e0f2;}
+  .swot .s4{background:#fbf6ea;border:1px solid #f0e4c0;}
+  .swot h4{font-size:14px;margin-bottom:8px;}
+  .swot li{margin:4px 0 4px 16px;}
+  .verdict{background:linear-gradient(135deg,#fdf6e9,#fef3dc);border:1px solid #eed9ae;border-radius:12px;padding:18px 22px;margin-top:16px;}
+  .verdict h3{color:var(--gold);margin-bottom:8px;}
+  .score-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
+  .score{flex:1;min-width:150px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
+  .score .n{font-size:20px;font-weight:800;color:var(--accent);}
+  .score .t{font-size:12px;color:var(--sub);}
+  .footer{font-size:11px;color:#9ca3af;text-align:center;margin-top:28px;line-height:1.8;}
+  .footnote{font-size:12px;color:var(--sub);background:#f0f3f8;border-left:3px solid #c3ccd9;padding:10px 14px;border-radius:0 8px 8px 0;margin-top:12px;}
+  @media(max-width:820px){.kpis{grid-template-columns:repeat(3,1fr);}.grid2,.swot{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== HEADER ===================== -->
+  <div class="hero">
+    <div>
+      <span class="tag">水电龙头</span><span class="tag">高股息</span><span class="tag">央企控股</span><span class="tag">ESG·A级</span>
+      <h1>长江电力 <span style="font-size:16px;opacity:.85;">600900.SH</span></h1>
+      <div class="code">公用事业 · 电力 · 上交所主板 · 上市日期 2003-11-18</div>
+      <div class="price-row">
+        <span class="price">28.05</span>
+        <span class="chg up">+0.30&nbsp;+1.08%</span>
+        <span style="font-size:13px;opacity:.85;">2026-08-10 收盘</span>
+      </div>
+      <div class="meta">开 27.68 / 高 28.21 / 低 27.57 &nbsp;·&nbsp; 成交额 33.22 亿 &nbsp;·&nbsp; 换手率 0.49%</div>
+    </div>
+  </div>
+
+  <!-- ===================== KPI ===================== -->
+  <div class="kpis">
+    <div class="kpi"><div class="k">总市值</div><div class="v">6,863亿</div><div class="s">全流通</div></div>
+    <div class="kpi"><div class="k">市盈率 PE(TTM)</div><div class="v">19.0</div><div class="s">近5年中枢区间</div></div>
+    <div class="kpi"><div class="k">市净率 PB</div><div class="v">3.01</div><div class="s">每股净资产 9.31元</div></div>
+    <div class="kpi"><div class="k">股息率(2025)</div><div class="v" style="color:var(--gold);">≈3.6%</div><div class="s">全年 1.00 元/股</div></div>
+    <div class="kpi"><div class="k">ROE(2025)</div><div class="v">15.99%</div><div class="s">连续三年提升</div></div>
+    <div class="kpi"><div class="k">2026年内涨幅</div><div class="v up">+3.16%</div><div class="s">52周高/低 29.57/25.38</div></div>
+  </div>
+
+  <!-- ===================== 公司概况 ===================== -->
+  <div class="card">
+    <h2><span class="bar"></span>一、公司概况</h2>
+    <div class="grid2">
+      <div>
+        <table>
+          <tr><td style="width:110px;">证券简称</td><td><b>长江电力</b>（600900.SH）</td></tr>
+          <tr><td>所属行业</td><td>公用事业 — 电力（申万一级）</td></tr>
+          <tr><td>上市日期</td><td>2003-11-18（上交所主板）</td></tr>
+          <tr><td>实际控制人</td><td>国务院国资委（合计持股 47.21%）</td></tr>
+          <tr><td>董事长 / 总经理</td><td>刘伟平 / 刘海波</td></tr>
+          <tr><td>总股本</td><td>244.68 亿股（全流通）</td></tr>
+        </table>
+      </div>
+      <div>
+        <p style="font-size:13px;">主营业务：<b>电力生产、经营和投资；电力生产技术咨询；水电工程检修维护</b>。公司是全球最大的水电上市公司，拥有长江干流<b>三峡、葛洲坝、溪洛渡、向家坝、白鹤滩、乌东德</b>六座梯级电站，总装机容量约 7,170 万千瓦，构成世界最大清洁能源走廊。</p>
+        <p class="note">商业模式核心：低成本、长寿命的存量水电资产 + 电价/电量的稳定现金流 + 高分红承诺（2021-2025 年每股分红不低于 0.65 元，并保持高比例分红）。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 行情与技术面 ===================== -->
+  <div class="card">
+    <h2><span class="bar"></span>二、行情表现与技术面</h2>
+    <h3>近 3 个月收盘价走势（2026-05 至 2026-08-10）</h3>
+    <div id="priceChart" style="width:100%;height:260px;"></div>
+    <div class="grid2" style="margin-top:16px;">
+      <div>
+        <h3>多周期表现（不复权）</h3>
+        <table>
+          <tr><th>区间</th><th class="num">涨跌幅</th></tr>
+          <tr><td>近 5 日</td><td class="num down">-3.44%</td></tr>
+          <tr><td>近 20 日</td><td class="num down">-1.30%</td></tr>
+          <tr><td>2026 年以来</td><td class="num up">+3.16%</td></tr>
+          <tr><td>近一年（价格口径）</td><td class="num up">+4.56%</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>均线位置（最新收盘 28.05）</h3>
+        <table>
+          <tr><th>均线</th><th class="num">数值</th><th class="num">相对现价</th></tr>
+          <tr><td>MA5</td><td class="num">27.92</td><td class="num up">现价上方 ▲</td></tr>
+          <tr><td>MA20</td><td class="num">28.58</td><td class="num down">现价下方 ▼</td></tr>
+          <tr><td>MA60</td><td class="num">27.70</td><td class="num up">现价上方 ▲</td></tr>
+          <tr><td>MA250</td><td class="num">27.50</td><td class="num up">现价上方 ▲</td></tr>
+        </table>
+        <p class="note">现价站上 MA5 / MA60 / MA250（长期均线多头），但跌破 MA20；7 月下旬冲高 29.49 后回落，短期处于<b>冲高回落的整理阶段</b>。近一年最大回撤 -10.4%，波动显著小于大盘。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 财务分析 ===================== -->
+  <div class="card">
+    <h2><span class="bar"></span>三、财务分析</h2>
+    <h3>近三年营收与归母净利润（亿元）</h3>
+    <div id="finChart" style="width:100%;height:250px;"></div>
+    <div style="margin-top:16px;overflow-x:auto;">
+      <table>
+        <tr>
+          <th>报告期</th><th class="num">营业收入</th><th class="num">同比</th><th class="num">归母净利</th><th class="num">同比</th>
+          <th class="num">ROE</th><th class="num">毛利率</th><th class="num">净利率</th><th class="num">资产负债率</th><th class="num">EPS</th>
+        </tr>
+        <tr><td>2023年报</td><td class="num">781.1亿</td><td class="num up">+14.8%</td><td class="num">272.4亿</td><td class="num up">+14.8%</td><td class="num">14.08%</td><td class="num">57.8%</td><td class="num">35.8%</td><td class="num">62.9%</td><td class="num">1.113</td></tr>
+        <tr><td>2024年报</td><td class="num">844.9亿</td><td class="num up">+8.1%</td><td class="num">325.0亿</td><td class="num up">+19.3%</td><td class="num">15.79%</td><td class="num">59.1%</td><td class="num">39.0%</td><td class="num">60.8%</td><td class="num">1.328</td></tr>
+        <tr><td>2025年报</td><td class="num">862.4亿</td><td class="num up">+2.1%</td><td class="num">345.0亿</td><td class="num up">+6.2%</td><td class="num">15.99%</td><td class="num">61.7%</td><td class="num">40.5%</td><td class="num">58.3%</td><td class="num">1.410</td></tr>
+        <tr style="background:#f4f8ff;"><td><b>2026Q1</b></td><td class="num"><b>181.1亿</b></td><td class="num up"><b>+6.4%</b></td><td class="num"><b>67.6亿</b></td><td class="num up"><b>+30.5%</b></td><td class="num">3.01%</td><td class="num">55.6%</td><td class="num">37.3%</td><td class="num">57.3%</td><td class="num">—</td></tr>
+      </table>
+    </div>
+    <h3>盈利质量要点</h3>
+    <ul style="font-size:13px;padding-left:20px;margin-top:6px;">
+      <li><b>毛利率、净利率持续抬升</b>：毛利率从 2023 年 57.8% → 2025 年 61.7%，主因六座电站全部并表后单位成本摊薄、来水改善。</li>
+      <li><b>ROE 稳步上行</b>：2023-2025 年 14.1% → 15.8% → 16.0%，水电"折旧到期 + 低边际成本"的盈利韧性显现。</li>
+      <li><b>现金流极强</b>：2025 年每股经营现金流 2.48 元，约为 EPS(1.41) 的 1.8 倍，为高分红提供硬支撑。</li>
+      <li><b>2026Q1 归母净利 +30.5%</b>：来水偏丰叠加财务费用下降（负债率 57.3%，连续三年下行），利润弹性释放。</li>
+      <li><b>Q4 单季利润同比 +41%</b>：2025 年末来水恢复与枯期补库共振，环比动能强。</li>
+      <li><b>注意点</b>：2025 年营收增速放缓至 +2.1%，收入端高度依赖来水；财务费用随负债率下降但绝对规模仍大（利息支出是主要成本项）。</li>
+    </ul>
+  </div>
+
+  <!-- ===================== 分红 ===================== -->
+  <div class="card">
+    <h2><span class="bar"></span>四、分红与股东回报</h2>
+    <div class="grid2">
+      <div>
+        <table>
+          <tr><th>分红年度</th><th class="num">每股派息（含税）</th><th>说明</th></tr>
+          <tr><td>2023 年度</td><td class="num">0.82 元</td><td>年度分红</td></tr>
+          <tr><td>2024 年度</td><td class="num">0.733 元</td><td>年度 + 中期 0.21 元 = 0.943 元</td></tr>
+          <tr><td>2025 年度</td><td class="num" style="color:var(--gold);font-weight:700;">1.00 元</td><td>年度 0.79 + 中期 0.21</td></tr>
+        </table>
+        <p class="note">2025 年度权益分派已于 2026-07-17 除权除息，合计派现约 193.3 亿元（仅年度部分）。</p>
+      </div>
+      <div>
+        <h3 style="margin-top:0;">股息率测算</h3>
+        <ul style="font-size:13px;padding-left:20px;">
+          <li>按 2025 年全年派息 1.00 元 / 现价 28.05 元：<b style="color:var(--gold);">股息率 ≈ 3.6%</b></li>
+          <li>参考 2024 年 0.943 元：历史股息率 ≈ 3.4%</li>
+          <li>公司承诺 2021-2025 年每股分红不低于 0.65 元，实际大幅超额兑现</li>
+        </ul>
+        <p class="note">在 10 年期国债收益率下行至 2% 附近的低利率环境下，3.5%+ 的稳定现金分红构成"类债券"配置吸引力——这也是开源证券等机构近期首次覆盖给予"买入"评级的核心逻辑。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 股东结构 ===================== -->
+  <div class="card">
+    <h2><span class="bar"></span>五、股东结构（最新定期报告）</h2>
+    <div class="grid2">
+      <div style="overflow-x:auto;">
+        <table>
+          <tr><th>排名</th><th>股东名称</th><th class="num">持股比例</th><th>性质</th></tr>
+          <tr><td>1</td><td>中国长江三峡集团</td><td class="num">43.47%</td><td>国有法人</td></tr>
+          <tr><td>2</td><td>香港中央结算（陆股通）</td><td class="num">4.24%</td><td>境外法人</td></tr>
+          <tr><td>3</td><td>中国平安人寿（普通保险产品）</td><td class="num">4.04%</td><td>险资</td></tr>
+          <tr><td>4</td><td>长江生态环保集团</td><td class="num">4.00%</td><td>国有法人</td></tr>
+          <tr><td>5</td><td>四川省能源投资集团</td><td class="num">3.75%</td><td>国有法人</td></tr>
+          <tr><td>6</td><td>中国三峡建工集团</td><td class="num">3.60%</td><td>国有法人</td></tr>
+          <tr><td>7</td><td>云南省能源集团</td><td class="num">2.17%</td><td>国有法人</td></tr>
+          <tr><td>8</td><td>三峡实业发展（北京）</td><td class="num">1.86%</td><td>国有法人</td></tr>
+          <tr><td>9</td><td>中国人寿（传统普通保险）</td><td class="num">1.64%</td><td>险资</td></tr>
+          <tr><td>10</td><td>昆明云能水电开发</td><td class="num">1.63%</td><td>国有法人</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3 style="margin-top:0;">结构特征</h3>
+        <ul style="font-size:13px;padding-left:20px;">
+          <li><b>央企控股 + 高集中度</b>：三峡集团及其一致行动人合计持股约 47%（实控人国资委 47.21%），前十大股东合计 70.4%，筹码高度稳定。</li>
+          <li><b>机构持股合计 73.4%</b>：保险资金（平安、国寿）与北向资金（香港中央结算）是重要机构股东，符合"高股息长线配置盘"特征。</li>
+          <li><b>股东户数约 74 万户</b>：散户筹码占比低，股价波动小。</li>
+        </ul>
+        <div style="margin-top:12px;">
+          <h3>运营数据（2026 上半年）</h3>
+          <ul style="font-size:13px;padding-left:20px;">
+            <li>六座梯级电站总发电量 <b>1,327.4 亿千瓦时，同比 +4.81%</b></li>
+            <li>Q2 发电量 709.2 亿千瓦时，同比 +2.82%</li>
+            <li>来水分化：乌东德偏枯 -16.9%，三峡偏丰 +28.7% —— 梯级联调平滑来水波动</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 风险与 ESG ===================== -->
+  <div class="card">
+    <h2><span class="bar"></span>六、风险画像与 ESG</h2>
+    <div class="grid2">
+      <div>
+        <table>
+          <tr><th>风险指标（近一年）</th><th class="num">数值</th><th>解读</th></tr>
+          <tr><td>Beta（vs 上证综指）</td><td class="num">≈ 0.0</td><td>与大盘几乎零相关，防御属性极强</td></tr>
+          <tr><td>年化波动率（100周）</td><td class="num">13.4%</td><td>显著低于宽基指数</td></tr>
+          <tr><td>区间最大回撤</td><td class="num down">-10.4%</td><td>一年内最深回调约 1 成</td></tr>
+          <tr><td>价格年化收益</td><td class="num up">+4.6%</td><td>不含分红，含分红总回报更高</td></tr>
+        </table>
+      </div>
+      <div>
+        <table>
+          <tr><th>ESG 指标</th><th class="num">评级/得分</th></tr>
+          <tr><td>华证 ESG 综合评级</td><td class="num" style="color:var(--accent);font-weight:700;">A</td></tr>
+          <tr><td>环境争议得分</td><td class="num">100（满分）</td></tr>
+          <tr><td>社会管理得分</td><td class="num">80.6</td></tr>
+          <tr><td>治理管理得分</td><td class="num">57.1</td></tr>
+          <tr><td>环境管理得分</td><td class="num">63.3</td></tr>
+        </table>
+        <p class="note">清洁水电资产使公司在"双碳"背景下环境评分领先；治理得分偏低与国企治理结构有关，但不影响主业现金流。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 综合评估 ===================== -->
+  <div class="card">
+    <h2><span class="bar"></span>七、综合评估</h2>
+    <div class="swot">
+      <div class="box s1"><h4>✅ 核心优势（S）</h4>
+        <li>全球最大水电上市公司，六座梯级电站不可复制</li>
+        <li>毛利率 62%、净利率 40%，成本近乎恒定</li>
+        <li>现金流为利润的 1.8 倍，分红能力极强</li>
+        <li>ROE 连续三年上行至 16%，盈利质量优</li>
+        <li>Beta≈0，与大盘脱敏的防御属性</li>
+      </div>
+      <div class="box s2"><h4>⚠️ 潜在劣势（W）</h4>
+        <li>营收增长高度依赖来水，2025 年营收仅 +2.1%</li>
+        <li>资产负债率 57%，利息支出规模仍大</li>
+        <li>治理 ESG 得分偏低，国企效率天花板</li>
+        <li>估值处历史中高位，PB 3.0、PE(TTM) 19</li>
+      </div>
+      <div class="box s3"><h4>📈 外部机会（O）</h4>
+        <li>低利率时代，3.6% 股息率"类债券"价值凸显</li>
+        <li>电改推进，水电成本优势与电价市场化利好</li>
+        <li>抽水蓄能、新能源协同布局打开增量</li>
+        <li>险资、被动资金持续增配高股息央企</li>
+      </div>
+      <div class="box s4"><h4>📉 外部威胁（T）</h4>
+        <li>来水偏枯年份利润直接承压（波动±20%）</li>
+        <li>无风险利率若大幅上行，压制"类债"估值</li>
+        <li>极端气候与流域干旱风险</li>
+        <li>电价下行政策风险（市场化竞争）</li>
+      </div>
+    </div>
+
+    <div class="score-row">
+      <div class="score"><div class="n">4.3 / 5</div><div class="t">基本面质量</div></div>
+      <div class="score"><div class="n">3.2 / 5</div><div class="t">当前估值吸引力</div></div>
+      <div class="score"><div class="n">4.6 / 5</div><div class="t">分红与股东回报</div></div>
+      <div class="score"><div class="n">4.0 / 5</div><div class="t">风险收益比</div></div>
+    </div>
+
+    <div class="verdict">
+      <h3>📌 结论与观点（基于 2026-08-10 数据）</h3>
+      <p style="font-size:13px;"><b>定位</b>：长江电力是 A 股稀缺的"现金流永续 + 高分红 + 低波动"核心资产，适合作为资产配置的<b>底仓型防御品种</b>，而非博取弹性的进攻标的。</p>
+      <p style="font-size:13px;margin-top:8px;"><b>估值</b>：当前 PE(TTM) 19 倍、PB 3.0 倍，处于自身历史估值区间的中高位——这是"高股息稀缺性"被市场充分定价的结果。按 2025 年分红 1.00 元计算股息率约 3.6%，相对 10 年期国债仍有约 1.5-1.6 个百分点的利差，对长线资金仍有配置价值。</p>
+      <p style="font-size:13px;margin-top:8px;"><b>操作视角</b>：短期股价自 29.49 高点回落整理、跌破 MA20，追高性价比一般；若追求股息回报，回调至 MA60（约 27.7）附近分批配置的赔率更优。需注意：<b>股息率并非固定收益</b>，来水偏枯年份利润与分红承诺兑现仍存在波动。</p>
+      <p style="font-size:13px;margin-top:8px;"><b>核心跟踪指标</b>：每月发电量公告、来水情况、10 年期国债收益率、年度分红方案。</p>
+    </div>
+  </div>
+
+  <!-- ===================== 建仓量化建议 ===================== -->
+  <div class="card">
+    <h2><span class="bar"></span>八、建仓量化建议（分批价位阶梯）</h2>
+    <p style="font-size:13px;">建议以<b>股息率锚定 + 历史估值分位 + 技术支撑</b>三重维度划档，按"每跌 0.5-1 元加一档"的节奏分批建仓，不一次性满仓。以下价格均按 2025 年全年派息 1.00 元/股倒推股息率、按 TTM 归母净利 360.8 亿（EPS≈1.475）计算 PE。</p>
+    <div style="margin:10px 0 6px;">
+      <svg viewBox="0 0 680 180" width="100%" role="img" aria-label="建仓价位阶梯图">
+        <title>建仓价位阶梯</title>
+        <desc>按价格划分的建仓区间：28.5 以上观望，27-28.5 第一档试仓，25.8-27 第二档加仓，24.5-25.8 第三档重仓，24.5 以下极端低估区</desc>
+        <text x="445" y="62" text-anchor="middle" font-size="12" font-weight="700" fill="#e03131">现价 28.05</text>
+        <path d="M441 76 L449 76 L445 82 Z" fill="#e03131"/>
+        <text x="262" y="62" text-anchor="middle" font-size="12" font-weight="600" fill="#0f6e56">6月低点 26.22</text>
+        <path d="M258 76 L266 76 L262 82 Z" fill="#0f6e56"/>
+        <text x="178" y="62" text-anchor="middle" font-size="12" font-weight="600" fill="#6b7280">52周低 25.38</text>
+        <path d="M174 76 L182 76 L178 82 Z" fill="#6b7280"/>
+        <rect x="490" y="84" width="150" height="56" rx="8" fill="#f1efe8" stroke="#5f5e5a" stroke-width="0.5"/>
+        <text x="565" y="102" text-anchor="middle" font-size="12" font-weight="600" fill="#2c2c2a">观望区</text>
+        <text x="565" y="120" text-anchor="middle" font-size="11" fill="#5f5e5a">股息 &lt;3.5%</text>
+        <rect x="340" y="84" width="150" height="56" rx="8" fill="#e6f1fb" stroke="#185fa5" stroke-width="0.5"/>
+        <text x="415" y="102" text-anchor="middle" font-size="12" font-weight="600" fill="#0c447c">第一档 试仓 1/3</text>
+        <text x="415" y="120" text-anchor="middle" font-size="11" fill="#185fa5">股息 3.5-3.7%</text>
+        <rect x="220" y="84" width="120" height="56" rx="8" fill="#e1f5ee" stroke="#0f6e56" stroke-width="0.5"/>
+        <text x="280" y="102" text-anchor="middle" font-size="12" font-weight="600" fill="#085041">第二档 加至 2/3</text>
+        <text x="280" y="120" text-anchor="middle" font-size="11" fill="#0f6e56">股息 3.7-3.9%</text>
+        <rect x="90" y="84" width="130" height="56" rx="8" fill="#eaf3de" stroke="#3b6d11" stroke-width="0.5"/>
+        <text x="155" y="102" text-anchor="middle" font-size="12" font-weight="600" fill="#27500a">第三档 重仓</text>
+        <text x="155" y="120" text-anchor="middle" font-size="11" fill="#3b6d11">股息 ≈3.9-4%</text>
+        <rect x="40" y="84" width="50" height="56" rx="8" fill="#faeeda" stroke="#854f0b" stroke-width="0.5"/>
+        <text x="65" y="102" text-anchor="middle" font-size="12" font-weight="600" fill="#633806">极端低估</text>
+        <text x="65" y="120" text-anchor="middle" font-size="11" fill="#854f0b">4.1%+</text>
+        <line x1="40" y1="148" x2="640" y2="148" stroke="#b4b2a9" stroke-width="1"/>
+        <line x1="40" y1="144" x2="40" y2="148" stroke="#b4b2a9" stroke-width="1"/>
+        <line x1="140" y1="144" x2="140" y2="148" stroke="#b4b2a9" stroke-width="1"/>
+        <line x1="240" y1="144" x2="240" y2="148" stroke="#b4b2a9" stroke-width="1"/>
+        <line x1="340" y1="144" x2="340" y2="148" stroke="#b4b2a9" stroke-width="1"/>
+        <line x1="440" y1="144" x2="440" y2="148" stroke="#b4b2a9" stroke-width="1"/>
+        <line x1="540" y1="144" x2="540" y2="148" stroke="#b4b2a9" stroke-width="1"/>
+        <line x1="640" y1="144" x2="640" y2="148" stroke="#b4b2a9" stroke-width="1"/>
+        <text x="40" y="166" text-anchor="middle" font-size="11" fill="#888780">24</text>
+        <text x="140" y="166" text-anchor="middle" font-size="11" fill="#888780">25</text>
+        <text x="240" y="166" text-anchor="middle" font-size="11" fill="#888780">26</text>
+        <text x="340" y="166" text-anchor="middle" font-size="11" fill="#888780">27</text>
+        <text x="440" y="166" text-anchor="middle" font-size="11" fill="#888780">28</text>
+        <text x="540" y="166" text-anchor="middle" font-size="11" fill="#888780">29</text>
+        <text x="640" y="166" text-anchor="middle" font-size="11" fill="#888780">30</text>
+      </svg>
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <tr><th>价位区间</th><th class="num">对应股息率</th><th class="num">对应 PE(TTM)</th><th>操作建议</th></tr>
+        <tr><td>&gt; 28.5 元</td><td class="num">&lt; 3.5%</td><td class="num">&gt; 19.3</td><td>观望，不追高</td></tr>
+        <tr><td>27.0 – 28.5 元</td><td class="num">3.5 – 3.7%</td><td class="num">18.3 – 19.3</td><td><b>第一档</b>：试仓 1/3（MA60≈27.7 / MA250≈27.5 支撑带）</td></tr>
+        <tr><td>25.8 – 27.0 元</td><td class="num">3.7 – 3.9%</td><td class="num">17.5 – 18.3</td><td><b>第二档</b>：加仓至 2/3</td></tr>
+        <tr><td>24.5 – 25.8 元</td><td class="num">≈ 3.9 – 4.1%</td><td class="num">16.6 – 17.5</td><td><b>第三档</b>：重仓（52 周低 25.38 附近）</td></tr>
+        <tr><td>&lt; 24.5 元</td><td class="num">&gt; 4.1%</td><td class="num">&lt; 16.6</td><td>极端低估区，接近 2022 年历史估值底（PE≈17.5）</td></tr>
+      </table>
+    </div>
+    <h3>操作纪律</h3>
+    <ul style="font-size:13px;padding-left:20px;margin-top:6px;">
+      <li><b>分批不梭哈</b>：按"每跌 0.5-1 元加一档"节奏执行，摊薄成本、保留后手。</li>
+      <li><b>现价定位</b>：当前 28.05 元正处于第一档区间边缘，不急满仓，等回调或按档位逐步买入。</li>
+      <li><b>动态调整</b>：若来水转枯、电价政策恶化等基本面变化，各档位应整体下移；反之亦然。</li>
+      <li><b>锚定股息</b>：对高股息标的，股息率 &gt;3.8%（≈26.3 元以下）性价比明显优于 3.5% 以下（28.6 元以上）的追高买点。</li>
+      <li><b>长期视角</b>：结合红利税规则（持有 &gt;1 年免税），本策略适合中长线持有吃息 + 填权，而非短线博弈。</li>
+    </ul>
+  </div>
+
+  <div class="footnote">
+    数据来源：同花顺 iFinD 金融数据（2026-08-10 收盘行情及最新定期报告）；运营数据来自公司 2026-07-07《2026年半年度发电量完成情况公告》。建仓价位基于 2025 年分红 1.00 元/股与 TTM 利润测算，为参考框架而非精确买卖点。报告仅作信息整理与参考，不构成任何投资建议。股市有风险，入市需谨慎。
+  </div>
+  <div class="footer">长江电力（600900.SH）深度分析 · 生成时间 2026-08-10 · 数据口径：同花顺 iFinD</div>
+</div>
+
+<script>
+/* ============ 价格走势图 ============ */
+(function(){
+  const data = [["05-01",27.32],["05-06",27.2],["05-07",27.05],["05-08",27.0],["05-11",27.01],["05-12",27.04],["05-13",27.0],["05-14",26.94],["05-15",27.03],["05-18",26.89],["05-19",27.25],["05-20",26.9],["05-21",26.66],["05-22",26.56],["05-25",26.67],["05-26",27.14],["05-27",27.24],["05-28",27.22],["05-29",27.75],["06-01",27.77],["06-02",27.96],["06-03",27.89],["06-04",27.72],["06-05",27.61],["06-08",27.51],["06-09",27.63],["06-10",27.69],["06-11",27.89],["06-12",28.28],["06-15",27.57],["06-16",27.19],["06-17",27.0],["06-18",26.66],["06-22",26.94],["06-23",26.87],["06-24",26.6],["06-25",26.22],["06-26",26.65],["06-29",26.84],["06-30",26.47],["07-01",26.64],["07-02",26.95],["07-03",27.05],["07-06",27.19],["07-07",27.41],["07-08",27.83],["07-09",27.77],["07-13",28.42],["07-14",28.55],["07-15",28.68],["07-16",28.24],["07-17",27.99],["07-20",28.98],["07-21",28.73],["07-22",29.09],["07-23",28.94],["07-24",28.9],["07-27",28.35],["07-28",29.07],["07-29",28.93],["07-30",29.49],["07-31",29.09],["08-03",29.05],["08-04",28.3],["08-05",27.76],["08-06",27.75],["08-07",27.75],["08-10",28.05]];
+  const el = document.getElementById('priceChart');
+  const W = el.clientWidth || 1000, H = 260, pl = 48, pr = 16, pt = 16, pb = 28;
+  const vmin = 25.8, vmax = 30.0;
+  const x = i => pl + i * (W - pl - pr) / (data.length - 1);
+  const y = v => pt + (vmax - v) / (vmax - vmin) * (H - pt - pb);
+  let path = '', area = '', last = data[data.length-1];
+  data.forEach((d,i) => { path += (i? 'L':'M') + x(i).toFixed(1) + ' ' + y(d[1]).toFixed(1) + ' '; });
+  data.forEach((d,i) => { area += (i? 'L':'M') + x(i).toFixed(1) + ' ' + y(d[1]).toFixed(1) + ' '; });
+  area += 'L' + x(data.length-1).toFixed(1) + ' ' + (H-pb) + ' L' + pl + ' ' + (H-pb) + ' Z';
+  let grid = '';
+  for(let i=0;i<=4;i++){ const v = vmin + (vmax-vmin)*i/4; grid += `<line x1="${pl}" y1="${y(v)}" x2="${W-pr}" y2="${y(v)}" stroke="#eef0f3" stroke-width="1"/><text x="${pl-6}" y="${y(v)+4}" text-anchor="end" font-size="10" fill="#9ca3af">${v.toFixed(1)}</text>`; }
+  const xLabels = [0, Math.floor(data.length*0.25), Math.floor(data.length*0.5), Math.floor(data.length*0.75), data.length-1];
+  let xlab = xLabels.map(i => `<text x="${x(i)}" y="${H-8}" text-anchor="middle" font-size="10" fill="#9ca3af">${data[i][0]}</text>`).join('');
+  const lastColor = last[1] >= data[data.length-2][1] ? '#e03131' : '#2f9e44';
+  el.innerHTML = `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;">
+    ${grid}${xlab}
+    <path d="${area}" fill="url(#g1)" opacity="0.9"/>
+    <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0b5cad" stop-opacity="0.28"/><stop offset="100%" stop-color="#0b5cad" stop-opacity="0.02"/></linearGradient></defs>
+    <path d="${path}" fill="none" stroke="#0b5cad" stroke-width="2.2" stroke-linejoin="round"/>
+    <circle cx="${x(data.length-1)}" cy="${y(last[1])}" r="4" fill="${lastColor}"/>
+    <text x="${x(data.length-1)}" y="${y(last[1])-10}" text-anchor="end" font-size="11" font-weight="700" fill="${lastColor}">28.05</text>
+  </svg>`;
+})();
+
+/* ============ 财务柱状图 ============ */
+(function(){
+  const rev = [["2023",781.1],["2024",844.9],["2025",862.4]];
+  const np  = [["2023",272.4],["2024",325.0],["2025",345.0]];
+  const el = document.getElementById('finChart');
+  const W = el.clientWidth || 1000, H = 250, pl = 52, pr = 16, pt = 18, pb = 30;
+  const vmax = 950;
+  const bw = (W - pl - pr) / 6, gap = bw * 0.5;
+  const y = v => pt + (vmax - v) / vmax * (H - pt - pb);
+  let html = '';
+  for(let i=0;i<=4;i++){ const v = vmax*i/4; html += `<line x1="${pl}" y1="${y(v)}" x2="${W-pr}" y2="${y(v)}" stroke="#eef0f3"/><text x="${pl-6}" y="${y(v)+4}" text-anchor="end" font-size="10" fill="#9ca3af">${Math.round(v)}</text>`; }
+  rev.forEach((d,i) => {
+    const cx = pl + bw*i + bw/2;
+    const h1 = H - pb - y(d[1]), h2 = H - pb - y(np[i][1]);
+    html += `
+      <rect x="${cx - gap/2 - 6}" y="${y(d[1])}" width="${gap*0.42}" height="${h1}" rx="3" fill="#0b5cad" opacity="0.85"/>
+      <text x="${cx - gap/2 + 2}" y="${y(d[1])-5}" text-anchor="middle" font-size="10" fill="#0b5cad" font-weight="700">${d[1]}</text>
+      <rect x="${cx + gap/2 - 4}" y="${y(np[i][1])}" width="${gap*0.42}" height="${h2}" rx="3" fill="#b45309" opacity="0.9"/>
+      <text x="${cx + gap/2 + 4}" y="${y(np[i][1])-5}" text-anchor="middle" font-size="10" fill="#b45309" font-weight="700">${np[i][1]}</text>
+      <text x="${cx}" y="${H-8}" text-anchor="middle" font-size="11" fill="#374151" font-weight="600">${d[0]}</text>`;
+  });
+  html += `<text x="${pl + 8}" y="${pt}" font-size="11" fill="#0b5cad" font-weight="600">■ 营业收入（亿元）</text>
+           <text x="${pl + 130}" y="${pt}" font-size="11" fill="#b45309" font-weight="600">■ 归母净利润（亿元）</text>`;
+  el.innerHTML = `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;">${html}</svg>`;
+})();
+</script>
+</body>
+</html>
