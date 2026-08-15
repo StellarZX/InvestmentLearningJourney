@@ -309,10 +309,12 @@ def build_html():
     gen_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
     n_low = len(low_list)
     n_high = len(high_list)
-    # 报告文件名按数据日期命名（20260810.html），目录本身已区分指数/行业
-    fname = market_date.replace('-', '') if market_date and market_date != '—' \
-        else datetime.datetime.now().strftime('%Y%m%d')
+    # 报告命名：YYYYMMDD.html（按生成日期，每天一个文件不覆盖历史）；
+    # 同一天多次生成自动追加 _HHMMSS 后缀保留每一版
+    fname = datetime.datetime.now().strftime('%Y%m%d')
     out_html = os.path.join(OUT_DIR, f'{fname}.html')
+    if os.path.exists(out_html):
+        out_html = os.path.join(OUT_DIR, f"{fname}_{datetime.datetime.now().strftime('%H%M%S')}.html")
 
     html = f'''<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
 <title>宽基指数报告</title>

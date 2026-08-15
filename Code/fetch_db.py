@@ -197,8 +197,56 @@ def fetch_meta_list():
     return []
 
 
+def enrich_names():
+    """用腾讯批量行情接口给 etf_meta 补全称（新浪/东财清单的 name 可能是残缺简称，
+    如 航空TH=航空航天ETF天弘、FG消费=港股通消费ETF富国，导致主题归一化失效）。
+    全称只替换更长的（简称→全称），不覆盖已有的完整名称。"""
+    import requests as _r
+    conn = sqlite3.connect(DB)
+    rows = conn.execute('SELECT code, name FROM etf_meta').fetchall()
+    # 疑似残缺简称：无中文或含孤立字母/过短
+    todo = []
+    for code, name in rows:
+        if not name:
+            todo.append(code)
+        elif len(name) <= 5 and any(c.isalpha() for c in name):   # 如 航空TH/FG消费/HK消费
+            todo.append(code)
+    if not todo:
+        conn.close()
+        return 0
+    print(f'  补全名称: {len(todo)} 只（残缺简称）...')
+    n_fixed = 0
+    for i in range(0, len(todo), 50):
+        batch = todo[i:i + 50]
+        try:
+            r = _r.get('https://qt.gtimg.cn/q=' + ','.join(batch), timeout=15,
+                       headers={'User-Agent': 'Mozilla/5.0'})
+            r.encoding = 'gbk'
+            for line in r.text.strip().split(';'):
+                if '=' not in line:
+                    continue
+                # 格式: v_sz159241="51~航空航天ETF天弘~159241~1.051~..."
+                key, _, val = line.partition('=')
+                code = key.replace('v_', '').strip()
+                parts = val.strip('"').split('~')
+                if len(parts) <= 3:
+                    continue
+                full = (parts[1] or '').strip()
+                old = dict(rows).get(code, '')
+                if full and len(full) > len(old):
+                    conn.execute('UPDATE etf_meta SET name=? WHERE code=?', (full, code))
+                    n_fixed += 1
+        except Exception:
+            pass
+        time.sleep(0.3)
+    conn.commit()
+    conn.close()
+    print(f'  已补全 {n_fixed} 只全称')
+    return n_fixed
+
+
 def rebuild_meta():
-    """重建 etf_meta 全市场清单（含类型标注）"""
+    """重建 etf_meta 全市场清单（含类型标注 + 全称补全）"""
     from signal_lib import classify_industry, is_industry
     lst = fetch_meta_list()
     if not lst:
@@ -217,11 +265,110 @@ def rebuild_meta():
         rows.append((code, name, t, 1 if t == 'industry' else 0))
     conn.executemany('INSERT OR REPLACE INTO etf_meta(code,name,type,is_ind) VALUES(?,?,?,?)', rows)
     conn.commit()
+    conn.close()
     n = len(rows)
     n_ind = sum(1 for r in rows if r[3])
-    conn.close()
+    # 用腾讯接口补全称（简称→全称）
+    enrich_names()
     print(f'  已重建清单: {n} 只（行业型 {n_ind}）')
     return n
+
+
+def fetch_index_data(force=False):
+    """拉取每只行业 ETF 跟踪的真实指数日线：
+    ① fundmobapi 查 ETF 跟踪指数(INDEXCODE/INDEXNAME) → index_kline 映射表
+    ② 东财 kline 接口拉指数日线 → index_daily 表
+    幂等可续跑：已有映射跳过查询，已有K线跳过拉取（东财限流后重跑即可续）"""
+    import requests as _r
+    H = {'User-Agent': 'Mozilla/5.0', 'Referer': 'https://quote.eastmoney.com/'}
+    conn = sqlite3.connect(DB)
+    conn.execute('''CREATE TABLE IF NOT EXISTS index_kline(
+        code TEXT PRIMARY KEY, name TEXT, theme TEXT,
+        INDEXCODE TEXT, INDEXNAME TEXT)''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS index_daily(
+        indexcode TEXT, date TEXT, open REAL, close REAL, high REAL, low REAL,
+        volume REAL, amount REAL, PRIMARY KEY(indexcode, date))''')
+    conn.execute('CREATE INDEX IF NOT EXISTS idx_index_daily ON index_daily(indexcode)')
+    conn.commit()
+    # 已有映射
+    known = {r[0] for r in conn.execute('SELECT theme FROM index_kline').fetchall()}
+    metas = conn.execute(
+        "SELECT code, name FROM etf_meta WHERE is_ind=1 ORDER BY code").fetchall()
+    conn.close()
+    # 主题 → 代表ETF
+    from signal_lib import theme_of
+    rep_by_theme = {}
+    for code, name in metas:
+        th = theme_of(name)
+        rep_by_theme.setdefault(th, (code, name))
+
+    # ① 查缺失的映射
+    todo = [(th, c, n) for th, (c, n) in rep_by_theme.items() if th not in known]
+    if todo:
+        print(f'指数映射: 已有 {len(known)} 个, 待查 {len(todo)} 个')
+        conn = sqlite3.connect(DB)
+        for i, (th, code, name) in enumerate(todo, 1):
+            for _t in range(2):
+                try:
+                    r = _r.get('https://fundmobapi.eastmoney.com/FundMNewApi/FundMNNBasicInformation',
+                               params={'FCODE': code[-6:], 'deviceid': 'x', 'plat': 'Android',
+                                       'product': 'EFund', 'version': '6.3.8'}, timeout=10, headers=H)
+                    d = (r.json().get('Datas') or {})
+                    ic, inm = d.get('INDEXCODE') or '', d.get('INDEXNAME') or ''
+                    if ic:
+                        conn.execute('INSERT OR REPLACE INTO index_kline(code,name,theme,INDEXCODE,INDEXNAME) '
+                                     'VALUES(?,?,?,?,?)', (code, name, th, ic, inm))
+                        conn.commit()
+                    break
+                except Exception:
+                    time.sleep(1.0)
+            if i % 40 == 0:
+                print(f'  [{i}/{len(todo)}] 映射中...', flush=True)
+            time.sleep(0.12)
+        conn.close()
+        print('  映射阶段完成')
+
+    # ② 拉缺失的指数K线
+    conn = sqlite3.connect(DB)
+    maps = conn.execute('SELECT theme, code, INDEXCODE, INDEXNAME FROM index_kline').fetchall()
+    have = {r[0] for r in conn.execute('SELECT DISTINCT indexcode FROM index_daily').fetchall()}
+    conn.close()
+    todo_kl = [m for m in maps if m[2] not in have]
+    print(f'指数K线: 已有 {len(maps)-len(todo_kl)} 个, 待拉 {len(todo_kl)} 个')
+    ok_cnt = 0
+    conn = sqlite3.connect(DB)
+    for i, (th, code, ic, inm) in enumerate(todo_kl, 1):
+        kl = None
+        for _try in range(3):
+            try:
+                r = _r.get('https://push2his.eastmoney.com/api/qt/stock/kline/get',
+                           params={'secid': f'2.{ic}',
+                                   'fields1': 'f1,f2,f3,f4,f5,f6',
+                                   'fields2': 'f51,f52,f53,f54,f55,f56,f57,f58',
+                                   'klt': 101, 'fqt': 1, 'beg': '19900101', 'end': '20500101',
+                                   'lmt': 2000}, timeout=20, headers=H)
+                kl = ((r.json().get('data') or {}).get('klines')) or []
+                if kl:
+                    break
+            except Exception:
+                time.sleep(2.0)
+        if kl:
+            rows = []
+            for line in kl:
+                p = line.split(',')
+                rows.append((ic, p[0], float(p[1]), float(p[2]), float(p[3]),
+                             float(p[4]), float(p[5]), float(p[6])))
+            conn.executemany(
+                'INSERT OR REPLACE INTO index_daily(indexcode,date,open,close,high,low,volume,amount) '
+                'VALUES(?,?,?,?,?,?,?,?)', rows)
+            conn.commit()
+            ok_cnt += 1
+        if i % 30 == 0:
+            print(f'  K线 [{i}/{len(todo_kl)}] 完成 {ok_cnt}', flush=True)
+        time.sleep(0.6)
+    conn.close()
+    print(f'完成: 本次拉取K线 {ok_cnt} 个指数')
+    return ok_cnt
 
 
 def main():
@@ -231,7 +378,12 @@ def main():
     ap.add_argument('--types', type=str, default='industry',
                     help='拉取类型: industry(默认) / all / 逗号分隔如 宽基,跨境')
     ap.add_argument('--workers', type=int, default=6)
+    ap.add_argument('--indexes', action='store_true', help='拉取行业ETF跟踪的真实指数日线（替代ETF合成）')
     args = ap.parse_args()
+
+    if args.indexes:
+        fetch_index_data()
+        return
 
     conn = sqlite3.connect(DB)
     # 首次运行自动建表（幂等）：全市场清单 + K线
@@ -241,6 +393,13 @@ def main():
         code TEXT, date TEXT, open REAL, close REAL, high REAL, low REAL,
         volume REAL, amount REAL, PRIMARY KEY(code, date))''')
     conn.execute('CREATE INDEX IF NOT EXISTS idx_kline_code ON kline(code)')
+    conn.execute('''CREATE TABLE IF NOT EXISTS index_kline(
+        code TEXT PRIMARY KEY, name TEXT, theme TEXT,
+        INDEXCODE TEXT, INDEXNAME TEXT)''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS index_daily(
+        indexcode TEXT, date TEXT, open REAL, close REAL, high REAL, low REAL,
+        volume REAL, amount REAL, PRIMARY KEY(indexcode, date))''')
+    conn.execute('CREATE INDEX IF NOT EXISTS idx_index_daily ON index_daily(indexcode)')
     conn.commit()
     # 清单为空（如克隆仓库后首次运行）→ 自动从接口重建全市场清单
     n_meta0 = conn.execute('SELECT COUNT(*) FROM etf_meta').fetchone()[0]
