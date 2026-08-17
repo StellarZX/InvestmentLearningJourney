@@ -3,7 +3,7 @@
 公共信号库（signal_lib.py）
 ============================
 从旧 run.py 提取的行业识别 / 主题识别 / MACD 计算等公共函数，
-供 sector_report.py（日报）与 fetch_all_industry.py（数据维护）共用。
+供 portfolio_report.py（持仓行业信号）与 plate_report.py（板块分析）共用。
 
 定位：只做「数据分析」，不做买卖指令。
 """

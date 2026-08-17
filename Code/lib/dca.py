@@ -65,37 +65,35 @@ class Fund:
 
 
 FUNDS: list[Fund] = [
-    # ---- A股长期指数（人民币，每月 ¥1,500，比例永久不变）----
-    # Quota weights: base_weight (targets 25/15/10/15/15/20)
+    # ---- 持仓基金 → 指数 映射表（持仓驱动：portfolio_report 按当前持仓分析）----
+    # 覆盖所有可能持仓的指数基金；base_weight 为历史定投权重（报告已不再用定投分配）
     Fund("cn", "华泰柏瑞沪深300ETF联接A", "460300", "CSI 300", "csi_300",
-         2.5, valuation_symbol="沪深300", price_source="local"),
+         2.5, valuation_symbol="沪深300", price_source="sina:sh000300"),
     Fund("cn", "南方中证500ETF联接(LOF)A", "160119", "CSI 500", "csi_500",
-         1.5, valuation_symbol="中证500"),
+         1.5, valuation_symbol="中证500", price_source="sina:sh000905"),
     Fund("cn", "易方达创业板ETF联接A", "110026", "ChiNext", "chi_next",
          1.0, price_source="sina:sz399006"),
     Fund("cn", "富国中证红利指数增强A", "100032", "CSI Dividend", "csi_dividend",
          1.5, price_source="yf:515080.SS", proxy_note="Price proxy: CSI Dividend ETF (515080)"),
     Fund("cn", "汇添富恒生指数(QDII-LOF)A", "164705", "Hang Seng Index", "hang_seng",
-         1.5, price_source="local"),
+         1.5, price_source="yf:^HSI"),
     Fund("cn", "易方达恒生红利低波ETF联接A", "021457", "HS Dividend Low Vol", "hsi_dividend_lowvol",
          2.0, price_source="yf:159545.SZ", proxy_note="Price proxy: HS Dividend Low Vol ETF (159545)"),
 ]
 
 
-# ---- 美股长期指数（人民币，每月 ¥1,000；国内平台每日 ¥10 定投）----
-# 标普500 40%（摩根A 019305 + 摩根C 017641）、纳斯达克100 60%
-# （摩根A 019172 + 招商A 019547 + 华安A 040046），每只基金等权（base_weight 2.0）。
+# ---- 美股长期指数（持仓基金 → 指数 映射）----
 US_FUNDS: list[Fund] = [
     Fund("us", "摩根标普500指数(QDII)A", "019305", "S&P 500", "sp500",
-         2.0, price_source="local"),
+         2.0, price_source="yf:^GSPC"),
     Fund("us", "摩根标普500指数(QDII)C", "017641", "S&P 500", "sp500",
-         2.0, price_source="local"),
+         2.0, price_source="yf:^GSPC"),
     Fund("us", "摩根纳斯达克100指数(QDII)A", "019172", "NASDAQ-100", "nasdaq_100",
-         2.0, price_source="local"),
+         2.0, price_source="yf:^NDX"),
     Fund("us", "招商纳斯达克100指数(QDII)A", "019547", "NASDAQ-100", "nasdaq_100",
-         2.0, price_source="local"),
+         2.0, price_source="yf:^NDX"),
     Fund("us", "华安纳斯达克100指数(QDII)A", "040046", "NASDAQ-100", "nasdaq_100",
-         2.0, price_source="local"),
+         2.0, price_source="yf:^NDX"),
 ]
 
 
@@ -335,14 +333,74 @@ def fetch_price_yahoo(symbol: str, fund: Fund) -> pd.DataFrame:
     return pd.DataFrame(rows).sort_values("date").drop_duplicates(subset=["date"], keep="last")
 
 
-def refresh_data(force: bool = False) -> dict[str, Any]:
+def build_assessments(only_slugs: set[str] | None = None) -> int:
+    """用最新 indices/valuations 重算评估分并写回 assessments 表。
+    该表是持仓基金分析报告（portfolio_report）健康度/信号的数据源。
+    only_slugs 不为空时只重算指定 slug（持仓驱动）。在 refresh_data() 末尾自动调用。"""
+    rows = []
+    seen_slug: set[str] = set()
+    for fund in FUNDS + US_FUNDS:
+        slug = fund.index_slug
+        if slug in seen_slug:
+            continue
+        if only_slugs is not None and slug not in only_slugs:
+            continue
+        seen_slug.add(slug)
+        pdf = read_index_csvs(slug)
+        if pdf.empty or "close" not in pdf.columns:
+            continue
+        close = pd.to_numeric(pdf["close"], errors="coerce").dropna().reset_index(drop=True)
+        if len(close) < 60:
+            continue
+        last = float(close.iloc[-1])
+        date_str = str(pd.to_datetime(pdf["date"]).max().date())
+        # 价格分位（近3年窗口，与 percentile_info 同口径）
+        pct_series = trailing_percentile(close, PRICE_WINDOW)
+        pct_v = pct_series.iloc[-1]
+        pct = float(pct_v) if pct_v is not None else None
+        # 回撤：距250日高点
+        mx = float(close.tail(250).max())
+        dd = float((last / mx - 1) * 100) if mx > 0 else 0.0
+        # 趋势分：站上/跌破 MA60（0-100，中性 50）
+        ma60 = float(close.tail(60).mean()) if len(close) >= 60 else last
+        trend = 70.0 if last > ma60 else (30.0 if last < ma60 else 50.0)
+        # 回撤分：回撤越深分越高（封顶 100）
+        dd_score = min(100.0, max(0.0, -dd * 3.33))
+        # 估值分：PE 历史分位越低分越高（越便宜越健康）
+        val_score = None
+        if fund.valuation_symbol:
+            vdf = read_valuation_csvs(slug)
+            if not vdf.empty and "pe_ttm" in vdf.columns:
+                pe = pd.to_numeric(vdf["pe_ttm"], errors="coerce").dropna()
+                if len(pe) >= 60:
+                    val_pct = float(expanding_percentile(pe).iloc[-1])
+                    val_score = round(100 - val_pct, 4)
+        rows.append({
+            "slug": slug, "date": date_str, "close": last,
+            "price_percentile": round(pct, 4) if pct is not None else None,
+            "drawdown_pct": round(dd, 4),
+            "price_score": round(100 - pct, 4) if pct is not None else None,
+            "drawdown_score": round(dd_score, 4),
+            "trend_score": trend,
+            "valuation_score": val_score,
+            "extra_investment_score": round(((100 - pct) if pct is not None else 50) + dd_score, 4),
+            "method": "auto_rebuild", "confidence": "auto",
+        })
+    db.upsert_assessments(rows)
+    return len(rows)
+
+
+def refresh_data(force: bool = False, only_slugs: set[str] | None = None) -> dict[str, Any]:
+    """刷新指数数据。only_slugs 不为空时只刷新指定 slug（持仓驱动：仅拉当前持仓涉及的指数）。"""
     db.init_db()
     today = date.today()
     results: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
     touched: set[str] = set()
 
-    for fund in FUNDS:
+    for fund in FUNDS + US_FUNDS:
+        if only_slugs is not None and fund.index_slug not in only_slugs:
+            continue
         key = (fund.index_slug, fund.valuation_symbol or "", fund.price_source or "")
         if key in seen:
             continue
@@ -424,6 +482,12 @@ def refresh_data(force: bool = False) -> dict[str, Any]:
         metadata["indices"][slug] = entry
     if touched:
         db.save_metadata(metadata)
+    # 重算评估分（assessments 表），保持健康度/全景表与最新行情同步
+    try:
+        n = build_assessments(only_slugs)
+        results.append({"slug": "_assessments", "tracking": "评估分", "status": f"已重算 {n} 个指数"})
+    except Exception as exc:  # noqa: BLE001
+        results.append({"slug": "_assessments", "tracking": "评估分", "status": f"重算失败：{type(exc).__name__}"})
     return {"results": results}
 
 
