@@ -48,7 +48,11 @@ INDEX_FUNDS = [
 ]
 CASHPOOL_FUND = ('余额宝', 'ZFB')
 
-DIRECTIONS = {'指数': ['买入', '卖出'], '行业': ['买入', '卖出'], '资金池': ['转入', '转出', '收益']}
+# 持仓分类：指数 / 红利 / 行业（被动+主动已合并）+ 资金池
+# 评分策略：指数=定投倍数 / 红利=买入区卖出区 / 行业=趋势（卖出为主）
+CATEGORIES = ['指数', '红利', '行业', '资金池']
+DIRECTIONS = {c: ['买入', '卖出'] for c in ('指数', '红利', '行业')}
+DIRECTIONS['资金池'] = ['转入', '转出', '收益']
 
 
 def db():
@@ -87,16 +91,15 @@ def get_summary():
         fund_net = conn.execute('''
             SELECT SUM(CASE WHEN direction IN ('买入') THEN amount
                             WHEN direction IN ('卖出') THEN -amount ELSE 0 END)
-            FROM trans WHERE category IN ('指数','行业') AND date >= ?''', (first_in,)).fetchone()[0] or 0
+            FROM trans WHERE category IN ('指数','红利','行业') AND date >= ?''', (first_in,)).fetchone()[0] or 0
         cash_manual = conn.execute('''
             SELECT SUM(CASE WHEN direction IN ('转入','收益') THEN amount
                             WHEN direction IN ('转出') THEN -amount ELSE 0 END)
             FROM trans WHERE category='资金池' ''').fetchone()[0] or 0
         cash_implied = round(cash_manual - fund_net, 2)
     conn.close()
-    summary = {'指数': {'funds': [], 'total': 0.0, 'cost': 0.0},
-               '行业': {'funds': [], 'total': 0.0, 'cost': 0.0},
-               '资金池': {'funds': [], 'total': 0.0, 'cost': 0.0}}
+    summary = {c: {'funds': [], 'total': 0.0, 'cost': 0.0}
+               for c in ('指数', '红利', '行业', '资金池')}
     for r in rows:
         if r['amt'] <= 0:
             continue
@@ -109,7 +112,7 @@ def get_summary():
         summary[c]['total'] = round(summary[c]['total'], 2)
     # 总资产 = 可用现金（推算余额）+ 基金持仓成本；无推算时用资金池手工总额
     if cash_implied is not None:
-        total = round(cash_implied + summary['指数']['total'] + summary['行业']['total'], 2)
+        total = round(cash_implied + summary['指数']['total'] + summary['红利']['total'] + summary['行业']['total'], 2)
     else:
         total = round(sum(summary[c]['total'] for c in summary), 2)
     return {'summary': summary, 'total': total, 'cash_implied': cash_implied}
@@ -154,6 +157,7 @@ def add_trans(p):
     conn.commit()
     conn.close()
     sync_readme()
+    sync_fund_data()
 
 
 def update_trans(pid, p):
@@ -165,6 +169,7 @@ def update_trans(pid, p):
     conn.commit()
     conn.close()
     sync_readme()
+    sync_fund_data()
 
 
 def delete_trans(pid):
@@ -173,6 +178,16 @@ def delete_trans(pid):
     conn.commit()
     conn.close()
     sync_readme()
+    sync_fund_data()
+
+
+def sync_fund_data():
+    """流水变更后同步持仓快照到 fund_data.db（分析报告的数据源）"""
+    try:
+        import fund_data as fd
+        fd.sync_holdings()
+    except Exception as e:
+        print(f'  [warn] 持仓汇总库同步失败: {e}')
 
 
 def sync_readme():
@@ -199,28 +214,28 @@ def sync_readme():
             fund_net = conn.execute('''
                 SELECT SUM(CASE WHEN direction IN ('买入') THEN amount
                                 WHEN direction IN ('卖出') THEN -amount ELSE 0 END)
-                FROM trans WHERE category IN ('指数','行业') AND date >= ?''', (first_in,)).fetchone()[0] or 0
+                FROM trans WHERE category IN ('指数','红利','行业') AND date >= ?''', (first_in,)).fetchone()[0] or 0
             cash_manual = conn.execute('''
                 SELECT SUM(CASE WHEN direction IN ('转入','收益') THEN amount
                                 WHEN direction IN ('转出') THEN -amount ELSE 0 END)
                 FROM trans WHERE category='资金池' ''').fetchone()[0] or 0
             ci = round(cash_manual - fund_net, 2)
         conn.close()
-        pos = {'指数': [], '行业': [], '其他': []}
+        pos = {'指数': [], '红利': [], '行业': [], '其他': []}
         for cat, fund, code, amt in rows:
             if amt <= 0:
                 continue
-            key = cat if cat in ('指数', '行业') else '其他'
+            key = cat if cat in ('指数', '红利', '行业') else '其他'
             pos[key].append({'fund': fund, 'code': code, 'amt': round(amt, 2)})
-        for k in ('指数', '行业'):
+        for k in ('指数', '红利', '行业'):
             pos[k].sort(key=lambda x: -x['amt'])
         def _fmt(v):
             return f'¥{v:,.2f}'
         md = ['## 4. 组合持仓', '',
               '|   类型   |   代码   |     当前持仓      |         基金          |',
               '|:------:|:------:|:-------------:|:-------------------:|']
-        totals = {'指数': 0.0, '行业': 0.0}
-        for cat in ('指数', '行业'):
+        totals = {c: 0.0 for c in ('指数', '红利', '行业')}
+        for cat in ('指数', '红利', '行业'):
             for it in pos[cat]:
                 md.append(f"|   {cat}   | {it['code']:>6} | {_fmt(it['amt']):>12} | {it['fund']:<16} |")
                 totals[cat] += it['amt']
@@ -230,7 +245,7 @@ def sync_readme():
             amt_show = ci if (it['code'] == 'ZFB' and ci is not None) else it['amt']
             cash_total += amt_show
             md.append(f"|   其他   | {it['code']:>6} | {_fmt(amt_show):>12} | {it['fund']:<16} |")
-        gt = totals['指数'] + totals['行业'] + cash_total
+        gt = sum(totals.values()) + cash_total
         md.append(f'|  总计   |  *-*   | *{_fmt(gt)}*  |         *-*         |')
         md.append('')
         md.append('> 表格由 `Code/export_positions.py` 从 `Code/data/portfolio.db` 自动生成，与「持仓流水管理」当前持仓同口径；余额宝显示可用现金（转入-已投基金）。')
@@ -268,13 +283,15 @@ select:focus,input:focus{outline:2px solid #B5D4F4;border-color:var(--blue)}
 .btn-p{background:var(--blue);color:#fff}.btn-p:hover{background:#0C447C}
 .btn-g{background:#f1f3f5;color:var(--tx)}.btn-g:hover{background:#e3e6eb}
 .btn-r{background:#FCEBEB;color:#A32D2D}.btn-r:hover{background:#F7C1C1}
+.btn-r2{background:#A32D2D;color:#fff}.btn-r2:hover{background:#A32D2D}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{background:#f1f3f5;padding:8px;text-align:center;border-bottom:2px solid var(--line)}
 td{padding:7px 8px;text-align:center;border-bottom:1px solid #f1f3f5}
 tr:hover td{background:#f8f9fa}
 .tag{display:inline-block;padding:1px 8px;border-radius:8px;font-size:12px;font-weight:500}
 .tag-index{background:var(--blue2);color:var(--blue)}
-.tag-industry{background:#EBFBEE;color:#0F6E56}
+.tag-dividend{background:#EAF3DE;color:#3B6D11}
+.tag-industry{background:#FAEEDA;color:#854F0B}
 .tag-cash{background:#FFF3BF;color:#854F0B}
 form#editForm{display:grid;grid-template-columns:repeat(7,auto) 1fr auto;gap:8px;align-items:end;margin-top:10px}
 form#editForm label{font-size:12px;color:var(--mut);display:block;margin-bottom:3px}
@@ -282,11 +299,11 @@ form#editForm label{font-size:12px;color:var(--mut);display:block;margin-bottom:
 .hint{font-size:12px;color:var(--mut);margin-top:8px}
 </style></head><body>
 <header><div class="wrap"><h1>持仓流水管理</h1>
-<div class="sub">统一数据库 data/portfolio.db · 指数定投 / 行业基金 / 余额宝资金池 · 代码文本存储保留前导零</div></div></header>
+<div class="sub">统一数据库 data/portfolio.db · 指数定投 / 红利低吸高抛 / 行业趋势波段 / 余额宝资金池 · 代码文本存储保留前导零</div></div></header>
 <div class="wrap">
 <div class="kpis">
 <div class="kpi"><div class="k">指数持仓</div><div class="v" id="kIdx">-</div></div>
-<div class="kpi"><div class="k">行业持仓</div><div class="v" id="kInd">-</div></div>
+<div class="kpi"><div class="k">红利/行业</div><div class="v" id="kInd">-</div></div>
 <div class="kpi"><div class="k">余额宝</div><div class="v" id="kCashImplied">-</div><div class="hint" style="margin-top:2px">可用现金</div></div>
 <div class="kpi"><div class="k">总资产</div><div class="v" id="kTotal">-</div></div>
 </div>
@@ -297,7 +314,7 @@ form#editForm label{font-size:12px;color:var(--mut);display:block;margin-bottom:
 <div class="card"><h2>新增 / 编辑流水</h2>
 <form id="editForm" autocomplete="off">
 <div><label>日期(YYYYMMDD)</label><input type="text" id="fDate" size="9" placeholder="20260810"></div>
-<div><label>类别</label><select id="fCat"><option>指数</option><option>行业</option><option>资金池</option></select></div>
+<div><label>类别</label><select id="fCat"><option>指数</option><option>红利</option><option>行业</option><option>资金池</option></select></div>
 <div><label>基金</label><span id="fundField"></span></div>
 <div><label>代码</label><input type="text" id="fCode" size="8" readonly></div>
 <div><label>方向</label><select id="fDir"></select></div>
@@ -311,7 +328,7 @@ form#editForm label{font-size:12px;color:var(--mut);display:block;margin-bottom:
 </div>
 <div class="card"><h2>流水明细</h2>
 <div class="filters">
-<select id="fltCat" onchange="load()"><option value="">全部类别</option><option>指数</option><option>行业</option><option>资金池</option></select>
+<select id="fltCat" onchange="load()"><option value="">全部类别</option><option>指数</option><option>红利</option><option>行业</option><option>资金池</option></select>
 <input type="text" id="fltQ" placeholder="搜索基金/代码" oninput="load()" style="width:200px">
 <button class="btn btn-g" type="button" onclick="load();loadSummary()">刷新</button>
 <span class="hint">共 <b id="cnt">0</b> 条</span>
@@ -321,9 +338,9 @@ form#editForm label{font-size:12px;color:var(--mut);display:block;margin-bottom:
 </div>
 </div>
 <script>
-const INDEX_FUNDS = ''' + json.dumps(INDEX_FUNDS, ensure_ascii=False) + ''';
-const CASH_FUND = ''' + json.dumps(CASHPOOL_FUND, ensure_ascii=False) + ''';
 const DIRS = ''' + json.dumps(DIRECTIONS, ensure_ascii=False) + ''';
+const TAG_CLS = {'指数':'tag-index','红利':'tag-dividend','行业':'tag-industry','资金池':'tag-cash'};
+function tagCls(c){ return TAG_CLS[c] || 'tag-cash'; }
 let editingId = null;
 
 function today(){ const d=new Date(); const p=n=>String(n).padStart(2,'0');
@@ -332,22 +349,13 @@ function today(){ const d=new Date(); const p=n=>String(n).padStart(2,'0');
 function buildFundField(cat, curFund, curCode){
   const box=document.getElementById('fundField');
   const code=document.getElementById('fCode');
-  if(cat==='指数'||cat==='资金池'){
-    const list = cat==='指数' ? INDEX_FUNDS : [CASH_FUND];
-    const sel=document.createElement('select'); sel.id='fFund'; sel.style.minWidth='230px';
-    list.forEach(([n,c])=>{const o=document.createElement('option');o.value=n;o.dataset.code=c;o.textContent=n;sel.appendChild(o);});
-    sel.onchange=()=>{ code.value=sel.selectedOptions[0].dataset.code||''; };
-    box.innerHTML=''; box.appendChild(sel);
-    if(curFund){ for(const o of sel.options){ if(o.value===curFund){ sel.value=curFund; break; } } }
-    code.value = curFund ? (curCode||sel.selectedOptions[0].dataset.code) : (list[0][1]);
-    code.readOnly=true;
-  } else {
-    const inp=document.createElement('input'); inp.id='fFund'; inp.type='text';
-    inp.list='fundSuggest'; inp.style.minWidth='230px'; inp.placeholder='输入基金名（如 国泰创新药ETF联接C）';
-    box.innerHTML=''; box.appendChild(inp);
-    code.readOnly=false;
-    if(curFund){ inp.value=curFund; code.value=curCode||''; } else { code.value=''; }
-  }
+  // 所有分类统一手动输入基金名（datalist 仅作补全提示，不限制输入）
+  const inp=document.createElement('input'); inp.id='fFund'; inp.type='text';
+  inp.list='fundSuggest'; inp.style.minWidth='230px';
+  inp.placeholder='输入基金名（如 华泰柏瑞沪深300ETF联接A）';
+  box.innerHTML=''; box.appendChild(inp);
+  code.readOnly=false;
+  if(curFund){ inp.value=curFund; code.value=curCode||''; } else { code.value=''; }
   buildDirOptions(cat);
 }
 function buildDirOptions(cat){
@@ -355,7 +363,7 @@ function buildDirOptions(cat){
   DIRS[cat].forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});
 }
 function loadSuggest(){
-  fetch('/api/names?category='+encodeURIComponent('行业')).then(r=>r.json()).then(list=>{
+  fetch('/api/names').then(r=>r.json()).then(list=>{
     const dl=document.getElementById('fundSuggest'); dl.innerHTML='';
     const seen=new Set();
     list.forEach(x=>{ if(!seen.has(x.fund)){ seen.add(x.fund); const o=document.createElement('option'); o.value=x.fund; dl.appendChild(o); } });
@@ -370,14 +378,14 @@ function load(){
     const tb=document.getElementById('tbody'); tb.innerHTML='';
     document.getElementById('cnt').textContent=data.length;
     data.forEach(t=>{
-      const cls=t.category==='指数'?'tag-index':(t.category==='行业'?'tag-industry':'tag-cash');
+      const cls=tagCls(t.category);
       const tr=document.createElement('tr');
       tr.innerHTML='<td>'+t.id+'</td><td>'+t.date+'</td><td><span class="tag '+cls+'">'+t.category+'</span></td>'
         +'<td style="text-align:left">'+t.fund+'</td><td>'+t.code+'</td><td>'+t.direction+'</td>'
         +'<td class="'+(t.direction==='卖出'||t.direction==='转出'?'down':'up')+'">'+t.amount.toFixed(2)+'</td>'
         +'<td>'+(t.note||'')+'</td>'
         +'<td><button class="btn btn-g" onclick="edit('+t.id+')">编辑</button> '
-        +'<button class="btn btn-r" onclick="del('+t.id+')">删</button></td>';
+        +'<button class="btn btn-r" onclick="del('+t.id+', this)">删</button></td>';
       tb.appendChild(tr);
     });
   });
@@ -385,17 +393,17 @@ function load(){
 function loadSummary(){
   fetch('/api/summary').then(r=>r.json()).then(s=>{
     document.getElementById('kIdx').textContent='¥'+s.summary['指数'].total.toLocaleString();
-    document.getElementById('kInd').textContent='¥'+s.summary['行业'].total.toLocaleString();
+    document.getElementById('kInd').textContent='¥'+(s.summary['红利'].total+s.summary['行业'].total).toLocaleString();
     document.getElementById('kCashImplied').textContent = (s.cash_implied!=null) ? '¥'+s.cash_implied.toLocaleString() : '—';
     document.getElementById('kTotal').textContent='¥'+s.total.toLocaleString();
     const tb=document.getElementById('holdTbody'); tb.innerHTML='';
-    // 指数/行业按当前持仓降序，余额宝固定放最后
-    const order=['指数','行业','资金池'];
+    // 四类持仓按金额降序，余额宝固定放最后
+    const order=['指数','红利','行业','资金池'];
     order.forEach(cat=>{
       const funds = (cat==='资金池') ? s.summary[cat].funds
         : s.summary[cat].funds.slice().sort((a,b)=>b.amt-a.amt);
       funds.forEach(f=>{
-        const cls=cat==='指数'?'tag-index':(cat==='行业'?'tag-industry':'tag-cash');
+        const cls=tagCls(cat);
         // 资金池显示「推算余额」（可用现金 = 转入-已投），而非转入累计
         const amtShow = (cat==='资金池' && s.cash_implied!=null) ? s.cash_implied : f.amt;
         const tr=document.createElement('tr');
@@ -446,17 +454,24 @@ function save(){
     direction:document.getElementById('fDir').value,
     amount:document.getElementById('fAmt').value,
     note:document.getElementById('fNote').value.trim() };
-  if(!p.date||!p.code||!p.amount){ document.getElementById('err').textContent='日期/代码/金额 必填'; return; }
-  if(p.category==='行业'&&!p.fund){ document.getElementById('err').textContent='行业基金需填基金名'; return; }
+  if(!p.date||!p.fund||!p.code||!p.amount){ document.getElementById('err').textContent='日期/基金名/代码/金额 必填'; return; }
   const url=editingId?'/api/update?id='+editingId:'/api/add';
   fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)}).then(r=>r.json()).then(d=>{
     if(d.ok){ resetForm(); load(); loadSummary(); loadSuggest(); }
     else document.getElementById('err').textContent=d.err||'保存失败';
   });
 }
-function del(id){
-  if(!confirm('确认删除这条流水？')) return;
-  fetch('/api/delete?id='+id).then(r=>r.json()).then(d=>{ if(d.ok){load();loadSummary();} });
+function del(id, btn){
+  // 两步确认（不依赖 confirm 弹窗，iframe 内也能用）：首次点击变"确认？"，3 秒内再点才删除
+  if(!btn.dataset.arm){
+    btn.dataset.arm='1'; btn.textContent='确认?'; btn.classList.add('btn-r2');
+    setTimeout(()=>{ delete btn.dataset.arm; btn.textContent='删'; btn.classList.remove('btn-r2'); }, 3000);
+    return;
+  }
+  fetch('/api/delete?id='+id).then(r=>r.json()).then(d=>{
+    if(d.ok){ load(); loadSummary(); loadSuggest(); }
+    else alert(d.err||'删除失败');
+  });
 }
 document.getElementById('fDate').value=today();
 buildFundField('指数');
@@ -471,6 +486,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header('Content-Type', ctype)
         self.send_header('Content-Length', str(len(body)))
+        self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate')
+        self.send_header('Pragma', 'no-cache')
         self.end_headers()
         self.wfile.write(body)
 
