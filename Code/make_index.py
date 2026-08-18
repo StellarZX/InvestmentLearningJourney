@@ -199,8 +199,7 @@ code{{background:#f1f3f5;border-radius:5px;padding:1px 6px;font-size:12px}}
 · <code>python run.py --index</code> → 持仓基金分析报告（PortfolioReport/YYYYMMDD.html）<br>
 · <code>python run.py --plate</code> → 板块分析报告（PlateReport/YYYYMMDD.html，同花顺官方行业 90 + 概念 375）<br>
 · <code>python run.py --portfolio</code> → 持仓流水管理（浏览器 http://127.0.0.1:8051）<br>
-· <code>python run.py --export</code> → 更新 README「组合持仓」表<br>
-· 报告/课程更新后运行 <code>python Code/make_index.py</code> 刷新本导航页</p>
+· 报告/课程更新后 <code>python run.py --nav</code> 刷新本导航页（--index/--plate 已自动刷新）</p>
 </div>
 
 <div class="card"><h2>📖 资料</h2>
