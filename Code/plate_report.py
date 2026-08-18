@@ -11,11 +11,12 @@
 （复用 lib/metrics._calc_index_metrics 指标引擎，数据源换成官方板块指数）。
 
 报告内容：
-  1. 行业板块全景：按综合分排序（含动量/分位/资金流/多头状态）
-  2. 概念板块雷达：AI/半导体/新能源等主题，按动量+资金流排序
-  3. 低估方向：250 日分位 < 30% 的板块（均值回归参考）
-  4. 强势方向：综合分 ≥65 且动量 MACD 双多（趋势参考）
-  5. 板块涨跌分布：当日涨跌幅排行（Top/Bottom）
+  1. 行业资金热度榜：按最新交易日成交额排序（成交额=成分股成交额之和，热度代理）
+  2. 行业板块全景：按综合分排序（含动量/分位/成交额/多头状态）
+  3. 概念板块 Top10：按最新交易日成交额取资金最活跃的概念（仅主题参考，不展示综合分）
+  4. 低估方向：250 日分位 < 30% 的板块（均值回归参考）
+  5. 强势方向：综合分 ≥65 且动量 MACD 双多（趋势参考）
+  6. 板块涨跌分布：当日涨跌幅排行（Top/Bottom）
 
 数据源：
   - data/plate.db：板块清单 + 板块指数 K 线（同花顺官方分类：行业 90 + 概念 375）
@@ -54,7 +55,7 @@ def load_plates_with_kline(plate_type):
             out.append({'theme': p['name'], 'code': p['code'], 'zdf': p['zdf'],
                         'mf': p['mf'], 'mom5': None, 'mom20': None, 'mom60': None,
                         'pct250': None, 'score': 0.0, 'macd_bull': False,
-                        'macd_weakening': False, 'date': ''})
+                        'macd_weakening': False, 'date': '', 'amount': None})
             continue
         s = df['close'].astype(float).reset_index(drop=True)
         o = df['open'].astype(float).reset_index(drop=True)
@@ -64,6 +65,8 @@ def load_plates_with_kline(plate_type):
         m['date'] = df['date'].iloc[-1]
         m['zdf'] = p['zdf']          # 当日涨跌幅（实时快照）
         m['mf'] = p['mf']            # 主力净流入（实时快照）
+        # 热度代理：最新交易日成交额（板块指数口径 = 全部成分股成交额之和）
+        m['amount'] = float(df['amount'].iloc[-1]) if len(df) else None
         out.append(m)
     out.sort(key=lambda x: -x['score'])
     return out
@@ -77,10 +80,18 @@ def _mom_cell(v, fmt='{v:+.1f}%'):
     return f'<td class="{cls}">{fmt.format(v=v)}</td>'
 
 
-def plate_rows_html(rows, cols=None, limit=40):
-    """板块表格行 HTML（综合分降序已排）"""
+def _amt_txt(v):
+    """成交额格式化：元 -> 亿（无数据显示 —）"""
+    if v is None or v <= 0:
+        return '<td style="color:#adb5bd">—</td>'
+    return f'<td>{v / 1e8:.0f}亿</td>'
+
+
+def plate_rows_html(rows, cols=None, limit=40, show_score=True):
+    """板块表格行 HTML（综合分降序已排；show_score=False 时去掉综合分列，供概念按成交额展示）"""
     if not rows:
-        return '<tr><td colspan="8" style="color:#adb5bd">无数据</td></tr>'
+        span = 9 if show_score else 8
+        return f'<tr><td colspan="{span}" style="color:#adb5bd">无数据</td></tr>'
     html = ''
     for i, r in enumerate(rows[:limit], 1):
         sc = r['score']
@@ -90,15 +101,19 @@ def plate_rows_html(rows, cols=None, limit=40):
         zdf_txt = f"{r['zdf']:+.1f}%" if r.get('zdf') is not None else '—'
         bull = '✅' if r['macd_bull'] else '❌'
         weak = '⚠️' if r['macd_weakening'] else ''
+        score_cell = (f'<td><span style="background:{sb};color:{sp};'
+                      f'padding:2px 8px;border-radius:8px;font-weight:700">{sc:.0f}</span></td>'
+                      if show_score else '')
         html += f'''<tr>
           <td>{i}</td>
           <td style="text-align:left"><b>{r['theme']}</b><br><span style="color:#868e96;font-size:11px">{r['code']}</span></td>
           <td>{zdf_txt}</td>
+          {_amt_txt(r.get('amount'))}
           {_mom_cell(r.get('mom5'))}
           {_mom_cell(r.get('mom20'))}
           {_mom_cell(r.get('mom60'))}
           <td>{pct_txt}</td>
-          <td><span style="background:{sb};color:{sp};padding:2px 8px;border-radius:8px;font-weight:700">{sc:.0f}</span></td>
+          {score_cell}
           <td>{bull}{weak}</td>
         </tr>'''
     return html
@@ -122,21 +137,45 @@ def build_html():
                    and (r['mom20'] or 0) > 0 and r['macd_bull']]
     strong_list.sort(key=lambda x: -x['score'])
 
+    # 资金热度榜：按最新交易日成交额（= 全部成分股成交额之和）排序，评分体系保留
+    hot_rows = [r for r in ind_rows if r.get('amount')]
+    hot_rows.sort(key=lambda x: -x['amount'])
+    hot_top = hot_rows[:15]
+    hot_bot = hot_rows[-15:] if len(hot_rows) > 15 else []
+
     ind_html = plate_rows_html(ind_rows, limit=90)   # 行业全景：全部 90 个
-    con_html = plate_rows_html(con_rows, limit=10)   # 概念：仅最热 Top 10 作参考
+    # 概念：按最新交易日成交额取 Top 10（不再用综合分排序/展示，评估指标保持不变）
+    con_rows.sort(key=lambda x: -(x.get('amount') or 0))
+    con_html = plate_rows_html(con_rows, limit=10, show_score=False)
     low_html = ''
-    for r in low_list[:20]:
+    for r in low_list[:10]:
         pct_txt = f"{r['pct250']:.0%}" if r['pct250'] is not None else '—'
         low_html += f'''<tr><td style="text-align:left"><b>{r['theme']}</b></td>
           <td>{r['code']}</td><td class="down">{pct_txt}</td>
           <td class="{'up' if (r['mom20'] or 0)>0 else 'down'}">{r['mom20']:+.1f}%</td>
           <td>{r['score']:.0f}</td></tr>'''
     strong_html = ''
-    for r in strong_list[:20]:
+    for r in strong_list[:10]:
         strong_html += f'''<tr><td style="text-align:left"><b>{r['theme']}</b></td>
           <td>{r['code']}</td><td class="up">{r['score']:.0f}</td>
           <td class="up">{r['mom20']:+.1f}%</td>
           <td class="up">{r['mom60']:+.1f}%</td></tr>'''
+
+    def _hot_tr(r):
+        zdf = r.get('zdf')
+        cls = 'up' if (zdf or 0) > 0 else 'down'
+        zdf_txt = f'{zdf:+.1f}%' if zdf is not None else '—'
+        return (f'<tr><td style="text-align:left"><b>{r["theme"]}</b></td>'
+                f'<td>{r["code"]}</td>{_amt_txt(r.get("amount"))}'
+                f'<td class="{cls}">{zdf_txt}</td>'
+                f'{_mom_cell(r.get("mom20"))}'
+                f'<td>{r["score"]:.0f}</td></tr>')
+    hot_top_html = ''.join(_hot_tr(r) for r in hot_top)
+    hot_bot_html = ''.join(_hot_tr(r) for r in hot_bot)
+    hot_max = hot_rows[0] if hot_rows else None
+    hot_kpi = (f'<div class="kpi"><div class="k">当日最热行业</div>'
+               f'<div class="v" style="font-size:15px">{hot_max["theme"]}</div>'
+               f'<div class="note">成交额 {hot_max["amount"] / 1e8:.0f} 亿</div></div>') if hot_max else ''
 
     # 当日涨跌排行（行业板块）
     by_zdf = sorted(ind_rows, key=lambda x: -(x.get('zdf') or -999))
@@ -192,34 +231,42 @@ tr:hover td{{background:#f8f9fa}}
   <div class="kpi"><div class="k">概念板块</div><div class="v">{len(con_rows)}</div><div class="note">热门 Top10 参考</div></div>
   <div class="kpi"><div class="k">低估方向</div><div class="v">{len(low_list)}</div><div class="note">行业 分位&lt;30%</div></div>
   <div class="kpi"><div class="k">强势方向</div><div class="v">{len(strong_list)}</div><div class="note">行业 综合分≥65 双多</div></div>
+  {hot_kpi}
 </div>
 
-<div class="card"><h2>📈 当日行业板块涨跌 Top / Bottom</h2>
+<div class="card"><h2>📈 当日行业板块涨跌 Top / Bottom（各 10 个）</h2>
 <table><thead><tr><th style="width:50%">涨幅领先</th><th style="width:50%">跌幅居前</th></tr></thead>
 <tbody><tr><td style="vertical-align:top"><table style="border:none"><tr><th>板块</th><th>当日</th><th>20日</th></tr>{top_zdf}</table></td>
 <td style="vertical-align:top"><table style="border:none"><tr><th>板块</th><th>当日</th><th>20日</th></tr>{bot_zdf}</table></td></tr></tbody></table>
 </div>
 
-<div class="card"><h2>📉 低估行业方向（250日分位 &lt;30%，均值回归参考）</h2>
+<div class="card"><h2>🔥 热门概念 Top 10（按最新交易日成交额，仅作主题参考）</h2>
+<p class="note">按成交额取资金最活跃的概念板块；概念反映资金情绪与题材热度，波动大、追高风险高，仅作参考不作决策依据。</p>
+<table><thead><tr><th>#</th><th>概念板块</th><th>当日</th><th>成交额</th><th>5日</th><th>20日</th><th>60日</th><th>分位</th><th>MACD</th></tr></thead>
+<tbody>{con_html}</tbody></table>
+</div>
+
+<div class="card"><h2>🔥 行业资金热度榜（按最新交易日成交额）</h2>
+<p class="note">成交额 = 该行业全部成分股当日成交额之和（板块指数口径），是资金参与度/关注度的代理指标；板块越大成交额天然越高，冷门榜同理仅供参考。原有评分体系不变。</p>
+<table><thead><tr><th style="width:50%">资金最活跃 Top 15</th><th style="width:50%">冷门 Bottom 15</th></tr></thead>
+<tbody><tr><td style="vertical-align:top"><table style="border:none"><tr><th>行业</th><th>代码</th><th>成交额</th><th>当日</th><th>20日</th><th>综合分</th></tr>{hot_top_html}</table></td>
+<td style="vertical-align:top"><table style="border:none"><tr><th>行业</th><th>代码</th><th>成交额</th><th>当日</th><th>20日</th><th>综合分</th></tr>{hot_bot_html}</table></td></tr></tbody></table>
+</div>
+
+<div class="card"><h2>📉 低估行业方向 Top 10（250日分位 &lt;30%，均值回归参考）</h2>
 <table><thead><tr><th>行业板块</th><th>代码</th><th>历史分位</th><th>20日动量</th><th>综合分</th></tr></thead>
 <tbody>{low_html or '<tr><td colspan="5" style="color:#adb5bd">无</td></tr>'}</tbody></table>
 </div>
 
-<div class="card"><h2>📈 强势行业方向（综合分≥65 且动量MACD双多）</h2>
+<div class="card"><h2>📈 强势行业方向 Top 10（综合分≥65 且动量MACD双多）</h2>
 <table><thead><tr><th>行业板块</th><th>代码</th><th>评分</th><th>20日动量</th><th>60日动量</th></tr></thead>
 <tbody>{strong_html or '<tr><td colspan="5" style="color:#adb5bd">当前无双多行业板块（市场偏弱）</td></tr>'}</tbody></table>
 </div>
 
 <div class="card"><h2>🗂️ 行业板块全景（全部 {len(ind_rows)} 个，按综合分降序）</h2>
-<p class="note">综合分 = 动量(5/20/60日) + MACD + MA60 + 历史分位，满分 100。数据来自同花顺官方板块指数（akshare，脚本独立拉取）。</p>
-<table><thead><tr><th>#</th><th>行业板块</th><th>当日</th><th>5日</th><th>20日</th><th>60日</th><th>分位</th><th>综合分</th><th>MACD</th></tr></thead>
+<p class="note">综合分 = 动量(5/20/60日) + MACD + MA60 + 历史分位，满分 100。成交额列 = 最新交易日成分股成交额之和。数据来自同花顺官方板块指数（akshare，脚本独立拉取）。</p>
+<table><thead><tr><th>#</th><th>行业板块</th><th>当日</th><th>成交额</th><th>5日</th><th>20日</th><th>60日</th><th>分位</th><th>综合分</th><th>MACD</th></tr></thead>
 <tbody>{ind_html}</tbody></table>
-</div>
-
-<div class="card"><h2>🔥 热门概念 Top 10（仅作主题参考，主要看行业板块）</h2>
-<p class="note">概念板块反映资金情绪与题材热度，波动大、追高风险高，仅作参考不作决策依据。</p>
-<table><thead><tr><th>#</th><th>概念板块</th><th>当日</th><th>5日</th><th>20日</th><th>60日</th><th>分位</th><th>综合分</th><th>MACD</th></tr></thead>
-<tbody>{con_html}</tbody></table>
 </div>
 
 <div class="disclaimer">板块分类来自同花顺官方（行业板块 90 / 概念板块 375），板块指数为等权指数；综合分基于历史统计，不预示未来。本报告仅做数据分析与参考，不构成买卖指令。</div>
