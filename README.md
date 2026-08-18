@@ -2,6 +2,8 @@
 
 这个仓库记录我的投资方法、执行记录与复盘。
 
+> **GitHub Pages 导航首页**：[index.html](index.html)（由 `Code/make_index.py` 自动生成，报告/课程更新后重新运行 `python Code/make_index.py` 刷新）
+
 ## 目录结构
 
 > **统一入口**：根目录 `run.py` 通过参数调用全部功能：
