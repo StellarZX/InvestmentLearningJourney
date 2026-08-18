@@ -1,21 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-东财板块数据层（plate_data.py）
-===============================
-用东方财富公开接口拉取官方板块数据（取代自建关键词分组方案）：
+板块数据层（plate_data.py）
+===========================
+数据源：**同花顺（akshare，脚本独立可用，无需 MCP/token，不限流）**
+取代东财直连方案（东财高频必封 IP）：
+  - 行业板块 90 个（stock_board_industry_name_ths）
+  - 概念板块 375 个（stock_board_concept_name_ths）
+  - 行业实时快照一次全量（stock_board_industry_summary_ths：涨跌幅/净流入/领涨股）
+  - 板块指数 K 线（stock_board_industry_index_ths / stock_board_concept_index_ths，symbol=板块名称）
 
-  - 行业板块（fs=m:90+t:2，约 496 个）：半导体/通信设备/医疗服务等细分行业
-  - 概念板块（fs=m:90+t:3，约 504 个）：高带宽内存/CPO/AI算力/机器人等主题
-
-板块指数 K 线（secid=90.BKxxxx）用于计算动量/分位/MACD/资金流信号，
-与 lib/metrics.py 指标引擎同口径（_calc_index_metrics）。
+板块指数 K 线用于计算动量/分位/MACD/资金流信号（lib/metrics.py 的 _calc_index_metrics）。
 
 用法：
-  from plate_data import fetch_plate_list, fetch_plate_kline, PlateStore
-
-数据源：
-  - https://push2.eastmoney.com/api/qt/clist/get      板块清单（实时快照）
-  - https://push2his.eastmoney.com/api/qt/stock/kline/get  板块指数日K
+  from plate_data import sync_ths_all, PlateStore
 """
 import os, sqlite3, time, datetime
 import pandas as pd
@@ -30,9 +27,12 @@ CLIST_URL = 'https://push2.eastmoney.com/api/qt/clist/get'
 KLINE_URL = 'https://push2his.eastmoney.com/api/qt/stock/kline/get'
 
 # 板块类型
-TYPE_INDUSTRY = 'industry'   # 行业板块 m:90+t:2
-TYPE_CONCEPT = 'concept'     # 概念板块 m:90+t:3
+TYPE_INDUSTRY = 'industry'   # 行业板块
+TYPE_CONCEPT = 'concept'     # 概念板块
 FS_MAP = {TYPE_INDUSTRY: 'm:90+t:2', TYPE_CONCEPT: 'm:90+t:3'}
+
+# K 线拉取长度（交易日数，约 1 年，够算 250 日分位）
+THS_KLINE_DAYS = 320
 
 
 def _get(url, params, retries=3, timeout=20):
@@ -94,6 +94,145 @@ def fetch_plate_kline(code, count=500):
 
 
 QT_URL = 'https://qt.gtimg.cn/q='
+
+
+# ================= 同花顺数据源（akshare，脚本独立可用）=================
+
+def _ak():
+    """延迟导入 akshare（首次使用才加载）"""
+    import akshare as ak
+    return ak
+
+
+def fetch_ths_lists(retries=4):
+    """同花顺板块清单：行业 90 + 概念 375。返回 (industry_list, concept_list)。
+    网络偶发断连时重试（先成功才返回，调用方据此决定是否替换旧数据）。"""
+    ak = _ak()
+    last = None
+    for i in range(retries):
+        try:
+            ind = ak.stock_board_industry_name_ths()
+            con = ak.stock_board_concept_name_ths()
+            ind_list = [{'code': str(r['code']), 'name': str(r['name'])} for _, r in ind.iterrows()]
+            con_list = [{'code': str(r['code']), 'name': str(r['name'])} for _, r in con.iterrows()]
+            if ind_list and con_list:
+                return ind_list, con_list
+            last = '空结果'
+        except Exception as e:
+            last = f'{type(e).__name__}: {e}'
+        print(f'  [retry] 清单拉取失败 {i+1}/{retries}: {last}', flush=True)
+        time.sleep(2.5 * (i + 1))
+    raise RuntimeError(f'同花顺板块清单拉取失败: {last}')
+
+
+def fetch_ths_industry_snapshot():
+    """行业板块实时快照（一次全量）。返回 {name: {zdf, net_in, lead}}"""
+    ak = _ak()
+    df = ak.stock_board_industry_summary_ths()
+    out = {}
+    for _, r in df.iterrows():
+        try:
+            out[str(r['板块'])] = {
+                'zdf': float(r['涨跌幅']),
+                'net_in': float(r['净流入']) if pd.notna(r['净流入']) else None,
+                'lead': str(r['领涨股']) if pd.notna(r['领涨股']) else '',
+            }
+        except (ValueError, KeyError):
+            continue
+    return out
+
+
+def fetch_ths_kline(name, plate_type, count=THS_KLINE_DAYS):
+    """同花顺板块指数日 K（symbol=板块名称）。返回 DataFrame(date,open,close,high,low,volume,amount) 或空表"""
+    ak = _ak()
+    end = datetime.date.today().strftime('%Y%m%d')
+    start = (datetime.date.today() - datetime.timedelta(days=int(count * 1.7))).strftime('%Y%m%d')
+    try:
+        if plate_type == TYPE_INDUSTRY:
+            df = ak.stock_board_industry_index_ths(symbol=name, start_date=start, end_date=end)
+        else:
+            df = ak.stock_board_concept_index_ths(symbol=name, start_date=start, end_date=end)
+    except Exception:
+        return pd.DataFrame()
+    if df is None or df.empty:
+        return pd.DataFrame()
+    rows = []
+    for _, r in df.iterrows():
+        try:
+            rows.append((str(r['日期']), float(r['开盘价']), float(r['收盘价']),
+                         float(r['最高价']), float(r['最低价']),
+                         float(r['成交量']), float(r['成交额'])))
+        except (ValueError, KeyError):
+            continue
+    return pd.DataFrame(rows, columns=['date', 'open', 'close', 'high', 'low', 'volume', 'amount'])
+
+
+def sync_ths_all(store=None, gap=0.35):
+    """全量同步同花顺板块数据到 plate.db：清单 + 行业快照 + 全部板块 K 线。
+    返回 {industry, concept, failed} 统计。脚本独立运行，无会话依赖。"""
+    store = store or PlateStore()
+    ak = _ak()
+    print('== 1/3 拉取同花顺板块清单 ==', flush=True)
+    ind_list, con_list = fetch_ths_lists()
+    print(f'  行业 {len(ind_list)} / 概念 {len(con_list)}', flush=True)
+    now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
+    # 先清理旧清单（同花顺体系替换旧数据源），再写入新清单
+    conn = sqlite3.connect(store.db)
+    conn.execute("DELETE FROM plate_list WHERE type IN ('industry','concept')")
+    conn.commit(); conn.close()
+    for p in ind_list:
+        store.save_list([{**p, 'zdf': None, 'mf': None}], TYPE_INDUSTRY)
+    for p in con_list:
+        store.save_list([{**p, 'zdf': None, 'mf': None}], TYPE_CONCEPT)
+
+    print('== 2/3 行业实时快照 ==', flush=True)
+    snap = fetch_ths_industry_snapshot()
+    conn = sqlite3.connect(store.db)
+    for name, s in snap.items():
+        conn.execute('UPDATE plate_list SET zdf=?, mf=? WHERE name=? AND type=?',
+                     (s['zdf'], s['net_in'], name, TYPE_INDUSTRY))
+    conn.commit(); conn.close()
+    print(f'  行业快照 {len(snap)} 个', flush=True)
+
+    print('== 3/3 批量拉板块 K 线 ==', flush=True)
+    stats = {'industry': 0, 'concept': 0, 'failed': []}
+    plates = store.list_plates(TYPE_INDUSTRY) + store.list_plates(TYPE_CONCEPT)
+    total = len(plates)
+    for i, p in enumerate(plates, 1):
+        # 增量：该板块 K 线已是最新交易日则跳过
+        latest = store.kline_latest(p['code'])
+        if latest and latest >= datetime.date.today().strftime('%Y-%m-%d'):
+            stats[p['type']] += 1
+            if i % 50 == 0 or i == total:
+                print(f'  [{i}/{total}] (增量跳过) 行业{stats["industry"]} 概念{stats["concept"]}', flush=True)
+            continue
+        try:
+            df = fetch_ths_kline(p['name'], p['type'])
+            if len(df) < 60:
+                # 重试一次（网络偶发断连）
+                time.sleep(1.5)
+                df = fetch_ths_kline(p['name'], p['type'])
+            if len(df) >= 60:
+                n = store.save_kline(p['code'], df)
+                stats[p['type']] += 1
+                # 概念当日涨跌幅从 K 线最后两根计算
+                if p['type'] == TYPE_CONCEPT and n >= 2:
+                    c = df['close'].astype(float)
+                    zdf = round((c.iloc[-1] / c.iloc[-2] - 1) * 100, 2)
+                    conn = sqlite3.connect(store.db)
+                    conn.execute('UPDATE plate_list SET zdf=? WHERE code=?', (zdf, p['code']))
+                    conn.commit(); conn.close()
+            else:
+                stats['failed'].append(p['name'])
+        except Exception as e:
+            stats['failed'].append(f"{p['name']}({type(e).__name__})")
+        if i % 25 == 0 or i == total:
+            print(f'  [{i}/{total}] 行业{stats["industry"]} 概念{stats["concept"]} 失败{len(stats["failed"])}', flush=True)
+        time.sleep(gap)
+    print(f'完成：行业 {stats["industry"]} 概念 {stats["concept"]} 失败 {len(stats["failed"])}', flush=True)
+    if stats['failed']:
+        print('  失败:', stats['failed'][:20], flush=True)
+    return stats
 
 
 def fetch_tencent_quotes(codes):

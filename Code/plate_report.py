@@ -18,7 +18,7 @@
   5. 板块涨跌分布：当日涨跌幅排行（Top/Bottom）
 
 数据源：
-  - data/plate.db：板块清单 + 板块指数 K 线（东财官方，首次拉取后增量更新）
+  - data/plate.db：板块清单 + 板块指数 K 线（同花顺官方分类：行业 90 + 概念 375）
 
 用法：
   python plate_report.py              # 生成报告（数据过旧自动增量更新）
@@ -87,7 +87,6 @@ def plate_rows_html(rows, cols=None, limit=40):
         sp = ('#c92a2a' if sc >= 65 else ('#ba7517' if sc >= 35 else '#3b6d11'))
         sb = ('#fff0f0' if sc >= 65 else ('#fff9e6' if sc >= 35 else '#eaf3de'))
         pct_txt = f"{r['pct250']:.0%}" if r['pct250'] is not None else '—'
-        mf_txt = f"{r['mf']/1e8:+.1f}亿" if r.get('mf') else '—'
         zdf_txt = f"{r['zdf']:+.1f}%" if r.get('zdf') is not None else '—'
         bull = '✅' if r['macd_bull'] else '❌'
         weak = '⚠️' if r['macd_weakening'] else ''
@@ -99,7 +98,6 @@ def plate_rows_html(rows, cols=None, limit=40):
           {_mom_cell(r.get('mom20'))}
           {_mom_cell(r.get('mom60'))}
           <td>{pct_txt}</td>
-          <td>{mf_txt}</td>
           <td><span style="background:{sb};color:{sp};padding:2px 8px;border-radius:8px;font-weight:700">{sc:.0f}</span></td>
           <td>{bull}{weak}</td>
         </tr>'''
@@ -117,15 +115,15 @@ def build_html():
     con_rows = load_plates_with_kline('concept')
     print(f'  有效K线: 行业 {len(ind_rows)} / 概念 {len(con_rows)}')
 
-    # 低估 / 强势（概念板块视角）
-    low_list = [r for r in con_rows if r['pct250'] is not None and r['pct250'] < BUY_PCT]
+    # 低估 / 强势（行业板块视角——主要分析对象）
+    low_list = [r for r in ind_rows if r['pct250'] is not None and r['pct250'] < BUY_PCT]
     low_list.sort(key=lambda x: x['pct250'])
-    strong_list = [r for r in con_rows if r['score'] >= STRONG_SCORE
+    strong_list = [r for r in ind_rows if r['score'] >= STRONG_SCORE
                    and (r['mom20'] or 0) > 0 and r['macd_bull']]
     strong_list.sort(key=lambda x: -x['score'])
 
-    ind_html = plate_rows_html(ind_rows, limit=60)
-    con_html = plate_rows_html(con_rows, limit=60)
+    ind_html = plate_rows_html(ind_rows, limit=90)   # 行业全景：全部 90 个
+    con_html = plate_rows_html(con_rows, limit=10)   # 概念：仅最热 Top 10 作参考
     low_html = ''
     for r in low_list[:20]:
         pct_txt = f"{r['pct250']:.0%}" if r['pct250'] is not None else '—'
@@ -140,8 +138,8 @@ def build_html():
           <td class="up">{r['mom20']:+.1f}%</td>
           <td class="up">{r['mom60']:+.1f}%</td></tr>'''
 
-    # 当日涨跌排行（概念板块实时快照）
-    by_zdf = sorted(con_rows, key=lambda x: -(x.get('zdf') or -999))
+    # 当日涨跌排行（行业板块）
+    by_zdf = sorted(ind_rows, key=lambda x: -(x.get('zdf') or -999))
     top_zdf = ''.join(
         f'<tr><td style="text-align:left">{r["theme"]}</td>'
         f'<td class="up">{r["zdf"]:+.1f}%</td>'
@@ -156,9 +154,7 @@ def build_html():
     mkt_date = con_rows[0]['date'] if con_rows else '—'
     gen_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
     fname = datetime.datetime.now().strftime('%Y%m%d')
-    out_html = os.path.join(OUT_DIR, f'{fname}.html')
-    if os.path.exists(out_html):
-        out_html = os.path.join(OUT_DIR, f"{fname}_{datetime.datetime.now().strftime('%H%M%S')}.html")
+    out_html = os.path.join(OUT_DIR, f'{fname}.html')   # 当天多次生成直接覆盖当天文件
 
     html = f'''<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
 <title>板块分析报告</title>
@@ -187,46 +183,46 @@ tr:hover td{{background:#f8f9fa}}
 </style></head><body>
 <header><div class="wrap">
 <h1>板块分析报告</h1>
-<div class="sub">数据日期 {mkt_date} · 生成时间 {gen_time} · 东方财富官方板块体系（行业+概念）· 本报告仅做数据分析与参考，不构成买卖指令</div>
+<div class="sub">数据日期 {mkt_date} · 生成时间 {gen_time} · 同花顺官方板块体系（行业 90 + 概念 375）· 本报告仅做数据分析与参考，不构成买卖指令</div>
 </div></header>
 <div class="wrap">
 
 <div class="kpis">
-  <div class="kpi"><div class="k">行业板块</div><div class="v">{len(ind_rows)}</div><div class="note">官方细分行业</div></div>
-  <div class="kpi"><div class="k">概念板块</div><div class="v">{len(con_rows)}</div><div class="note">主题热点</div></div>
-  <div class="kpi"><div class="k">低估方向</div><div class="v">{len(low_list)}</div><div class="note">分位&lt;30%</div></div>
-  <div class="kpi"><div class="k">强势方向</div><div class="v">{len(strong_list)}</div><div class="note">综合分≥65 双多</div></div>
+  <div class="kpi"><div class="k">行业板块</div><div class="v">{len(ind_rows)}</div><div class="note">主要分析对象</div></div>
+  <div class="kpi"><div class="k">概念板块</div><div class="v">{len(con_rows)}</div><div class="note">热门 Top10 参考</div></div>
+  <div class="kpi"><div class="k">低估方向</div><div class="v">{len(low_list)}</div><div class="note">行业 分位&lt;30%</div></div>
+  <div class="kpi"><div class="k">强势方向</div><div class="v">{len(strong_list)}</div><div class="note">行业 综合分≥65 双多</div></div>
 </div>
 
-<div class="card"><h2>📈 当日概念板块涨跌 Top / Bottom（实时快照）</h2>
+<div class="card"><h2>📈 当日行业板块涨跌 Top / Bottom</h2>
 <table><thead><tr><th style="width:50%">涨幅领先</th><th style="width:50%">跌幅居前</th></tr></thead>
 <tbody><tr><td style="vertical-align:top"><table style="border:none"><tr><th>板块</th><th>当日</th><th>20日</th></tr>{top_zdf}</table></td>
 <td style="vertical-align:top"><table style="border:none"><tr><th>板块</th><th>当日</th><th>20日</th></tr>{bot_zdf}</table></td></tr></tbody></table>
 </div>
 
-<div class="card"><h2>📉 低估概念方向（250日分位 &lt;30%，均值回归参考）</h2>
-<table><thead><tr><th>概念板块</th><th>代码</th><th>历史分位</th><th>20日动量</th><th>综合分</th></tr></thead>
+<div class="card"><h2>📉 低估行业方向（250日分位 &lt;30%，均值回归参考）</h2>
+<table><thead><tr><th>行业板块</th><th>代码</th><th>历史分位</th><th>20日动量</th><th>综合分</th></tr></thead>
 <tbody>{low_html or '<tr><td colspan="5" style="color:#adb5bd">无</td></tr>'}</tbody></table>
 </div>
 
-<div class="card"><h2>📈 强势概念方向（综合分≥65 且动量MACD双多）</h2>
-<table><thead><tr><th>概念板块</th><th>代码</th><th>评分</th><th>20日动量</th><th>60日动量</th></tr></thead>
-<tbody>{strong_html or '<tr><td colspan="5" style="color:#adb5bd">当前无双多概念板块（市场偏弱）</td></tr>'}</tbody></table>
+<div class="card"><h2>📈 强势行业方向（综合分≥65 且动量MACD双多）</h2>
+<table><thead><tr><th>行业板块</th><th>代码</th><th>评分</th><th>20日动量</th><th>60日动量</th></tr></thead>
+<tbody>{strong_html or '<tr><td colspan="5" style="color:#adb5bd">当前无双多行业板块（市场偏弱）</td></tr>'}</tbody></table>
 </div>
 
-<div class="card"><h2>🗂️ 行业板块全景（{len(ind_rows)} 个，按综合分降序）</h2>
-<p class="note">综合分 = 动量(5/20/60日) + MACD + MA60 + 历史分位 + 资金流，满分 100。数据来自东财官方行业板块指数。</p>
-<table><thead><tr><th>#</th><th>行业板块</th><th>当日</th><th>5日</th><th>20日</th><th>60日</th><th>分位</th><th>主力资金</th><th>综合分</th><th>MACD</th></tr></thead>
+<div class="card"><h2>🗂️ 行业板块全景（全部 {len(ind_rows)} 个，按综合分降序）</h2>
+<p class="note">综合分 = 动量(5/20/60日) + MACD + MA60 + 历史分位，满分 100。数据来自同花顺官方板块指数（akshare，脚本独立拉取）。</p>
+<table><thead><tr><th>#</th><th>行业板块</th><th>当日</th><th>5日</th><th>20日</th><th>60日</th><th>分位</th><th>综合分</th><th>MACD</th></tr></thead>
 <tbody>{ind_html}</tbody></table>
 </div>
 
-<div class="card"><h2>🗂️ 概念板块全景（{len(con_rows)} 个，按综合分降序）</h2>
-<p class="note">概念板块聚焦主题热点（AI/半导体/新能源/机器人等），综合分口径同上。</p>
-<table><thead><tr><th>#</th><th>概念板块</th><th>当日</th><th>5日</th><th>20日</th><th>60日</th><th>分位</th><th>主力资金</th><th>综合分</th><th>MACD</th></tr></thead>
+<div class="card"><h2>🔥 热门概念 Top 10（仅作主题参考，主要看行业板块）</h2>
+<p class="note">概念板块反映资金情绪与题材热度，波动大、追高风险高，仅作参考不作决策依据。</p>
+<table><thead><tr><th>#</th><th>概念板块</th><th>当日</th><th>5日</th><th>20日</th><th>60日</th><th>分位</th><th>综合分</th><th>MACD</th></tr></thead>
 <tbody>{con_html}</tbody></table>
 </div>
 
-<div class="disclaimer">板块分类来自东方财富官方（行业板块/概念板块），板块指数为等权指数；综合分基于历史统计，不预示未来。本报告仅做数据分析与参考，不构成买卖指令。</div>
+<div class="disclaimer">板块分类来自同花顺官方（行业板块 90 / 概念板块 375），板块指数为等权指数；综合分基于历史统计，不预示未来。本报告仅做数据分析与参考，不构成买卖指令。</div>
 </div></body></html>'''
     return html, out_html
 
@@ -238,26 +234,15 @@ def main():
     ap.add_argument('--only-concept', action='store_true', help='只处理概念板块（跳过行业，快速出报告）')
     args = ap.parse_args()
 
-    # 增量更新板块数据（失败不阻塞报告；东财可能限流，超时后跳过）
+    # 同步板块数据（同花顺源，脚本独立运行；数据已最新则跳过）
     if not args.no_refresh:
         try:
             store = pd_.PlateStore(DB)
-            types = ['concept'] if args.only_concept else ['concept', 'industry']
-            for t in types:
-                if not store.list_plates(t):
-                    print(f'首次拉取 {t} 板块清单...', flush=True)
-                    plates = pd_.fetch_plate_list(t, max_pages=10)
-                    if plates:
-                        store.save_list(plates, t)
-                        print(f'  {t}: {len(plates)} 个', flush=True)
-                    else:
-                        print(f'  {t}: 清单拉取失败（跳过）', flush=True)
-                    time.sleep(3)
-            print('增量更新板块 K 线（限速）...', flush=True)
-            for t in types:
-                upd, fail = pd_.refresh_all(t, store=store)
-                print(f'  {t}: 更新 {len(upd)} 失败 {len(fail)}', flush=True)
-                time.sleep(3)
+            if not store.list_plates('concept'):
+                print('首次同步同花顺板块数据（清单 + 行业快照 + 全部 K 线，约 8 分钟）...', flush=True)
+            else:
+                print('增量同步同花顺板块数据（缺失/过旧板块补 K 线）...', flush=True)
+            pd_.sync_ths_all(store=store)
         except Exception as e:
             print(f'  [warn] 板块数据更新失败: {e}', flush=True)
 

@@ -116,9 +116,7 @@ def build_html(rows=None, cash=None):
         pass
     gen_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
     fname = datetime.datetime.now().strftime('%Y%m%d')
-    out_html = os.path.join(OUT_DIR, f'{fname}.html')
-    if os.path.exists(out_html):
-        out_html = os.path.join(OUT_DIR, f"{fname}_{datetime.datetime.now().strftime('%H%M%S')}.html")
+    out_html = os.path.join(OUT_DIR, f'{fname}.html')   # 当天多次生成直接覆盖当天文件
 
     kpi = ''
     for c in CATS:

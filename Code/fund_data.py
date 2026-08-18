@@ -134,47 +134,59 @@ def _fetch_nav(code, count=MAX_NAV):
 
 
 def fetch_nav(code, force=False):
-    """拉净值入 nav 表（增量优化：先拉 1 页快速判断，库内最新 >= 接口最新则跳过；
-    需要更新才全量分页拉）。返回写入条数。"""
+    """拉净值入 nav 表（增量优化：startDate 只拉缺失区间，秒级；首次/强制才全量分页）。
+    返回写入条数。"""
     import requests
     url = 'https://api.fund.eastmoney.com/f10/lsjz'
     headers = {'User-Agent': 'Mozilla/5.0', 'Referer': 'http://fundf10.eastmoney.com/'}
-    # 快速检查最新日期（1 页 20 条）
-    try:
-        r = requests.get(url, params={'fundCode': code, 'pageIndex': 1, 'pageSize': 20},
-                         timeout=15, headers=headers)
-        lst = (r.json().get('Data') or {}).get('LSJZList') or [] if r.text.strip().startswith('{') else []
-        latest_api = lst[0]['FSRQ'] if lst else None
-    except Exception:
-        latest_api = None
-    if not latest_api:
-        return 0
     c = conn()
     db_latest = c.execute('SELECT MAX(date) FROM nav WHERE code=?', (code,)).fetchone()[0]
     c.close()
-    if not force and db_latest and db_latest >= latest_api:
+    params = {'fundCode': code, 'pageIndex': 1, 'pageSize': 20}
+    if db_latest and not force:
+        # 增量：只拉库内最新日期之后的净值（接口支持 startDate/endDate，通常 1 页即够）
+        start = (datetime.date.fromisoformat(db_latest) + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+        params['startDate'] = start
+        params['endDate'] = datetime.date.today().strftime('%Y-%m-%d')
+    try:
+        r = requests.get(url, params=params, timeout=15, headers=headers)
+        lst = (r.json().get('Data') or {}).get('LSJZList') or [] if r.text.strip().startswith('{') else []
+    except Exception:
         return 0
-    rows = _fetch_nav(code)
-    if not rows:
+    if not lst:
         return 0
+    rows = [(it['FSRQ'], float(it['DWJZ'])) for it in lst
+            if it.get('FSRQ') and it.get('DWJZ')]
+    if not db_latest and not force:
+        # 首次拉取：补齐历史（全量分页）
+        full = _fetch_nav(code)
+        if full:
+            rows = full
+    rows.sort(key=lambda x: x[0])
     c = conn()
+    added = 0
     for d, nav in rows:
+        if db_latest and d <= db_latest:
+            continue
         c.execute('INSERT OR REPLACE INTO nav VALUES(?,?,?)', (code, d, nav))
+        added += 1
     c.commit(); c.close()
-    return len(rows)
+    return added
 
 
 def ensure_updated(holdings=None):
-    """对全部持仓拉取/增量更新净值，返回新增条数"""
+    """对全部持仓拉取/增量更新净值，返回新增条数（带进度输出，避免误以为卡住）"""
     holdings = holdings or list_holdings()
     total = 0
-    for h in holdings:
+    n = len(holdings)
+    for i, h in enumerate(holdings, 1):
         try:
-            n = fetch_nav(h['code'])
-            if n:
-                total += n
+            n_add = fetch_nav(h['code'])
+            total += n_add
+            flag = f'+{n_add} 条' if n_add else '已最新'
+            print(f'  [{i}/{n}] {h["name"]} {flag}', flush=True)
         except Exception as e:
-            print(f'  [warn] {h["name"]} 净值拉取失败: {type(e).__name__}: {e}')
+            print(f'  [{i}/{n}] {h["name"]} 失败: {type(e).__name__}: {e}', flush=True)
     return total
 
 

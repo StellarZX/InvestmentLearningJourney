@@ -6,7 +6,7 @@
 
 > **统一入口**：根目录 `run.py` 通过参数调用全部功能：
 > - `python run.py --index` → 持仓基金分析报告（生成 `PortfolioReport/YYYYMMDD.html`）
-> - `python run.py --plate` → 板块分析报告（生成 `PlateReport/YYYYMMDD.html`，东财官方行业+概念板块）
+> - `python run.py --plate` → 板块分析报告（生成 `PlateReport/YYYYMMDD.html`，同花顺官方行业+概念板块）
 > - `python run.py --portfolio` → 持仓流水管理（浏览器 http://127.0.0.1:8051）
 > - `python run.py --export` → 更新本文件第 4 节「组合持仓」表
 > - `--sector` 为 `--plate` 的兼容别名（旧行业报告已由板块报告取代）
@@ -15,7 +15,7 @@
 > - `run.py`：统一入口（--index / --plate / --portfolio / --export；--sector 别名）
 > - `Code/portfolio_report.py`：**持仓基金分析报告**（读全部持仓 → 拉场外净值 → 三类评分 → 决策建议 → `PortfolioReport/`）
 > - `Code/fund_data.py`：**持仓汇总库数据层**（用场外基金代码直接拉净值（天天基金），持仓快照 + 净值 + 估值三张表，报告运行时自动增量更新）
-> - `Code/plate_data.py` + `Code/plate_report.py`：**板块分析**（东财官方行业板块 + 概念板块，板块指数 K 线算动量/分位/MACD → `PlateReport/`）
+> - `Code/plate_data.py` + `Code/plate_report.py`：**板块分析**（同花顺官方分类：行业 90 + 概念 375，板块指数 K 线算动量/分位/MACD，脚本独立拉取 → `PlateReport/`）
 > - `Code/portfolio_app.py`：**持仓流水管理**（增删改查，浏览器 8051；基金名/代码手动输入，带历史补全提示）
 > - `Code/export_positions.py`：持仓汇总表生成（第 4 节）
 > - `Code/data/`：`portfolio.db`（持仓流水）/ `fund_data.db`（净值+持仓快照）/ `plate.db`（板块清单+K线）
@@ -104,8 +104,8 @@
 
 ## 3. 板块分析报告
 
-- **板块全景**由 `run.py --plate` 承担：用东财官方板块体系（行业板块 + 概念板块，类似同花顺）取代自建关键词分组，板块指数 K 线算 5/20/60 日动量、250 日分位、MACD、资金流、综合分，输出板块全景 / 低估方向 / 强势方向 / 当日涨跌排行。
-- 板块数据缓存在 `Code/data/plate.db`（清单 + K 线）。注：东财接口有 IP 限流（高频 502），当前报告以概念板块实时行情为主，行业板块清单与全量 K 线待接口解封后补齐。
+- **板块全景**由 `run.py --plate` 承担：用同花顺官方板块体系（行业 90 + 概念 375，类似同花顺 App 的分类）取代自建关键词分组，板块指数 K 线算 5/20/60 日动量、250 日分位、MACD、资金流、综合分，输出板块全景 / 低估方向 / 强势方向 / 当日涨跌排行。
+- 数据源为**同花顺（akshare）**，脚本独立运行、无需注册/token、不限流：板块清单、行业实时快照（一次全量）、板块指数 K 线。数据缓存在 `Code/data/plate.db`，`run.py --plate` 自动增量同步（已最新则跳过）。
 - 旧的行业全市场维护（fetch_db + market_industry.db）、行业识别（signal_lib）、场外映射（otc_map）、指数定投库（dca/db + market_index.db）已于 2026-08-17 废弃，备份在根目录 `backup_old/`。
 
 ```powershell
@@ -130,6 +130,7 @@
 |   红利   | 008164 |      ¥500.00 | 南方红利低波50ETF联接C   |
 |   红利   | 100032 |      ¥188.00 | 富国中证红利指数增强A      |
 | *红利合计* |  *-*   |  *¥2,188.00*  |         *-*         |
+|   行业   | 016708 |      ¥500.00 | 华夏有色金属ETF联接C     |
 |   行业   | 017811 |      ¥500.00 | 东方人工智能主题混合C      |
 |   行业   | 004643 |      ¥334.00 | 南方中证全指房地产ETF联接C  |
 |   行业   | 012857 |      ¥333.00 | 汇添富中证主要消费ETF联接C  |
@@ -137,11 +138,11 @@
 |   行业   | 000217 |      ¥310.00 | 华安黄金ETF联接C       |
 |   行业   | 013403 |      ¥200.00 | 华夏恒生科技ETF联接(QDII)C |
 |   行业   | 014118 |      ¥200.00 | 国泰创新药ETF联接C      |
-| *行业合计* |  *-*   |  *¥2,210.00*  |         *-*         |
-|   其他   |    ZFB |    ¥6,995.03 | 余额宝              |
+| *行业合计* |  *-*   |  *¥2,710.00*  |         *-*         |
+|   其他   |    ZFB |    ¥6,495.03 | 余额宝              |
 |  总计   |  *-*   | *¥16,051.83*  |         *-*         |
 
-> 表格由 `Code/export_positions.py` 从 `Code/data/portfolio.db` 自动生成（`run.py --export`），与「持仓流水管理」当前持仓同口径；余额宝显示可用现金（转入-已投基金）。
+> 表格由 `Code/export_positions.py` 从 `Code/data/portfolio.db` 自动生成，与「持仓流水管理」当前持仓同口径；余额宝显示可用现金（转入-已投基金）。
 
 ## 5. 流水记录
 
