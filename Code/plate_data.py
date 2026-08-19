@@ -14,9 +14,11 @@
 用法：
   from plate_data import sync_ths_all, PlateStore
 """
-import os, sqlite3, time, datetime
+import os, sqlite3, time, datetime, json, subprocess, sys, threading, re
 import pandas as pd
 import requests
+
+os.environ.setdefault('TQDM_DISABLE', '1')   # 抑制 akshare 内部进度条输出
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 DB = os.path.join(BASE, 'data', 'plate.db')
@@ -99,9 +101,208 @@ QT_URL = 'https://qt.gtimg.cn/q='
 # ================= 同花顺数据源（akshare，脚本独立可用）=================
 
 def _ak():
-    """延迟导入 akshare（首次使用才加载）"""
+    """延迟导入 akshare（仅清单/快照接口使用；K 线已改直连避免 MiniRacer 崩溃）"""
     import akshare as ak
     return ak
+
+
+# ---------- 直连同花顺板块 K 线（替代 akshare，绕过 mini_racer/V8 崩溃） ----------
+
+_THS_JS_CANDIDATES = [
+    r'C:\Users\Zuoxin\.workbuddy\binaries\python\envs\default\Lib\site-packages\akshare\data\ths.js',
+]
+
+
+def _find_ths_js():
+    """定位 akshare 包内的 ths.js（v 签名算法），找不到时尝试按包路径扫描"""
+    for p in _THS_JS_CANDIDATES:
+        if os.path.exists(p):
+            return p
+    try:
+        import akshare
+        pkg = os.path.dirname(akshare.__file__)
+        for root, _, files in os.walk(pkg):
+            if 'ths.js' in files:
+                return os.path.join(root, 'ths.js')
+    except Exception:
+        pass
+    return None
+
+
+_v_code_lock = threading.Lock()
+_v_code_cache = None
+
+
+def _ths_v_code(force=False):
+    """计算同花顺 v 签名：用子进程跑 MiniRacer（主进程不碰 V8，避免退出崩溃）。
+    子进程算完 os._exit(0) 跳过 V8 清理。结果缓存（进程内）。"""
+    global _v_code_cache
+    if _v_code_cache and not force:
+        return _v_code_cache
+    with _v_code_lock:
+        if _v_code_cache and not force:
+            return _v_code_cache
+        js_path = _find_ths_js()
+        if not js_path:
+            raise RuntimeError('未找到 akshare 的 ths.js（v 签名算法），无法直连同花顺接口')
+        script = (
+            'import py_mini_racer, os\n'
+            'js = py_mini_racer.MiniRacer()\n'
+            f'js.eval(open({js_path!r}, encoding="utf-8").read())\n'
+            'print(js.call("v"))\n'
+            'os._exit(0)\n'
+        )
+        try:
+            out = subprocess.run([sys.executable, '-c', script],
+                                 capture_output=True, text=True, timeout=30)
+            v = out.stdout.strip()
+            if v:
+                _v_code_cache = v
+                return v
+        except Exception:
+            pass
+        # 回退：当前进程算（接受进程退出时 V8 清理崩溃风险，数据已拿到）
+        import py_mini_racer
+        js = py_mini_racer.MiniRacer()
+        js.eval(open(js_path, encoding='utf-8').read())
+        _v_code_cache = js.call('v')
+        return _v_code_cache
+
+
+_THS_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                  '(KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36',
+    'Referer': 'http://q.10jqka.com.cn',
+    'Host': 'd.10jqka.com.cn',
+}
+
+
+def _ths_fetch_year(code, year, v_code, retries=2):
+    """拉某板块某年的指数数据，返回原始行列表 [(date,open,close,high,low,vol,amt), ...]"""
+    url = f'https://d.10jqka.com.cn/v4/line/bk_{code}/01/{year}.js'
+    headers = dict(_THS_HEADERS, Cookie=f'v={v_code}')
+    for i in range(retries):
+        try:
+            r = requests.get(url, headers=headers, timeout=15)
+            if r.status_code != 200:
+                continue
+            text = r.text
+            i0 = text.find('{')
+            if i0 < 0:
+                return []
+            j = json.loads(text[i0:-1])
+            data = j.get('data', '')
+            if not data:
+                return []
+            rows = []
+            for line in data.split(';'):
+                p = line.split(',')
+                if len(p) < 7:
+                    continue
+                try:
+                    rows.append((p[0], float(p[1]), float(p[4]),
+                                 float(p[2]), float(p[3]),
+                                 float(p[5]), float(p[6])))
+                except (ValueError, IndexError):
+                    continue
+            return rows
+        except Exception:
+            if i < retries - 1:
+                time.sleep(0.8)
+    return []
+
+
+def fetch_ths_kline_direct(code, start_date=None, end_date=None, count=THS_KLINE_DAYS, v_code=None):
+    """直连同花顺板块指数日 K（不经过 akshare/MiniRacer，线程安全，可多线程并发）。
+    code: 板块代码（plate_list.code，如 881121 / 308614）。
+    start_date 缺省 = 最近 count 天；返回 DataFrame(date,open,close,high,low,volume,amount)。"""
+    v_code = v_code or _ths_v_code()
+    end = end_date or datetime.date.today().strftime('%Y%m%d')
+    if start_date is None:
+        start = (datetime.date.today() - datetime.timedelta(days=int(count * 1.7))).strftime('%Y%m%d')
+    else:
+        start = start_date
+    rows = []
+    begin_year = int(start[:4])
+    cur_year = int(end[:4])
+    for year in range(begin_year, cur_year + 1):
+        rows.extend(_ths_fetch_year(code, year, v_code))
+    if not rows:
+        return pd.DataFrame()
+    # 日期过滤（YYYYMMDD 字符串可比较）
+    rows = [r for r in rows if start <= r[0] <= end]
+    rows.sort(key=lambda x: x[0])
+    return pd.DataFrame(rows, columns=['date', 'open', 'close', 'high', 'low', 'volume', 'amount'])
+
+
+def _code_by_name(name, plate_type):
+    """按板块名查库拿代码（直连需要 bk_code）"""
+    conn = sqlite3.connect(DB)
+    r = conn.execute('SELECT code FROM plate_list WHERE name=? AND type=?',
+                     (name, plate_type)).fetchone()
+    conn.close()
+    return r[0] if r else None
+
+
+def fetch_concept_inner_code(code, retries=2):
+    """概念板块：访问详情页提取真正的指数代码（bk_{inner_code} 才有效；清单 code 只用于详情页）"""
+    url = f'https://q.10jqka.com.cn/gn/detail/code/{code}'
+    h = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+    for i in range(retries):
+        try:
+            r = requests.get(url, headers=h, timeout=15)
+            if r.status_code == 200:
+                m = re.search(r'id="clid"[^>]*value=[\'"](\d+)[\'"]', r.text)
+                if m:
+                    return m.group(1)
+        except Exception:
+            pass
+        time.sleep(0.8)
+    return None
+
+
+def fetch_ths_kline_direct(code, start_date=None, end_date=None, count=THS_KLINE_DAYS,
+                           v_code=None, inner_code=None):
+    """直连同花顺板块指数日 K（不经过 akshare/MiniRacer，线程安全，可多线程并发）。
+    code: 板块清单代码（行业 881xxx 直接可用；概念需 inner_code，见下）。
+    inner_code: 概念板块的真实指数代码（bk_{inner_code}），缺省时用 code。
+    start_date 缺省 = 最近 count 天；返回 DataFrame(date,open,close,high,low,volume,amount)。"""
+    v_code = v_code or _ths_v_code()
+    bk = inner_code or code
+    end = end_date or datetime.date.today().strftime('%Y%m%d')
+    if start_date is None:
+        start = (datetime.date.today() - datetime.timedelta(days=int(count * 1.7))).strftime('%Y%m%d')
+    else:
+        start = start_date
+    rows = []
+    begin_year = int(start[:4])
+    cur_year = int(end[:4])
+    for year in range(begin_year, cur_year + 1):
+        rows.extend(_ths_fetch_year(bk, year, v_code))
+    if not rows:
+        return pd.DataFrame()
+    # 日期过滤（YYYYMMDD 字符串可比较）
+    rows = [r for r in rows if start <= r[0] <= end]
+    rows.sort(key=lambda x: x[0])
+    return pd.DataFrame(rows, columns=['date', 'open', 'close', 'high', 'low', 'volume', 'amount'])
+
+
+def fetch_ths_kline(name, plate_type, start_date=None, end_date=None, count=THS_KLINE_DAYS):
+    """同花顺板块指数日 K（兼容旧接口：按名称转 code 后直连；概念板块自动解析 inner_code）。
+    start_date 缺省 = 拉最近 count 天（约 1 年全量）；传入 %Y%m%d = 只拉该日起数据（增量补缺失 K 线）。"""
+    code = _code_by_name(name, plate_type)
+    if not code:
+        return pd.DataFrame()
+    inner = None
+    if plate_type == TYPE_CONCEPT:
+        st = PlateStore()
+        inner = st.get_inner(code)
+        if not inner:
+            inner = fetch_concept_inner_code(code)
+            if inner:
+                st.set_inner(code, inner)
+    return fetch_ths_kline_direct(code, start_date=start_date, end_date=end_date,
+                                  count=count, inner_code=inner)
 
 
 def fetch_ths_lists(retries=4):
@@ -142,33 +343,30 @@ def fetch_ths_industry_snapshot():
     return out
 
 
-def fetch_ths_kline(name, plate_type, count=THS_KLINE_DAYS):
-    """同花顺板块指数日 K（symbol=板块名称）。返回 DataFrame(date,open,close,high,low,volume,amount) 或空表"""
-    ak = _ak()
-    end = datetime.date.today().strftime('%Y%m%d')
-    start = (datetime.date.today() - datetime.timedelta(days=int(count * 1.7))).strftime('%Y%m%d')
+def _fetch_worker(args):
+    """线程 worker：只做网络拉取（直连接口纯 requests，线程安全可并发）。
+    增量 start_date = 库内最新 + 1 天；增量空 = 当天数据未出/停更，跳过（不回退全量）；
+    首次（无历史）空结果重试一次全量。返回 (p, df, inc)。"""
+    p, latest, inner = args
+    inc = latest is not None
+    start = None
+    if inc:
+        start = (datetime.date.fromisoformat(latest)
+                 + datetime.timedelta(days=1)).strftime('%Y%m%d')
     try:
-        if plate_type == TYPE_INDUSTRY:
-            df = ak.stock_board_industry_index_ths(symbol=name, start_date=start, end_date=end)
-        else:
-            df = ak.stock_board_concept_index_ths(symbol=name, start_date=start, end_date=end)
-    except Exception:
-        return pd.DataFrame()
-    if df is None or df.empty:
-        return pd.DataFrame()
-    rows = []
-    for _, r in df.iterrows():
-        try:
-            rows.append((str(r['日期']), float(r['开盘价']), float(r['收盘价']),
-                         float(r['最高价']), float(r['最低价']),
-                         float(r['成交量']), float(r['成交额'])))
-        except (ValueError, KeyError):
-            continue
-    return pd.DataFrame(rows, columns=['date', 'open', 'close', 'high', 'low', 'volume', 'amount'])
+        df = fetch_ths_kline_direct(p['code'], start_date=start, inner_code=inner)
+        if (df is None or df.empty) and not inc:
+            df = fetch_ths_kline_direct(p['code'], inner_code=inner)   # 首次全量重试一次
+        return p, df, inc
+    except Exception as e:
+        return p, None, inc
 
 
-def sync_ths_all(store=None, gap=0.35):
+def sync_ths_all(store=None, gap=0.15, workers=8):
     """全量同步同花顺板块数据到 plate.db：清单 + 行业快照 + 全部板块 K 线。
+    增量优化：只拉每个板块缺失区间的 K 线（start_date=库内最新+1 天，不再全量 545 天）。
+    并发：K 线改用**直连接口**（绕过 akshare 的 mini_racer/V8，纯 requests 线程安全），
+    多线程并发拉取，主线程串行写库避免 SQLite 锁。
     返回 {industry, concept, failed} 统计。脚本独立运行，无会话依赖。"""
     store = store or PlateStore()
     ak = _ak()
@@ -194,41 +392,73 @@ def sync_ths_all(store=None, gap=0.35):
     conn.commit(); conn.close()
     print(f'  行业快照 {len(snap)} 个', flush=True)
 
-    print('== 3/3 批量拉板块 K 线 ==', flush=True)
+    print('== 3/3 批量拉板块 K 线（增量 + 多线程并发，直连接口）==', flush=True)
     stats = {'industry': 0, 'concept': 0, 'failed': []}
     plates = store.list_plates(TYPE_INDUSTRY) + store.list_plates(TYPE_CONCEPT)
     total = len(plates)
-    for i, p in enumerate(plates, 1):
-        # 增量：该板块 K 线已是最新交易日则跳过
-        latest = store.kline_latest(p['code'])
-        if latest and latest >= datetime.date.today().strftime('%Y-%m-%d'):
+    today = datetime.date.today().strftime('%Y-%m-%d')
+    # 一次查出所有板块最新日期（避免逐板块查询）
+    conn = sqlite3.connect(store.db)
+    latest_map = dict(conn.execute(
+        'SELECT code, MAX(date) FROM plate_kline GROUP BY code').fetchall())
+    conn.close()
+    todo = []
+    for p in plates:
+        if latest_map.get(p['code']) and latest_map[p['code']] >= today:
             stats[p['type']] += 1
-            if i % 50 == 0 or i == total:
-                print(f'  [{i}/{total}] (增量跳过) 行业{stats["industry"]} 概念{stats["concept"]}', flush=True)
-            continue
-        try:
-            df = fetch_ths_kline(p['name'], p['type'])
-            if len(df) < 60:
-                # 重试一次（网络偶发断连）
-                time.sleep(1.5)
-                df = fetch_ths_kline(p['name'], p['type'])
-            if len(df) >= 60:
-                n = store.save_kline(p['code'], df)
-                stats[p['type']] += 1
-                # 概念当日涨跌幅从 K 线最后两根计算
-                if p['type'] == TYPE_CONCEPT and n >= 2:
-                    c = df['close'].astype(float)
-                    zdf = round((c.iloc[-1] / c.iloc[-2] - 1) * 100, 2)
-                    conn = sqlite3.connect(store.db)
-                    conn.execute('UPDATE plate_list SET zdf=? WHERE code=?', (zdf, p['code']))
-                    conn.commit(); conn.close()
-            else:
+        else:
+            todo.append(p)
+    print(f'  待更新 {len(todo)}/{total} 个板块（已最新跳过）', flush=True)
+    if not todo:
+        print(f'完成：行业 {stats["industry"]} 概念 {stats["concept"]} 失败 0', flush=True)
+        return stats
+
+    def apply_one(p, df, inc):
+        """主线程：写库 + 概念当日涨跌幅。增量空 = 无新数据跳过（不算失败）；首次全量空才算失败"""
+        if df is None:
+            stats['failed'].append(p['name'])
+            return
+        if len(df) == 0:
+            if not inc:
                 stats['failed'].append(p['name'])
-        except Exception as e:
-            stats['failed'].append(f"{p['name']}({type(e).__name__})")
-        if i % 25 == 0 or i == total:
-            print(f'  [{i}/{total}] 行业{stats["industry"]} 概念{stats["concept"]} 失败{len(stats["failed"])}', flush=True)
-        time.sleep(gap)
+            return
+        if not inc and len(df) < 60:
+            stats['failed'].append(p['name'])
+            return
+        store.save_kline(p['code'], df)
+        stats[p['type']] += 1
+        if p['type'] == TYPE_CONCEPT:
+            conn = sqlite3.connect(store.db)
+            rows = conn.execute(
+                'SELECT close FROM plate_kline WHERE code=? ORDER BY date DESC LIMIT 2',
+                (p['code'],)).fetchall()
+            if len(rows) >= 2 and rows[0][0] and rows[1][0]:
+                zdf = round((rows[0][0] / rows[1][0] - 1) * 100, 2)
+                conn.execute('UPDATE plate_list SET zdf=? WHERE code=?', (zdf, p['code']))
+            conn.commit(); conn.close()
+
+    _ths_v_code()   # 预热 v 签名（子进程计算，主进程不碰 V8）
+    # 概念板块预取 inner_code（缓存缺失才抓详情页，一次请求/板块；后续同步零开销）
+    need_inner = [p for p in todo if p['type'] == TYPE_CONCEPT and not store.get_inner(p['code'])]
+    if need_inner:
+        print(f'  解析 {len(need_inner)} 个概念板块指数代码（首次，约 2 分钟）...', flush=True)
+        for i, p in enumerate(need_inner, 1):
+            ic = fetch_concept_inner_code(p['code'])
+            if ic:
+                store.set_inner(p['code'], ic)
+            if i % 50 == 0 or i == len(need_inner):
+                print(f'    [{i}/{len(need_inner)}]', flush=True)
+            time.sleep(0.1)
+    inner_map = {p['code']: store.get_inner(p['code']) for p in todo}
+    args = [(p, latest_map.get(p['code']), inner_map.get(p['code'])) for p in todo]
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        for i, (p, df, inc) in enumerate(ex.map(_fetch_worker, args), 1):
+            apply_one(p, df, inc)
+            if i % 50 == 0 or i == len(todo):
+                print(f'  [{i}/{len(todo)}] 行业{stats["industry"]} 概念{stats["concept"]} '
+                      f'失败{len(stats["failed"])}', flush=True)
+            time.sleep(gap)
     print(f'完成：行业 {stats["industry"]} 概念 {stats["concept"]} 失败 {len(stats["failed"])}', flush=True)
     if stats['failed']:
         print('  失败:', stats['failed'][:20], flush=True)
@@ -289,6 +519,8 @@ class PlateStore:
         conn.execute('''CREATE TABLE IF NOT EXISTS plate_kline(
             code TEXT, date TEXT, open REAL, close REAL, high REAL, low REAL,
             volume REAL, amount REAL, PRIMARY KEY(code, date))''')
+        conn.execute('''CREATE TABLE IF NOT EXISTS plate_inner(
+            code TEXT PRIMARY KEY, inner_code TEXT, fetched_at TEXT)''')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_pk_code ON plate_kline(code)')
         conn.commit()
         conn.close()
@@ -338,6 +570,20 @@ class PlateStore:
             'WHERE code=? ORDER BY date', conn, params=(code,))
         conn.close()
         return df
+
+    def get_inner(self, code):
+        conn = sqlite3.connect(self.db)
+        r = conn.execute('SELECT inner_code FROM plate_inner WHERE code=?', (code,)).fetchone()
+        conn.close()
+        return r[0] if r else None
+
+    def set_inner(self, code, inner_code):
+        conn = sqlite3.connect(self.db)
+        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
+        conn.execute('INSERT OR REPLACE INTO plate_inner(code,inner_code,fetched_at) VALUES(?,?,?)',
+                     (code, inner_code, now))
+        conn.commit()
+        conn.close()
 
 
 def refresh_all(plate_type=TYPE_CONCEPT, limit=None, store=None, only_codes=None):
