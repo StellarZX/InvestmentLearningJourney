@@ -11,8 +11,7 @@
 数据流：portfolio.db（持仓）→ fund_data 同步 + 拉净值 + 评分 → 本报告渲染
 
 用法：
-  python portfolio_report.py            # 同步持仓 + 增量拉净值 + 生成报告
-  python run.py --index                 # 统一入口
+  python portfolio_report.py            # 同步持仓 + 增量拉净值 + 生成报告（或双击根目录 daily_report.bat）
 输出：PortfolioReport/YYYYMMDD.html
 """
 import os, sys, sqlite3, datetime

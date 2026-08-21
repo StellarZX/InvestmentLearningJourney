@@ -195,11 +195,10 @@ code{{background:#f1f3f5;border-radius:5px;padding:1px 6px;font-size:12px}}
 <div class="card"><h2>📚 基础课程（40 课）</h2>{lessons_html(lessons)}</div>
 
 <div class="card"><h2>🚀 使用（本地）</h2>
-<p class="note">统一入口 <code>run.py</code>（根目录）：<br>
-· <code>python run.py --index</code> → 持仓基金分析报告（PortfolioReport/YYYYMMDD.html）<br>
-· <code>python run.py --plate</code> → 板块分析报告（PlateReport/YYYYMMDD.html，同花顺官方行业 90 + 概念 375）<br>
-· <code>python run.py --portfolio</code> → 持仓流水管理（浏览器 http://127.0.0.1:8051）<br>
-· 报告/课程更新后 <code>python run.py --nav</code> 刷新本导航页（--index/--plate 已自动刷新）</p>
+<p class="note">根目录双击批处理：<br>
+· <code>update_portfolio.bat</code> → 持仓流水管理（浏览器 http://127.0.0.1:8051）<br>
+· <code>daily_report.bat</code> → 两份报告一次生成（PortfolioReport + PlateReport，同花顺官方行业 90 + 概念 375），并刷新本导航页、自动提交推送<br>
+· 手动等价命令：<code>python Code/portfolio_report.py</code> / <code>python Code/plate_report.py</code> / <code>python Code/make_index.py</code></p>
 </div>
 
 <div class="card"><h2>📖 资料</h2>
