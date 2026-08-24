@@ -108,13 +108,16 @@ def lessons_html(lessons):
 def build_html():
     plate = scan_reports('PlateReport')
     pf = scan_reports('PortfolioReport')
+    etf = scan_reports('EtfReport')
     lessons = scan_lessons()
     gen = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
 
     plate_latest = f'PlateReport/{plate[0][1]}' if plate else ''
     pf_latest = f'PortfolioReport/{pf[0][1]}' if pf else ''
+    etf_latest = f'EtfReport/{etf[0][1]}' if etf else ''
     plate_date = fmt_date(plate[0][0]) if plate else '—'
     pf_date = fmt_date(pf[0][0]) if pf else '—'
+    etf_date = fmt_date(etf[0][0]) if etf else '—'
 
     # 最新报告大卡片
     latest_cards = ''
@@ -127,6 +130,11 @@ def build_html():
         latest_cards += f'''<a class="bigcard" href="{plate_latest}">
 <div class="bc-emoji">📈</div><div><b>板块分析报告</b>
 <p>数据日期 {plate_date} · 行业 90 + 概念 375 · 热度榜/低估/强势</p></div>
+<span class="arrow">→</span></a>'''
+    if etf_latest:
+        latest_cards += f'''<a class="bigcard" href="{etf_latest}">
+<div class="bc-emoji">🎯</div><div><b>ETF 联接入场机会</b>
+<p>数据日期 {etf_date} · 底池筛选 + 稳健趋势入场（T+1 追高惩罚）</p></div>
 <span class="arrow">→</span></a>'''
 
     return f'''<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
@@ -170,8 +178,8 @@ a.lesson{{border:1px solid var(--line);border-radius:7px;padding:2px 8px;font-si
 a.lesson:hover{{border-color:var(--accent);text-decoration:none}}
 code{{background:#f1f3f5;border-radius:5px;padding:1px 6px;font-size:12px}}
 .disclaimer{{font-size:12px;color:#868e96;margin:16px 0 30px;padding:12px;background:#f8f9fa;border-radius:10px}}
-.dup{{display:grid;grid-template-columns:1fr 1fr;gap:14px}}
-@media(max-width:760px){{.dup{{grid-template-columns:1fr}}}}
+.dup{{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}}
+@media(max-width:900px){{.dup{{grid-template-columns:1fr}}}}
 </style></head><body>
 <header><div class="wrap">
 <h1>💰 投资方法与记录</h1>
@@ -197,8 +205,8 @@ code{{background:#f1f3f5;border-radius:5px;padding:1px 6px;font-size:12px}}
 <div class="card"><h2>🚀 使用（本地）</h2>
 <p class="note">根目录双击批处理：<br>
 · <code>update_portfolio.bat</code> → 持仓流水管理（浏览器 http://127.0.0.1:8051）<br>
-· <code>daily_report.bat</code> → 两份报告一次生成（PortfolioReport + PlateReport，同花顺官方行业 90 + 概念 375），并刷新本导航页、自动提交推送<br>
-· 手动等价命令：<code>python Code/portfolio_report.py</code> / <code>python Code/plate_report.py</code> / <code>python Code/make_index.py</code></p>
+· <code>daily_report.bat</code> → 三份报告一次生成（持仓基金 + 板块 + ETF 联接入场），并刷新本导航页、自动提交推送<br>
+· 手动等价命令：<code>python Code/portfolio_report.py</code> / <code>python Code/plate_report.py</code> / <code>python Code/etf_report.py</code> / <code>python Code/make_index.py</code></p>
 </div>
 
 <div class="card"><h2>📖 资料</h2>
@@ -209,6 +217,7 @@ code{{background:#f1f3f5;border-radius:5px;padding:1px 6px;font-size:12px}}
 <div class="dup">
   <div class="card"><h2>📊 持仓基金分析报告（历史）</h2>{hist_tree(pf, 'PortfolioReport')}</div>
   <div class="card"><h2>📈 板块分析报告（历史）</h2>{hist_tree(plate, 'PlateReport')}</div>
+  <div class="card"><h2>🎯 ETF 联接报告（历史）</h2>{hist_tree(etf, 'EtfReport')}</div>
 </div>
 
 <div class="disclaimer">本仓库内容为个人投资记录与学习笔记，全部为数据分析与参考，不构成任何投资建议。基金有风险，投资需谨慎。</div>
