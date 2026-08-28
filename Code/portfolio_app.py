@@ -12,12 +12,14 @@
   - direction: 指数/行业 = 买入/卖出；资金池 = 转入/转出/收益
 
 用法：
-  python portfolio_app.py          # 启动后浏览器打开 http://127.0.0.1:8051
+  python portfolio_app.py          # 本机访问 http://127.0.0.1:8051
+  PORTFOLIO_HOST=0.0.0.0 python portfolio_app.py  # 允许局域网访问
 """
 import json
 import os
 import sys
 import sqlite3
+import socket
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 # 打包成 exe 后：BASE = exe 所在目录（Code/ 或根目录）；脚本运行时 = 脚本所在目录（Code/）
@@ -32,7 +34,9 @@ else:
     DB = os.path.join(BASE, 'data', 'portfolio.db')
 # 确保数据目录存在（首次运行/克隆仓库后自动创建 data/）
 os.makedirs(os.path.dirname(DB), exist_ok=True)
-PORT = 8051
+HOST = os.environ.get('PORTFOLIO_HOST', '127.0.0.1')
+PORT = int(os.environ.get('PORTFOLIO_PORT', '8051'))
+OPEN_BROWSER = os.environ.get('PORTFOLIO_OPEN_BROWSER', '0').lower() in ('1', 'true', 'yes')
 
 # ---- 定投下拉标的（指数类别：选基金自动带出代码，避免手输丢前导零）----
 INDEX_FUNDS = [
@@ -462,11 +466,27 @@ if __name__ == '__main__':
     print(f'[debug] frozen={getattr(sys, "frozen", False)} DB={DB} exists={os.path.exists(DB)}')
     if not os.path.exists(DB):
         print(f'[warn] 未找到数据库 {DB}，界面将显示空数据')
-    # 延迟打开浏览器（等服务起来）
-    threading.Timer(0.8, lambda: webbrowser.open(f'http://127.0.0.1:{PORT}')).start()
-    print(f'持仓流水管理已启动: http://127.0.0.1:{PORT}')
-    print('浏览器已自动打开；关闭本窗口即停止服务')
+    local_url = f'http://127.0.0.1:{PORT}'
+    print(f'持仓流水管理已启动: {local_url}')
+    if HOST in ('0.0.0.0', '::'):
+        try:
+            # UDP connect 只用于选择本机出接口，不会实际发送数据，通常比 hostname 更可靠。
+            probe = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            probe.connect(('8.8.8.8', 80))
+            lan_ip = probe.getsockname()[0]
+            probe.close()
+        except OSError:
+            try:
+                lan_ip = socket.gethostbyname(socket.gethostname())
+            except OSError:
+                lan_ip = '<服务器局域网IP>'
+        print(f'远程电脑访问: http://{lan_ip}:{PORT}')
+        print('若无法访问，请检查服务器防火墙是否放行该端口。')
+    if OPEN_BROWSER:
+        # 延迟打开浏览器（等服务起来）；服务器无图形界面时保持关闭即可
+        threading.Timer(0.8, lambda: webbrowser.open(local_url)).start()
+    print('关闭此窗口即停止服务')
     try:
-        ThreadingHTTPServer(('127.0.0.1', PORT), Handler).serve_forever()
+        ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()
     except KeyboardInterrupt:
         print('\n已停止')

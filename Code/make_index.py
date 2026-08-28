@@ -204,8 +204,8 @@ code{{background:#f1f3f5;border-radius:5px;padding:1px 6px;font-size:12px}}
 
 <div class="card"><h2>🚀 使用（本地）</h2>
 <p class="note">根目录双击批处理：<br>
-· <code>update_portfolio.bat</code> → 持仓流水管理（浏览器 http://127.0.0.1:8051）<br>
-· <code>daily_report.bat</code> → 三份报告一次生成（持仓基金 + 板块 + ETF 联接入场），并刷新本导航页、自动提交推送<br>
+· <code>update_portfolio.bat</code> / <code>update_portfolio.sh</code> → 持仓流水管理（Linux 脚本支持局域网远程访问 8051 端口）<br>
+· <code>daily_report.bat</code> / <code>daily_report.sh</code> → 三份报告一次生成（持仓基金 + 板块 + ETF 联接入场），并刷新本导航页<br>
 · 手动等价命令：<code>python Code/portfolio_report.py</code> / <code>python Code/plate_report.py</code> / <code>python Code/etf_report.py</code> / <code>python Code/make_index.py</code></p>
 </div>
 
