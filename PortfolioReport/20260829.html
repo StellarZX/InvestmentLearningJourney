@@ -1,0 +1,232 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
+<title>持仓基金分析报告</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--line:#e3e6eb;--tx:#1c2333}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:-apple-system,"Microsoft YaHei",sans-serif;font-size:14px}
+header{background:#fff;border-bottom:1px solid var(--line);padding:22px 0}
+.wrap{max-width:1150px;margin:0 auto;padding:0 20px}
+header h1{font-size:22px}
+header .sub{opacity:.85;font-size:13px;margin-top:6px}
+.card{background:var(--card);border-radius:14px;padding:20px 22px;margin:18px 0;border:1px solid var(--line)}
+.card h2{font-size:17px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f1f3f5;padding:9px 8px;text-align:center;font-weight:600;border-bottom:2px solid var(--line)}
+td{padding:8px;text-align:center;border-bottom:1px solid #f1f3f5}
+tr:hover td{background:#f8f9fa}
+.up{color:#e03131;font-weight:600}
+.down{color:#0ca678;font-weight:600}
+.note{font-size:13px;color:#5b6472;line-height:1.7;margin-top:10px}
+.kpis{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.kpi{flex:1;min-width:150px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .k{color:#5b6472;font-size:12px}
+.kpi .v{font-size:22px;font-weight:700;margin-top:4px}
+.disclaimer{font-size:12px;color:#868e96;line-height:1.7;margin-top:16px;padding:12px;background:#f8f9fa;border-radius:10px}
+</style></head><body>
+<header><div class="wrap">
+<h1>持仓基金分析报告</h1>
+<div class="sub">净值日期 2026-08-28 · 生成时间 2026-08-29 18:01 · 三类持仓分组（指数/红利/行业）· 本报告仅做数据分析与参考，不构成买卖指令</div>
+</div></header>
+<div class="wrap">
+
+<div class="kpis">
+<div class="kpi"><div class="k">指数</div><div class="v">¥5,109</div><div class="note">6 只</div></div><div class="kpi"><div class="k">红利</div><div class="v">¥2,188</div><div class="note">3 只</div></div><div class="kpi"><div class="k">行业</div><div class="v">¥7,210</div><div class="note">13 只</div></div><div class="kpi"><div class="k">余额宝</div><div class="v">¥1,545</div><div class="note">可用现金</div></div><div class="kpi"><div class="k">持仓总资产</div><div class="v">¥16,052</div><div class="note">含现金</div></div>
+</div>
+
+<div class="card"><h2>📊 指数持仓（定投：分位 → 买入倍数）</h2>
+<p class="note">定投倍数 = PE 估值分位（<30% ×1.5 / 30-70% ×1.0 / >70% ×0.5），无 PE 时用价格分位兜底；分数高=现在适合多投。</p>
+<table><thead><tr><th>持仓基金</th><th>持仓金额</th><th>20日动量</th><th>历史分位</th><th>综合分</th><th>决策建议</th><th>预警</th></tr></thead>
+<tbody><tr>
+          <td style="text-align:left"><b>华泰柏瑞沪深300ETF联接A</b><br><span style="color:#868e96;font-size:11px">460300</span></td>
+          <td>¥2,625.00</td>
+          <td class="up">+0.6%</td>
+          <td>56%</td>
+          <td><b>29</b></td>
+          <td><b class="">定投 ×1.0 · 正常（标准定投）</b></td>
+          <td style="text-align:left"><span style="font-size:12px">未取到 PE 估值，用价格分位兜底</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>汇添富恒生指数(QDII-LOF)A</b><br><span style="color:#868e96;font-size:11px">164705</span></td>
+          <td>¥1,187.00</td>
+          <td class="down">-1.1%</td>
+          <td>49%</td>
+          <td><b>51</b></td>
+          <td><b class="">定投 ×1.0 · 正常（标准定投）</b></td>
+          <td style="text-align:left"><span style="font-size:12px">未取到 PE 估值，用价格分位兜底</span><br><span style="font-size:12px">⚠️ 动量转负且MACD空头——趋势走弱</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>摩根纳斯达克100指数(QDII)A</b><br><span style="color:#868e96;font-size:11px">019172</span></td>
+          <td>¥480.00</td>
+          <td class="up">+5.1%</td>
+          <td>85%</td>
+          <td><b>32</b></td>
+          <td><b class="">定投 ×0.5 · 高估（减半定投）</b></td>
+          <td style="text-align:left"><span style="font-size:12px">未取到 PE 估值，用价格分位兜底</span><br><span style="font-size:12px">📈 历史分位 85% 偏高</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>南方中证500ETF联接(LOF)A</b><br><span style="color:#868e96;font-size:11px">160119</span></td>
+          <td>¥371.80</td>
+          <td class="up">+5.2%</td>
+          <td>56%</td>
+          <td><b>35</b></td>
+          <td><b class="">定投 ×1.0 · 正常（标准定投）</b></td>
+          <td style="text-align:left"><span style="font-size:12px">未取到 PE 估值，用价格分位兜底</span><br><span style="font-size:12px">🟠 MACD红柱衰竭——涨势减速</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>摩根标普500指数(QDII)A</b><br><span style="color:#868e96;font-size:11px">019305</span></td>
+          <td>¥320.00</td>
+          <td class="up">+3.7%</td>
+          <td>95%</td>
+          <td><b>31</b></td>
+          <td><b class="">定投 ×0.5 · 高估（减半定投）</b></td>
+          <td style="text-align:left"><span style="font-size:12px">未取到 PE 估值，用价格分位兜底</span><br><span style="font-size:12px">📈 历史分位 95% 偏高</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>易方达创业板ETF联接A</b><br><span style="color:#868e96;font-size:11px">110026</span></td>
+          <td>¥125.00</td>
+          <td class="up">+2.2%</td>
+          <td>49%</td>
+          <td><b>44</b></td>
+          <td><b class="">定投 ×1.0 · 正常（标准定投）</b></td>
+          <td style="text-align:left"><span style="font-size:12px">未取到 PE 估值，用价格分位兜底</span></td>
+        </tr></tbody></table>
+</div><div class="card"><h2>🧧 红利持仓（低吸高抛：分位 + 股息率安全垫）</h2>
+<p class="note">低分位（<30%）+ 止跌确认 = 买入区；高分位（>70%）+ 滞涨确认 = 卖出区；中间持有。股息率利差是安全垫（暂未接入，中性处理）。</p>
+<table><thead><tr><th>持仓基金</th><th>持仓金额</th><th>20日动量</th><th>历史分位</th><th>综合分</th><th>决策建议</th><th>预警</th></tr></thead>
+<tbody><tr>
+          <td style="text-align:left"><b>易方达恒生红利低波ETF联接A</b><br><span style="color:#868e96;font-size:11px">021457</span></td>
+          <td>¥1,500.00</td>
+          <td class="down">-2.0%</td>
+          <td>37%</td>
+          <td><b>68</b></td>
+          <td><b class="">持有</b></td>
+          <td style="text-align:left"><span style="font-size:12px">🟠 MACD红柱衰竭——涨势减速</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>南方红利低波50ETF联接C</b><br><span style="color:#868e96;font-size:11px">008164</span></td>
+          <td>¥500.00</td>
+          <td class="down">-3.4%</td>
+          <td>41%</td>
+          <td><b>60</b></td>
+          <td><b class="">持有</b></td>
+          <td style="text-align:left"><span style="font-size:12px">⚠️ 动量转负且MACD空头——趋势走弱</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>富国中证红利指数增强A</b><br><span style="color:#868e96;font-size:11px">100032</span></td>
+          <td>¥188.00</td>
+          <td class="up">+1.9%</td>
+          <td>55%</td>
+          <td><b>54</b></td>
+          <td><b class="">持有</b></td>
+          <td style="text-align:left"><span style="font-size:12px">➖ 中性区间，无特别预警</span></td>
+        </tr></tbody></table>
+</div><div class="card"><h2>📈 行业持仓（被动+主动合并：趋势波段 · 卖出为主）</h2>
+<p class="note">趋势驱动：20日动量 + MACD + 资金流（净值场景资金流中性）。信号转弱/死叉即提示离场，不恋战。</p>
+<table><thead><tr><th>持仓基金</th><th>持仓金额</th><th>20日动量</th><th>历史分位</th><th>综合分</th><th>决策建议</th><th>预警</th></tr></thead>
+<tbody><tr>
+          <td style="text-align:left"><b>博时恒生医疗保健ETF发起式联接（QDII）C</b><br><span style="color:#868e96;font-size:11px">014425</span></td>
+          <td>¥1,000.00</td>
+          <td class="up">+12.4%</td>
+          <td>47%</td>
+          <td><b>62</b></td>
+          <td><b class="">持有</b></td>
+          <td style="text-align:left"><span style="font-size:12px">🟠 MACD红柱衰竭——涨势减速</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>天弘中证农业主题ETF联接C</b><br><span style="color:#868e96;font-size:11px">010770</span></td>
+          <td>¥1,000.00</td>
+          <td class="up">+3.6%</td>
+          <td>39%</td>
+          <td><b>57</b></td>
+          <td><b class="">持有</b></td>
+          <td style="text-align:left"><span style="font-size:12px">➖ 中性区间，无特别预警</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>广发科创芯片设计ETF联接C</b><br><span style="color:#868e96;font-size:11px">027521</span></td>
+          <td>¥1,000.00</td>
+          <td class="down">—</td>
+          <td>—</td>
+          <td><b>—</b></td>
+          <td><b class="">—</b></td>
+          <td style="text-align:left"><span style="font-size:12px">净值数据不足（59 根 < 65），等待拉取</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>国泰中证钢铁ETF联接C</b><br><span style="color:#868e96;font-size:11px">008190</span></td>
+          <td>¥1,000.00</td>
+          <td class="up">+1.8%</td>
+          <td>16%</td>
+          <td><b>50</b></td>
+          <td><b class="">持有</b></td>
+          <td style="text-align:left"><span style="font-size:12px">📉 历史分位 16% 低位</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>东方人工智能主题混合C</b><br><span style="color:#868e96;font-size:11px">017811</span></td>
+          <td>¥500.00</td>
+          <td class="up">+8.5%</td>
+          <td>70%</td>
+          <td><b>43</b></td>
+          <td><b class="down">关注（动能转弱，准备卖出）</b></td>
+          <td style="text-align:left"><span style="font-size:12px">🟠 MACD红柱衰竭——涨势减速</span><br><span style="font-size:12px">📈 历史分位 70% 偏高</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>华夏有色金属ETF联接C</b><br><span style="color:#868e96;font-size:11px">016708</span></td>
+          <td>¥500.00</td>
+          <td class="up">+10.0%</td>
+          <td>52%</td>
+          <td><b>63</b></td>
+          <td><b class="">持有</b></td>
+          <td style="text-align:left"><span style="font-size:12px">🟠 MACD红柱衰竭——涨势减速</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>华夏中证动漫游戏ETF联接C</b><br><span style="color:#868e96;font-size:11px">012769</span></td>
+          <td>¥500.00</td>
+          <td class="down">-2.9%</td>
+          <td>12%</td>
+          <td><b>21</b></td>
+          <td><b class="down">关注（动能转弱，准备卖出）</b></td>
+          <td style="text-align:left"><span style="font-size:12px">⚠️ 动量转负且MACD空头——趋势走弱</span><br><span style="font-size:12px">📉 历史分位 12% 低位</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>南方中证全指房地产ETF联接C</b><br><span style="color:#868e96;font-size:11px">004643</span></td>
+          <td>¥334.00</td>
+          <td class="up">+4.5%</td>
+          <td>22%</td>
+          <td><b>54</b></td>
+          <td><b class="">持有</b></td>
+          <td style="text-align:left"><span style="font-size:12px">🟠 MACD红柱衰竭——涨势减速</span><br><span style="font-size:12px">📉 历史分位 22% 低位</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>华夏食品饮料ETF联接C</b><br><span style="color:#868e96;font-size:11px">013126</span></td>
+          <td>¥333.00</td>
+          <td class="down">-4.1%</td>
+          <td>20%</td>
+          <td><b>29</b></td>
+          <td><b class="down">关注（动能转弱，准备卖出）</b></td>
+          <td style="text-align:left"><span style="font-size:12px">⚠️ 动量转负且MACD空头——趋势走弱</span><br><span style="font-size:12px">📉 历史分位 20% 低位</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>汇添富中证主要消费ETF联接C</b><br><span style="color:#868e96;font-size:11px">012857</span></td>
+          <td>¥333.00</td>
+          <td class="down">-3.0%</td>
+          <td>24%</td>
+          <td><b>31</b></td>
+          <td><b class="down">关注（动能转弱，准备卖出）</b></td>
+          <td style="text-align:left"><span style="font-size:12px">⚠️ 动量转负且MACD空头——趋势走弱</span><br><span style="font-size:12px">📉 历史分位 24% 低位</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>华安黄金ETF联接C</b><br><span style="color:#868e96;font-size:11px">000217</span></td>
+          <td>¥310.00</td>
+          <td class="up">+12.3%</td>
+          <td>46%</td>
+          <td><b>68</b></td>
+          <td><b class="">持有（趋势强）</b></td>
+          <td style="text-align:left"><span style="font-size:12px">➖ 中性区间，无特别预警</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>国泰创新药ETF联接C</b><br><span style="color:#868e96;font-size:11px">014118</span></td>
+          <td>¥200.00</td>
+          <td class="up">+9.9%</td>
+          <td>79%</td>
+          <td><b>47</b></td>
+          <td><b class="">持有</b></td>
+          <td style="text-align:left"><span style="font-size:12px">📈 历史分位 79% 偏高</span></td>
+        </tr><tr>
+          <td style="text-align:left"><b>华夏恒生科技ETF联接(QDII)C</b><br><span style="color:#868e96;font-size:11px">013403</span></td>
+          <td>¥200.00</td>
+          <td class="down">-4.5%</td>
+          <td>13%</td>
+          <td><b>20</b></td>
+          <td><b class="down">关注（动能转弱，准备卖出）</b></td>
+          <td style="text-align:left"><span style="font-size:12px">⚠️ 动量转负且MACD空头——趋势走弱</span><br><span style="font-size:12px">📉 历史分位 13% 低位</span></td>
+        </tr></tbody></table>
+</div>
+
+<div class="card"><h2>💰 资金池</h2>
+<table><thead><tr><th>账户</th><th>可用余额</th><th>说明</th></tr></thead>
+<tbody><tr><td>余额宝（ZFB）</td><td class="up">¥1,545.03</td><td style="text-align:left;color:#5b6472">转入累计 - 已投基金（推算口径，与持仓流水管理一致）</td></tr></tbody></table>
+</div>
+
+<div class="disclaimer">本报告由 Code/portfolio_report.py 生成：持仓来自 portfolio.db，行情为场外基金净值（天天基金），信号为纯价格统计（动量/分位/MACD）+ 指数 PE 估值分位。三类评分策略不同：指数=定投倍数、红利=低吸高抛、行业=趋势卖出为主（被动+主动已合并）。不构成投资建议。</div>
+</div></body></html>
