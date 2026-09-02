@@ -24,7 +24,6 @@ cd "$ROOT_DIR"
 echo "[$(date '+%F %T %Z')] 开始生成报告（环境：$ENV_NAME）"
 "$CONDA_CMD" run --no-capture-output -n "$ENV_NAME" python Code/portfolio_report.py
 "$CONDA_CMD" run --no-capture-output -n "$ENV_NAME" python Code/plate_report.py
-"$CONDA_CMD" run --no-capture-output -n "$ENV_NAME" python Code/etf_report.py
 "$CONDA_CMD" run --no-capture-output -n "$ENV_NAME" python Code/make_index.py
 
 # 与 Windows daily_report.bat 保持一致：有变化才提交并推送，避免每天产生空提交。
