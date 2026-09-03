@@ -53,7 +53,7 @@ def load_plates_with_kline(plate_type):
         if len(df) < 65:
             # 降级：只有实时行情
             out.append({'theme': p['name'], 'code': p['code'], 'zdf': p['zdf'],
-                        'mf': p['mf'], 'mom5': None, 'mom20': None, 'mom60': None,
+                        'mf': p['mf'], 'mom5': None, 'mom10': None, 'mom20': None, 'mom60': None,
                         'pct250': None, 'score': 0.0, 'macd_bull': False,
                         'macd_weakening': False, 'date': '', 'amount': None})
             continue
@@ -152,14 +152,17 @@ def build_html():
         pct_txt = f"{r['pct250']:.0%}" if r['pct250'] is not None else '—'
         low_html += f'''<tr><td style="text-align:left"><b>{r['theme']}</b></td>
           <td>{r['code']}</td><td class="down">{pct_txt}</td>
+          <td class="{'up' if (r['mom5'] or 0)>0 else 'down'}">{r['mom5']:+.1f}%</td>
+          <td class="{'up' if (r['mom10'] or 0)>0 else 'down'}">{r['mom10']:+.1f}%</td>
           <td class="{'up' if (r['mom20'] or 0)>0 else 'down'}">{r['mom20']:+.1f}%</td>
           <td>{r['score']:.0f}</td></tr>'''
     strong_html = ''
     for r in strong_list[:10]:
         strong_html += f'''<tr><td style="text-align:left"><b>{r['theme']}</b></td>
           <td>{r['code']}</td><td class="up">{r['score']:.0f}</td>
-          <td class="up">{r['mom20']:+.1f}%</td>
-          <td class="up">{r['mom60']:+.1f}%</td></tr>'''
+          <td class="up">{r['mom5']:+.1f}%</td>
+          <td class="up">{r['mom10']:+.1f}%</td>
+          <td class="up">{r['mom20']:+.1f}%</td></tr>'''
 
     def _hot_tr(r):
         zdf = r.get('zdf')
@@ -228,7 +231,7 @@ tr:hover td{{background:#f8f9fa}}
 
 <div class="kpis">
   <div class="kpi"><div class="k">行业板块</div><div class="v">{len(ind_rows)}</div><div class="note">主要分析对象</div></div>
-  <div class="kpi"><div class="k">概念板块</div><div class="v">{len(con_rows)}</div><div class="note">热门 Top10 参考</div></div>
+  <div class="kpi"><div class="k">概念板块</div><div class="v">{len(con_rows)}</div><div class="note">分类数据参考</div></div>
   <div class="kpi"><div class="k">低估方向</div><div class="v">{len(low_list)}</div><div class="note">行业 分位&lt;30%</div></div>
   <div class="kpi"><div class="k">强势方向</div><div class="v">{len(strong_list)}</div><div class="note">行业 综合分≥65 双多</div></div>
   {hot_kpi}
@@ -240,12 +243,6 @@ tr:hover td{{background:#f8f9fa}}
 <td style="vertical-align:top"><table style="border:none"><tr><th>板块</th><th>当日</th><th>20日</th></tr>{bot_zdf}</table></td></tr></tbody></table>
 </div>
 
-<div class="card"><h2>🔥 热门概念 Top 10（按最新交易日成交额，仅作主题参考）</h2>
-<p class="note">按成交额取资金最活跃的概念板块；概念反映资金情绪与题材热度，波动大、追高风险高，仅作参考不作决策依据。</p>
-<table><thead><tr><th>#</th><th>概念板块</th><th>当日</th><th>成交额</th><th>5日</th><th>20日</th><th>60日</th><th>分位</th><th>MACD</th></tr></thead>
-<tbody>{con_html}</tbody></table>
-</div>
-
 <div class="card"><h2>🔥 行业资金热度榜（按最新交易日成交额）</h2>
 <p class="note">成交额 = 该行业全部成分股当日成交额之和（板块指数口径），是资金参与度/关注度的代理指标；板块越大成交额天然越高，冷门榜同理仅供参考。原有评分体系不变。</p>
 <table><thead><tr><th style="width:50%">资金最活跃 Top 15</th><th style="width:50%">冷门 Bottom 15</th></tr></thead>
@@ -254,13 +251,13 @@ tr:hover td{{background:#f8f9fa}}
 </div>
 
 <div class="card"><h2>📉 低估行业方向 Top 10（250日分位 &lt;30%，均值回归参考）</h2>
-<table><thead><tr><th>行业板块</th><th>代码</th><th>历史分位</th><th>20日动量</th><th>综合分</th></tr></thead>
-<tbody>{low_html or '<tr><td colspan="5" style="color:#adb5bd">无</td></tr>'}</tbody></table>
+<table><thead><tr><th>行业板块</th><th>代码</th><th>历史分位</th><th>5日动量</th><th>10日动量</th><th>20日动量</th><th>综合分</th></tr></thead>
+<tbody>{low_html or '<tr><td colspan="7" style="color:#adb5bd">无</td></tr>'}</tbody></table>
 </div>
 
 <div class="card"><h2>📈 强势行业方向 Top 10（综合分≥65 且动量MACD双多）</h2>
-<table><thead><tr><th>行业板块</th><th>代码</th><th>评分</th><th>20日动量</th><th>60日动量</th></tr></thead>
-<tbody>{strong_html or '<tr><td colspan="5" style="color:#adb5bd">当前无双多行业板块（市场偏弱）</td></tr>'}</tbody></table>
+<table><thead><tr><th>行业板块</th><th>代码</th><th>评分</th><th>5日动量</th><th>10日动量</th><th>20日动量</th></tr></thead>
+<tbody>{strong_html or '<tr><td colspan="6" style="color:#adb5bd">当前无双多行业板块（市场偏弱）</td></tr>'}</tbody></table>
 </div>
 
 <div class="card"><h2>🗂️ 行业板块全景（全部 {len(ind_rows)} 个，按综合分降序）</h2>

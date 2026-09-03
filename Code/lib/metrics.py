@@ -38,6 +38,7 @@ def _calc_index_metrics(s, o, v, theme):
     """在合成指数序列上计算全部指标（s=收盘/指数点, o=开盘, v=成交量）"""
     n = len(s)
     m5 = s.iloc[-1] / s.iloc[-6] - 1 if n > 6 else 0
+    m10 = s.iloc[-1] / s.iloc[-11] - 1 if n > 11 else 0
     m20 = s.iloc[-1] / s.iloc[-min(21, n)] - 1
     m60 = s.iloc[-1] / s.iloc[-min(61, n)] - 1 if n > 60 else m20
     dif, dea = macd_series(s)
@@ -90,7 +91,8 @@ def _calc_index_metrics(s, o, v, theme):
             weakening = True
     return {
         'theme': theme, 'date': str(s.index[-1]) if hasattr(s.index[-1], 'strftime') else '',
-        'mom5': round(float(m5)*100, 2), 'mom20': round(float(m20)*100, 2),
+        'mom5': round(float(m5)*100, 2), 'mom10': round(float(m10)*100, 2),
+        'mom20': round(float(m20)*100, 2),
         'mom60': round(float(m60)*100, 2),
         'pct250': round(pct250, 3) if pct250 is not None else None,
         'macd_bull': macd_bull, 'macd_weakening': weakening,
@@ -226,4 +228,3 @@ def score_trend(m, scale='passive'):
     else:
         decision = '持有'
     return {'score': score, 'decision': decision}
-
